@@ -18,18 +18,6 @@ namespace EnumRun
         public bool RunOnce { get; set; }
         public Dictionary<string, EnumRun.Lib.ProcessRange> Ranges { get; set; }
 
-        [JsonIgnore]
-        public LanguageCollection Languages { get; set; }
-
-        /// <summary>
-        /// 設定ファイル保存先の候補
-        /// </summary>
-        private static readonly string[] _targetCandidate = new string[]
-        {
-            Path.Combine(Item.WorkDirectory),
-            Path.Combine(Item.AssemblyDirectory),
-        };
-
         /// <summary>
         /// 初期値をセット
         /// </summary>
@@ -46,17 +34,6 @@ namespace EnumRun
                 { "LogonScript", new EnumRun.Lib.ProcessRange(){ Range = "81-89" } },
                 { "LogoffScript",new EnumRun.Lib.ProcessRange(){ Range = "91-99" } },
             };
-
-            SetLanguageCollection();
-        }
-
-        public void SetLanguageCollection()
-        {
-            string langConfPath = _targetCandidate.
-                Select(x => Path.Combine(x, Item.LANG_JSON)).
-                FirstOrDefault(x => File.Exists(x));
-            this.Languages = new LanguageCollection();
-            this.Languages.Load(langConfPath);
         }
 
         /// <summary>
@@ -65,11 +42,16 @@ namespace EnumRun
         /// <returns></returns>
         public static EnumRunSetting Deserialize()
         {
-            EnumRunSetting setting = null;
+            string[] _targetCandidate = new string[]
+            {
+                Path.Combine(Item.WorkDirectory),
+                Path.Combine(Item.AssemblyDirectory),
+            };
             string configPath = _targetCandidate.
                 Select(x => Path.Combine(x, Item.CONFIG_JSON)).
                 FirstOrDefault(x => File.Exists(x));
 
+            EnumRunSetting setting = null;
             if (configPath != null)
             {
                 try

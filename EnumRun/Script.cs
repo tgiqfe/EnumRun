@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.IO;
+using EnumRun.Lib;
 
-namespace EnumRun.Lib
+namespace EnumRun
 {
     internal class Script
     {

@@ -14,32 +14,8 @@ namespace EnumRun.Lib
         private Regex _delimiter = new Regex(@"[\-~_]");
         private int[] _Range { get; set; }
 
-        /*
-        public int GetStartNumber()
-        {
-            if (_Range == null) { SplitRange(); }
-            return _Range[0];
-        }
-
-        public int GetEndNumber()
-        {
-            if (_Range == null) { SplitRange(); }
-            return _Range[1];
-        }
-
-        private void SplitRange()
-        {
-            string[] fields = _delimiter.Split(this.Range).Select(x => x.Trim()).ToArray();
-            if (int.TryParse(fields[0], out int startNum) && int.TryParse(fields[1], out int endNum))
-            {
-                this._Range = new int[] { startNum, endNum };
-            }
-        }
-        */
-
         public bool Within(int num)
         {
-            //if (_Range == null) { SplitRange(); }
             if(_Range == null)
             {
                 string[] fields = _delimiter.Split(this.Range).Select(x => x.Trim()).ToArray();
