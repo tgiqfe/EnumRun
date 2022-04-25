@@ -20,11 +20,10 @@ namespace EnumRun.Lib
         {
             string[] _targetCandidate = new string[]
             {
-                Path.Combine(Item.WorkDirectory),
-                Path.Combine(Item.AssemblyDirectory),
+                Path.Combine(Item.WorkDirectory, Item.LANG_JSON),
+                Path.Combine(Item.AssemblyDirectory, Item.LANG_JSON),
             };
             string configPath = _targetCandidate.
-                Select(x => Path.Combine(x, Item.LANG_JSON)).
                 FirstOrDefault(x => File.Exists(x));
 
             var collection = new LanguageCollection();

@@ -16,7 +16,7 @@ namespace EnumRun
         public string LogsPath { get; set; }
         public string OutputPath { get; set; }
         public bool RunOnce { get; set; }
-        public Dictionary<string, EnumRun.Lib.ProcessRange> Ranges { get; set; }
+        public ProcessRange Ranges { get; set; }
 
         /// <summary>
         /// 初期値をセット
@@ -27,12 +27,12 @@ namespace EnumRun
             this.LogsPath = Path.Combine(Item.WorkDirectory, "Logs");
             this.OutputPath = Path.Combine(Item.WorkDirectory, "Output");
             this.RunOnce = false;
-            this.Ranges = new Dictionary<string, EnumRun.Lib.ProcessRange>()
+            this.Ranges = new ProcessRange()
             {
-                { "StartupScript", new EnumRun.Lib.ProcessRange(){ Range = "0-9" } },
-                { "ShutdownScript", new EnumRun.Lib.ProcessRange(){ Range = "11-29" } },
-                { "LogonScript", new EnumRun.Lib.ProcessRange(){ Range = "81-89" } },
-                { "LogoffScript",new EnumRun.Lib.ProcessRange(){ Range = "91-99" } },
+                { "StartupScript", "0-9" },
+                { "ShutdownScript", "11-29" },
+                { "LogonScript", "81-89" },
+                { "LogoffScript", "91-99" },
             };
         }
 
@@ -44,11 +44,10 @@ namespace EnumRun
         {
             string[] _targetCandidate = new string[]
             {
-                Path.Combine(Item.WorkDirectory),
-                Path.Combine(Item.AssemblyDirectory),
+                Path.Combine(Item.WorkDirectory, Item.CONFIG_JSON),
+                Path.Combine(Item.AssemblyDirectory, Item.CONFIG_JSON),
             };
             string configPath = _targetCandidate.
-                Select(x => Path.Combine(x, Item.CONFIG_JSON)).
                 FirstOrDefault(x => File.Exists(x));
 
             EnumRunSetting setting = null;
