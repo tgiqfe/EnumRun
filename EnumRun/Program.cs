@@ -7,7 +7,7 @@ using System.IO;
 
 EnumRunSetting setting = new EnumRunSetting();
 setting.SetDefault();
-setting.Serialize(@"Setting.json");
+setting.Serialize("Setting.json");
 
 LanguageCollection collection = LanguageCollection.Deserialize();
 collection.Save("Language.json");
@@ -29,7 +29,6 @@ foreach (var scriptPath in Directory.GetFiles(setting.FilesPath))
 */
 
 
-
-Console.ReadLine();
+//Console.ReadLine();
 
 

@@ -42,9 +42,14 @@ namespace EnumRun
         public const string SESSION_FILE = "session.json";
 
         /// <summary>
-        /// 設定ファイル
+        /// 設定ファイル(JSON)
         /// </summary>
         public const string CONFIG_JSON = "Setting.json";
+
+        /// <summary>
+        /// 設定ファイル(TXT)
+        /// </summary>
+        public const string CONFIG_TXT = "Setting.txt";
 
         /// <summary>
         /// スクリプト言語設定ファイル

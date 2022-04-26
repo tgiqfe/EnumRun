@@ -7,6 +7,8 @@ using EnumRun.Lib;
 using System.Text.Json;
 using System.IO;
 using System.Text.Json.Serialization;
+using Hnx8.ReadJEnc;
+using System.Text.RegularExpressions;
 
 namespace EnumRun
 {
@@ -36,26 +38,45 @@ namespace EnumRun
             };
         }
 
+        #region Json serialize
+
         /// <summary>
         /// デシリアライズ
         /// </summary>
         /// <returns></returns>
         public static EnumRunSetting Deserialize()
         {
-            string[] _targetCandidate = new string[]
+            string jsonConfigPath = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.CONFIG_JSON),
                 Path.Combine(Item.AssemblyDirectory, Item.CONFIG_JSON),
-            };
-            string configPath = _targetCandidate.
-                FirstOrDefault(x => File.Exists(x));
+            }.FirstOrDefault(x => File.Exists(x));
+            if(jsonConfigPath != null)
+            {
+                return DeserializeJson(jsonConfigPath);
+            }
 
+            string textConfigPath = new string[]
+            {
+                Path.Combine(Item.WorkDirectory, Item.CONFIG_TXT),
+                Path.Combine(Item.AssemblyDirectory, Item.CONFIG_TXT),
+            }.FirstOrDefault(x => File.Exists(x));
+            if(textConfigPath != null)
+            {
+                return DeserializeText(textConfigPath);
+            }
+
+            return null;
+        }
+
+        public static EnumRunSetting DeserializeJson(string filePath)
+        {
             EnumRunSetting setting = null;
-            if (configPath != null)
+            if (filePath != null)
             {
                 try
                 {
-                    using (var sr = new StreamReader(configPath, Encoding.UTF8))
+                    using (var sr = new StreamReader(filePath, Encoding.UTF8))
                     {
                         setting = JsonSerializer.Deserialize<EnumRunSetting>(sr.ReadToEnd());
                     }
@@ -70,6 +91,64 @@ namespace EnumRun
 
             return setting;
         }
+
+        public static EnumRunSetting DeserializeText(string filePath)
+        {
+            var setting = new EnumRunSetting();
+
+            var info = new FileInfo(filePath);
+            using (FileReader fr = new FileReader(info))
+            {
+                fr.Read(info);
+                using (StringReader sr = new StringReader(fr.Text))
+                {
+                    string readLine = "";
+                    while ((readLine = sr.ReadLine()) != null)
+                    {
+                        string key = readLine.Substring(0, readLine.IndexOf(":"));
+                        string val = readLine.Substring(readLine.IndexOf(":") + 1);
+                        switch (key.ToLower())
+                        {
+                            case "filespath":
+                            case "filepath":
+                                setting.FilesPath = val;
+                                break;
+                            case "logspath":
+                            case "logpath":
+                                setting.LogsPath = val;
+                                break;
+                            case "outputspath":
+                            case "outputpath":
+                                setting.OutputPath = val;
+                                break;
+                            case "runonce":
+                                setting.RunOnce = !BooleanCandidate.IsFalse(val);
+                                break;
+                            case "ranges":
+                            case "range":
+                                setting.Ranges = new ProcessRange();
+                                string readLine2 = "";
+                                Regex pattern_indent = new Regex(@"^(\s{2})+");
+                                while ((readLine2 = sr.ReadLine()) != null)
+                                {
+                                    if (!pattern_indent.IsMatch(readLine2))
+                                    {
+                                        break;
+                                    }
+                                    string key2 = readLine2.Substring(0, readLine2.IndexOf(":"));
+                                    string val2 = readLine2.Substring(readLine2.IndexOf(":") + 1);
+                                    setting.Ranges[key2] = val2;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            return setting;
+        }
+
+
 
         /// <summary>
         /// シリアライズ
@@ -89,5 +168,16 @@ namespace EnumRun
                 sw.WriteLine(json);
             }
         }
+
+        #endregion
+        #region Text serialize
+
+        
+        public static void SerializeText(string filePath)
+        {
+
+        }
+
+        #endregion
     }
 }
