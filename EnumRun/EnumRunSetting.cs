@@ -14,14 +14,42 @@ namespace EnumRun
 {
     internal class EnumRunSetting
     {
+        /// <summary>
+        /// スクリプトファイルの保存先フォルダーのパス
+        /// </summary>
         public string FilesPath { get; set; }
+
+        /// <summary>
+        /// ログ出力先フｒダーのパス
+        /// </summary>
         public string LogsPath { get; set; }
+
+        /// <summary>
+        /// スクリプト実行時の標準出力の出力先パス
+        /// </summary>
         public string OutputPath { get; set; }
-        public bool RunOnce { get; set; }
+
+        /// <summary>
+        /// 同じプロセスで次回実行可能になるまでの待ち時間(ループバックGPO対策) (秒)
+        /// </summary>
+        public int RestTime { get; set; }
+
+        /// <summary>
+        /// デフォルトでスクリプト実行時の標準出力を出力させるかどうか
+        /// </summary>
+        public bool DefaultOutput { get; set; }
+
+        /// <summary>
+        /// ログや標準出力の出力データの最大保持期間(日)
+        /// </summary>
+        public int RetentionPeriod { get; set; }
+
+        /// <summary>
+        /// プロセスごとに実行可能なスクリプトファイルの番号の範囲
+        /// </summary>
         public ProcessRanges Ranges { get; set; }
 
-        //  (案)デフォルトで標準出力させるかどうか
-        //  (案)ログや出力データの保存期間の指定
+
 
         /// <summary>
         /// 初期値をセット
@@ -31,7 +59,9 @@ namespace EnumRun
             this.FilesPath = Path.Combine(Item.WorkDirectory, "Files");
             this.LogsPath = Path.Combine(Item.WorkDirectory, "Logs");
             this.OutputPath = Path.Combine(Item.WorkDirectory, "Output");
-            this.RunOnce = false;
+            this.RestTime = 60;
+            this.DefaultOutput = false;
+            this.RetentionPeriod = 0;
             this.Ranges = new ProcessRanges()
             {
                 { "StartupScript", "0-9" },
@@ -134,8 +164,14 @@ namespace EnumRun
                             case "outputpath":
                                 setting.OutputPath = val;
                                 break;
-                            case "runonce":
-                                setting.RunOnce = !BooleanCandidate.IsFalse(val);
+                            case "resttime":
+                                setting.RestTime = int.TryParse(val, out int num1) ? num1 : 0;
+                                break;
+                            case "defaultoutput":
+                                setting.DefaultOutput = !BooleanCandidate.IsFalse(val);
+                                break;
+                            case "retentionperiod":
+                                setting.RetentionPeriod = int.TryParse(val, out int num2) ? num2 : 0;
                                 break;
                             case "ranges":
                             case "range":
@@ -213,8 +249,9 @@ namespace EnumRun
                 sw.WriteLine($"FilesPath: {this.FilesPath}");
                 sw.WriteLine($"LogsPath: {this.LogsPath}");
                 sw.WriteLine($"OutputPath: {this.OutputPath}");
-                sw.WriteLine($"RunOnce: {this.RunOnce}");
-
+                sw.WriteLine($"RestTime: {this.RestTime}");
+                sw.WriteLine($"DefaultOutput: {this.DefaultOutput}");
+                sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
                 sw.WriteLine("Ranges:");
                 foreach (var pair in this.Ranges)
                 {

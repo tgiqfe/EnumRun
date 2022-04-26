@@ -18,7 +18,6 @@ using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
 
 
 
-/*
 EnumRunSetting setting = new EnumRunSetting();
 setting.SetDefault();
 setting.Serialize("Setting.json");
@@ -26,11 +25,11 @@ setting.Serialize("Setting.txt");
 
 LanguageCollection collection = LanguageCollection.Deserialize();
 collection.Save("Language.json");
-*/
 
 
 
 
+/*
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
@@ -44,7 +43,7 @@ if (Directory.Exists(setting.FilesPath))
         Select(x => x.Process());
     Task.WhenAll(processes);
 }
-
+*/
 
 Console.ReadLine();
 

@@ -10,7 +10,6 @@ namespace EnumRun.Lib
 {
     internal class UserAccount
     {
-
         private static bool? _isSystemAccount = null;
 
         private static string[] _systemSIDs = null;
@@ -57,28 +56,11 @@ namespace EnumRun.Lib
         {
             get
             {
-                return !UserAccount.IsSystemAccount && Machine.IsDomain &&
+                return !UserAccount.IsSystemAccount &&
+                    Machine.IsDomain &&
                     (Environment.UserDomainName != Environment.MachineName);
             }
         }
-
-        /*
-        /// <summary>
-        /// プロセス実行中ユーザーがシステムアカウントかどうかをチェック
-        /// </summary>
-        /// <returns></returns>
-        public static bool IsSystemAccount()
-        {
-            _systemSIDs ??= new ManagementClass("Win32_SystemAccount").
-                GetInstances().
-                OfType<ManagementObject>().
-                Select(x => x["SID"] as string).
-                ToArray();
-            _currentSID ??= WindowsIdentity.GetCurrent().User.ToString();
-
-            return _systemSIDs.Contains(_currentSID);
-        }
-        */
 
         /// <summary>
         /// 管理者実行しているかどうかの確認

@@ -11,6 +11,7 @@ namespace EnumRun.Lib
     internal class Machine
     {
         private static bool? _isDomain = null;
+
         private static string _domainOrWorkgroupName { get; set; }
 
         /// <summary>
@@ -29,19 +30,6 @@ namespace EnumRun.Lib
                         FirstOrDefault();
                     _isDomain = (bool)mo["PartOfDomain"];
                     _domainOrWorkgroupName = mo["Domain"] as string;
-
-
-                    /*
-                    var mo = new ManagementClass("Win32_ComputerSystem").
-                        GetInstances().
-                        OfType<ManagementClass>().
-                        FirstOrDefault(x => (bool)x["PartOfDomain"]);
-                    _isDomain = mo != null;
-                    _domainOrWorkgroupName = mo != null ?
-                        mo["Domain"] as string :
-                        mo["Workgroup"] as string;
-                    */
-
                 }
                 return (bool)_isDomain;
             }

@@ -16,11 +16,11 @@ namespace EnumRun
         public string FilePath { get; set; }
         public string FileName { get; set; }
         public int FileNumber { get; set; }
+        public EnumRunSetting Setting { get; set; }
         public Language Language { get; set; }
         public bool Enabled { get; set; }
         public EnumRunOption Option { get; set; }
-        public string OutputDirectory { get; set; }
-
+        
         private static readonly Regex pattern_fileNum = new Regex(@"^\d+(?=_)");
 
         public Script() { }
@@ -35,9 +35,9 @@ namespace EnumRun
             if (setting.Ranges.Within(this.FileNumber))
             {
                 this.Enabled = true;
+                this.Setting = setting;
                 this.Language = collection.GetLanguage(this.FilePath);
                 this.Option = new EnumRunOption(this.FilePath);
-                this.OutputDirectory = setting.OutputPath;
 
                 //  [Log]Enable判定だったこと。
                 //  [Log]Language判定
@@ -61,7 +61,7 @@ namespace EnumRun
             //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
             //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
             //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
-            Task task = this.Option.Contains(OptionType.Output) ?
+            Task task = this.Setting.DefaultOutput || this.Option.Contains(OptionType.Output) ?
                 ProcessThreadAndOutput() :
                 ProcessThread();
             if (Option.Contains(OptionType.WaitForExit))
@@ -187,7 +187,7 @@ namespace EnumRun
         private async Task ProcessThreadAndOutput()
         {
             string outputPath = Path.Combine(
-                this.OutputDirectory,
+                this.Setting.OutputPath,
                 string.Format("{0}_{1}_{2}.txt",
                     Path.GetFileName(FilePath),
                     Environment.ProcessId,
