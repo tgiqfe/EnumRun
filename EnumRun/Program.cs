@@ -5,6 +5,20 @@ using System.IO;
 
 
 /*
+using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
+{
+    Console.WriteLine(proc.Id);
+
+    proc.StartInfo.FileName = "cmd";
+    proc.StartInfo.Arguments = "/c ping localhost -n 5";
+    proc.Start();
+    proc.WaitForExit();
+}
+*/
+
+
+
+/*
 EnumRunSetting setting = new EnumRunSetting();
 setting.SetDefault();
 setting.Serialize("Setting.json");
@@ -20,19 +34,16 @@ collection.Save("Language.json");
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
+
 if (Directory.Exists(setting.FilesPath))
 {
-    foreach (var scriptPath in Directory.GetFiles(setting.FilesPath))
-    {
-        var script = new Script(scriptPath, setting, collection);
-    }
+    var processes = Directory.GetFiles(setting.FilesPath).
+        ToList().
+        Select(x => new Script(x, setting, collection)).
+        Where(x => x.Enabled).
+        Select(x => x.Process());
+    Task.WhenAll(processes);
 }
-
-
-
-OptionType opt = OptionType.Output | OptionType.NoRun | OptionType.BeforeWait;
-Console.WriteLine(opt.ToString());
-
 
 
 Console.ReadLine();

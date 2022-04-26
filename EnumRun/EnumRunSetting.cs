@@ -206,6 +206,8 @@ namespace EnumRun
         /// <param name="filePath"></param>
         public void SerializeText(string filePath)
         {
+            //  BOM無しUTF-8は、new System.Text.UTF8Encoding(false)でも可。
+            //  今回は、デシリアライズ時の自動エンコードチェックの為に使用したReadJEncを使用。
             using (var sw = new StreamWriter(filePath, false, FileType.UTF8N.GetEncoding()))
             {
                 sw.WriteLine($"FilesPath: {this.FilesPath}");

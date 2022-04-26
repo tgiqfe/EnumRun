@@ -6,16 +6,20 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.IO;
 using EnumRun.Lib;
+using System.Threading;
+using System.Diagnostics;
 
 namespace EnumRun
 {
     internal class Script
     {
         public string FilePath { get; set; }
+        public string FileName { get; set; }
         public int FileNumber { get; set; }
         public Language Language { get; set; }
         public bool Enabled { get; set; }
         public EnumRunOption Option { get; set; }
+        public string OutputDirectory { get; set; }
 
         private static readonly Regex pattern_fileNum = new Regex(@"^\d+(?=_)");
 
@@ -33,6 +37,7 @@ namespace EnumRun
                 this.Enabled = true;
                 this.Language = collection.GetLanguage(this.FilePath);
                 this.Option = new EnumRunOption(this.FilePath);
+                this.OutputDirectory = setting.OutputPath;
 
                 //  [Log]Enable判定だったこと。
                 //  [Log]Language判定
@@ -40,14 +45,52 @@ namespace EnumRun
             }
         }
 
-        public void Process()
+        public Task Process()
+        {
+            if (StopByOption()) { return null; }
+
+            //  実行前待機
+            if (this.Option.Contains(OptionType.BeforeWait) && Option.BeforeTime > 0)
+            {
+                //  [Log]実行前待機すること。秒
+                Thread.Sleep(Option.BeforeTime * 1000);
+            }
+
+            //  終了待ち/標準出力有りの各パターンの組み合わせ
+            //    終了待ち:false/標準出力:false ⇒ wait無し。別プロセスとして非管理で実行
+            //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
+            //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
+            //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
+            Task task = this.Option.Contains(OptionType.Output) ?
+                ProcessThreadAndOutput() :
+                ProcessThread();
+            if (Option.Contains(OptionType.WaitForExit))
+            {
+                task.Wait();
+            }
+
+            //  実行後待機
+            if (this.Option.Contains(OptionType.AfterWait) && Option.AfterTime > 0)
+            {
+                //  [Log]実行後待機すること。秒
+                Thread.Sleep(Option.AfterTime * 1000);
+            }
+
+            return task;
+        }
+
+        /// <summary>
+        /// オプションによって実行対象外と判定するかどうか
+        /// </summary>
+        /// <returns>実行対象外の場合にtrue</returns>
+        private bool StopByOption()
         {
             //  [n]オプション
             //  実行対象外
             if (this.Option.Contains(OptionType.NoRun))
             {
                 //  [Log]実行対象外ということ
-                return;
+                return true;
             }
 
             //  [m]オプション
@@ -56,7 +99,7 @@ namespace EnumRun
             {
                 //  [Log]ドメイン参加していないということ
                 //  [Log]ドメイン名。Machine.DomainName
-                return;
+                return true;
             }
 
             //  [k]オプション
@@ -65,7 +108,7 @@ namespace EnumRun
             {
                 //  [log]ワークグループPCではないということ
                 //  [Log]ワークグループ名。Machine.WorkgroupName
-                return;
+                return true;
             }
 
             //  [s]オプション
@@ -74,7 +117,7 @@ namespace EnumRun
             {
                 //  [Log]システムアカウントではないこと
                 //  [Log]SIDを出力
-                return;
+                return true;
             }
 
             //  [d]オプション
@@ -83,7 +126,7 @@ namespace EnumRun
             {
                 //  [Log]ドメインユーザーではないこと(ローカルユーザーである)
                 //  [Log]ユーザー名
-                return;
+                return true;
             }
 
             //  [l]オプション
@@ -92,15 +135,15 @@ namespace EnumRun
             {
                 //  [Log]ローカルユーザーではないこと(ドメインユーザーである)
                 //  [Log]ユーザー名
-                return;
+                return true;
             }
 
             //  [p]オプション
             //  デフォルトゲートウェイへの通信確認
-            if(this.Option.Contains(OptionType.DGReachableOnly) && !Machine.IsReachableDefaultGateway())
+            if (this.Option.Contains(OptionType.DGReachableOnly) && !Machine.IsReachableDefaultGateway())
             {
                 //  [Log]デフォルトゲートウェイへ導通不可であること
-                return;
+                return true;
             }
 
             //  [t]オプション
@@ -109,20 +152,67 @@ namespace EnumRun
             if (this.Option.Contains(OptionType.TrustedOnly) && !UserAccount.IsRunAdministrator())
             {
                 //  [Log]管理者実行していないこと
-                return;
+                return true;
             }
 
-
-
-
-
-
-
-
+            return false;
         }
 
+        /// <summary>
+        /// プロセス実行
+        /// </summary>
+        /// <returns></returns>
+        private async Task ProcessThread()
+        {
+            await Task.Run(async () =>
+            {
+                using (Process proc = this.Language.GetProcess(this.FilePath, ""))
+                {
+                    proc.StartInfo.Verb = this.Option.Contains(OptionType.RunAsAdmin) ? "RunAs" : "";
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.Start();
+                    if (this.Option.Contains(OptionType.WaitForExit))
+                    {
+                        proc.WaitForExit();
+                    }
+                }
+            });
+        }
 
+        /// <summary>
+        /// プロセス実行 (実行結果をファイルに出力)
+        /// </summary>
+        /// <returns></returns>
+        private async Task ProcessThreadAndOutput()
+        {
+            string outputPath = Path.Combine(
+                this.OutputDirectory,
+                string.Format("{0}_{1}_{2}.txt",
+                    Path.GetFileName(FilePath),
+                    Environment.ProcessId,
+                    DateTime.Now.ToString("yyyyMMddHHmmss")));
+            ParentDirectory.Create(outputPath);
 
-
+            await Task.Run(() =>
+            {
+                using (Process proc = this.Language.GetProcess(this.FilePath, ""))
+                using (StreamWriter sw = new StreamWriter(outputPath, false, new UTF8Encoding(false)))
+                {
+                    proc.StartInfo.Verb = this.Option.Contains(OptionType.RunAsAdmin) ? "RunAs" : "";
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.RedirectStandardOutput = true;
+                    proc.StartInfo.RedirectStandardError = true;
+                    proc.StartInfo.RedirectStandardInput = true;
+                    proc.OutputDataReceived += (sender, e) => { sw.WriteLine(e.Data); };
+                    proc.ErrorDataReceived += (sender, e) => { sw.WriteLine(e.Data); };
+                    proc.Start();
+                    proc.BeginOutputReadLine();
+                    proc.BeginErrorReadLine();
+                    proc.WaitForExit();
+                }
+            });
+        }
     }
 }
