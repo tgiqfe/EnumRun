@@ -18,7 +18,10 @@ namespace EnumRun
         public string LogsPath { get; set; }
         public string OutputPath { get; set; }
         public bool RunOnce { get; set; }
-        public ProcessRange Ranges { get; set; }
+        public ProcessRanges Ranges { get; set; }
+
+        //  (案)デフォルトで標準出力させるかどうか
+        //  (案)ログや出力データの保存期間の指定
 
         /// <summary>
         /// 初期値をセット
@@ -29,7 +32,7 @@ namespace EnumRun
             this.LogsPath = Path.Combine(Item.WorkDirectory, "Logs");
             this.OutputPath = Path.Combine(Item.WorkDirectory, "Output");
             this.RunOnce = false;
-            this.Ranges = new ProcessRange()
+            this.Ranges = new ProcessRanges()
             {
                 { "StartupScript", "0-9" },
                 { "ShutdownScript", "11-29" },
@@ -38,7 +41,7 @@ namespace EnumRun
             };
         }
 
-        #region Json serialize
+        #region Deserialize
 
         /// <summary>
         /// デシリアライズ
@@ -51,7 +54,7 @@ namespace EnumRun
                 Path.Combine(Item.WorkDirectory, Item.CONFIG_JSON),
                 Path.Combine(Item.AssemblyDirectory, Item.CONFIG_JSON),
             }.FirstOrDefault(x => File.Exists(x));
-            if(jsonConfigPath != null)
+            if (jsonConfigPath != null)
             {
                 return DeserializeJson(jsonConfigPath);
             }
@@ -61,7 +64,7 @@ namespace EnumRun
                 Path.Combine(Item.WorkDirectory, Item.CONFIG_TXT),
                 Path.Combine(Item.AssemblyDirectory, Item.CONFIG_TXT),
             }.FirstOrDefault(x => File.Exists(x));
-            if(textConfigPath != null)
+            if (textConfigPath != null)
             {
                 return DeserializeText(textConfigPath);
             }
@@ -69,6 +72,11 @@ namespace EnumRun
             return null;
         }
 
+        /// <summary>
+        /// Jsonファイルからシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static EnumRunSetting DeserializeJson(string filePath)
         {
             EnumRunSetting setting = null;
@@ -92,6 +100,11 @@ namespace EnumRun
             return setting;
         }
 
+        /// <summary>
+        /// Textファイルからデシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static EnumRunSetting DeserializeText(string filePath)
         {
             var setting = new EnumRunSetting();
@@ -126,7 +139,7 @@ namespace EnumRun
                                 break;
                             case "ranges":
                             case "range":
-                                setting.Ranges = new ProcessRange();
+                                setting.Ranges = new ProcessRanges();
                                 string readLine2 = "";
                                 Regex pattern_indent = new Regex(@"^(\s{2})+");
                                 while ((readLine2 = sr.ReadLine()) != null)
@@ -148,7 +161,8 @@ namespace EnumRun
             return setting;
         }
 
-
+        #endregion
+        #region Serialize
 
         /// <summary>
         /// シリアライズ
@@ -157,6 +171,23 @@ namespace EnumRun
         public void Serialize(string filePath)
         {
             ParentDirectory.Create(filePath);
+            switch (Path.GetExtension(filePath))
+            {
+                case ".json":
+                    SerializeJson(filePath);
+                    break;
+                case ".txt":
+                    SerializeText(filePath);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Jsonファイルへシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        public void SerializeJson(string filePath)
+        {
             using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
             {
                 string json = JsonSerializer.Serialize(this,
@@ -169,13 +200,25 @@ namespace EnumRun
             }
         }
 
-        #endregion
-        #region Text serialize
-
-        
-        public static void SerializeText(string filePath)
+        /// <summary>
+        /// Textファイルへシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        public void SerializeText(string filePath)
         {
+            using (var sw = new StreamWriter(filePath, false, FileType.UTF8N.GetEncoding()))
+            {
+                sw.WriteLine($"FilesPath: {this.FilesPath}");
+                sw.WriteLine($"LogsPath: {this.LogsPath}");
+                sw.WriteLine($"OutputPath: {this.OutputPath}");
+                sw.WriteLine($"RunOnce: {this.RunOnce}");
 
+                sw.WriteLine("Ranges:");
+                foreach (var pair in this.Ranges)
+                {
+                    sw.WriteLine($"  {pair.Key}: {pair.Value}");
+                }
+            }
         }
 
         #endregion

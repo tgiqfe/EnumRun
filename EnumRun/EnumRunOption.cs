@@ -28,7 +28,15 @@ namespace EnumRun
         private static readonly Regex pattern_befWait = new Regex(@"\d{1,3}(?=r)");
         private static readonly Regex pattern_aftWait = new Regex(@"(?<=r)\d{1,3}");
 
+        /// <summary>
+        /// コンストラクタ (引数無し)
+        /// </summary>
         public EnumRunOption() { }
+
+        /// <summary>
+        /// コンストラクタ (ファイル名を指定)
+        /// </summary>
+        /// <param name="filePath"></param>
         public EnumRunOption(string filePath)
         {
             string fileName = Path.GetFileName(filePath).ToLower();
@@ -64,6 +72,16 @@ namespace EnumRun
                     OptionType |= OptionType.WaitForExit;
                 }
             }
+        }
+
+        /// <summary>
+        /// 対象のオプションが含まれているかどうかの判定
+        /// </summary>
+        /// <param name="targetOption"></param>
+        /// <returns></returns>
+        public bool Contains(OptionType targetOption)
+        {
+            return (this.OptionType & targetOption) == targetOption;
         }
     }
 }

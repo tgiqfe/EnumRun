@@ -20,7 +20,7 @@ namespace EnumRun
         private static readonly Regex pattern_fileNum = new Regex(@"^\d+(?=_)");
 
         public Script() { }
-        public Script(string filePath, LanguageCollection collection, ProcessRange range)
+        public Script(string filePath, EnumRunSetting setting, LanguageCollection collection)
         {
             this.FilePath = filePath;
 
@@ -28,12 +28,16 @@ namespace EnumRun
             this.FileNumber = (match = pattern_fileNum.Match(filePath)).Success ?
                 int.Parse(match.Value) : -1;
 
-            if (range.Within(this.FileNumber))
+            if (setting.Ranges.Within(this.FileNumber))
             {
                 this.Enabled = true;
                 this.Language = collection.GetLanguage(this.FilePath);
                 this.Option = new EnumRunOption(this.FilePath);
             }
         }
+
+
+
+
     }
 }
