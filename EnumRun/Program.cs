@@ -20,13 +20,21 @@ collection.Save("Language.json");
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
-foreach (var scriptPath in Directory.GetFiles(setting.FilesPath))
+if (Directory.Exists(setting.FilesPath))
 {
-    var script = new Script(scriptPath, setting, collection);
+    foreach (var scriptPath in Directory.GetFiles(setting.FilesPath))
+    {
+        var script = new Script(scriptPath, setting, collection);
+    }
 }
 
 
 
-//Console.ReadLine();
+OptionType opt = OptionType.Output | OptionType.NoRun | OptionType.BeforeWait;
+Console.WriteLine(opt.ToString());
+
+
+
+Console.ReadLine();
 
 

@@ -30,7 +30,7 @@ namespace EnumRun
         /// システムアカウントの場合は実行ファイルの場所。それ以外はTempフォルダー配下
         /// </summary>
         public static readonly string WorkDirectory = 
-            EnumRun.Lib.UserAccount.IsSystemAccount() ?
+            EnumRun.Lib.UserAccount.IsSystemAccount ?
                 AssemblyDirectory : 
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 

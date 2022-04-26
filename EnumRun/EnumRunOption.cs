@@ -81,7 +81,10 @@ namespace EnumRun
         /// <returns></returns>
         public bool Contains(OptionType targetOption)
         {
-            return (this.OptionType & targetOption) == targetOption;
+            //  ↓前の判定方法。でもこちらのほうがパフォーマンスは良いらしい
+            //return (this.OptionType & targetOption) == targetOption;
+
+            return this.OptionType.HasFlag(targetOption);
         }
     }
 }
