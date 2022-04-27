@@ -20,6 +20,7 @@ namespace EnumRun.Lib
         //  (案)前回ログオンID/今回ログオンID
         //  (案)前回実行時間/今回実行時間
         //  (案)システムアカウントの場合はログオン時間の確認不要
+        //  (案)settingの設定内容の確認
 
         public ExecSessionResult() { }
         public ExecSessionResult(ExecSession last, ExecSession current, int diff)

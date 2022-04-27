@@ -36,7 +36,7 @@ namespace EnumRun
             this.FileNumber = (match = _pat_fileNum.Match(filePath)).Success ?
                 int.Parse(match.Value) : -1;
 
-            if (setting.Ranges.Within(this.FileNumber))
+            if (setting.Ranges?.Within(this.FileNumber) ?? false)
             {
                 this.Enabled = true;
                 this.Option = new EnumRunOption(this.FilePath);
@@ -69,7 +69,7 @@ namespace EnumRun
             //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
             //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
             //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
-            Task task = this._setting.DefaultOutput || this.Option.Contains(OptionType.Output) ?
+            Task task = this._setting.DefaultOutput ?? false || this.Option.Contains(OptionType.Output) ?
                 ProcessThreadAndOutput() :
                 ProcessThread();
             if (Option.Contains(OptionType.WaitForExit))

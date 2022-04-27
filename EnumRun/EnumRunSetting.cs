@@ -15,6 +15,9 @@ namespace EnumRun
 {
     internal class EnumRunSetting
     {
+        private string _logsPath = null;
+        private string _outputPath = null;
+
         /// <summary>
         /// スクリプトファイルの保存先フォルダーのパス
         /// </summary>
@@ -23,27 +26,35 @@ namespace EnumRun
         /// <summary>
         /// ログ出力先フｒダーのパス
         /// </summary>
-        public string LogsPath { get; set; }
+        public string LogsPath
+        {
+            get { return _logsPath ?? Path.Combine(Item.WorkDirectory, "Logs"); }
+            set { this._logsPath = value; }
+        }
 
         /// <summary>
         /// スクリプト実行時の標準出力の出力先パス
         /// </summary>
-        public string OutputPath { get; set; }
+        public string OutputPath
+        {
+            get { return _outputPath ?? Path.Combine(Item.WorkDirectory, "Output"); }
+            set { this._outputPath = value; }
+        }
 
         /// <summary>
         /// 同じプロセスで次回実行可能になるまでの待ち時間(ループバックGPO対策) (秒)
         /// </summary>
-        public int RestTime { get; set; }
+        public int? RestTime { get; set; }
 
         /// <summary>
         /// デフォルトでスクリプト実行時の標準出力を出力させるかどうか
         /// </summary>
-        public bool DefaultOutput { get; set; }
+        public bool? DefaultOutput { get; set; }
 
         /// <summary>
         /// ログや標準出力の出力データの最大保持期間(日)
         /// </summary>
-        public int RetentionPeriod { get; set; }
+        public int? RetentionPeriod { get; set; }
 
         /// <summary>
         /// ログ出力の最低レベル

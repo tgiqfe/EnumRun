@@ -17,15 +17,13 @@ collection_def.Save("Language.json");
 
 
 
-
-
-
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
-using (var logger = new Logger(
-    setting.LogsPath,
-    "{0}_{1}.log", Item.ExecFileName, DateTime.Now.ToString("yyyyMMdd")))
+//using (var logger = new Logger(
+//    setting.LogsPath,
+//    "{0}_{1}.log", Item.ExecFileName, DateTime.Now.ToString("yyyyMMdd")))
+using(var logger = new Logger(setting))
 {
     logger.Write("開始");
 

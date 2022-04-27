@@ -34,7 +34,7 @@ namespace EnumRun.Log
 
         public void Init()
         {
-            this.ProcessName = Item.ExecFileName;
+            this.ProcessName = Item.ProcessName;
             this.UserName = Environment.UserName;
             this.HostName = Environment.MachineName;
 

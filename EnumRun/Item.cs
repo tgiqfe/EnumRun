@@ -18,9 +18,9 @@ namespace EnumRun
         public static readonly string ExecFilePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
 
         /// <summary>
-        /// 実行ファイルの名前
+        /// 実行ファイルの名前(プロセス名)
         /// </summary>
-        public static readonly string ExecFileName = Path.GetFileNameWithoutExtension(ExecFilePath);
+        public static readonly string ProcessName = Path.GetFileNameWithoutExtension(ExecFilePath);
 
         /// <summary>
         /// 実行ファイルの場所

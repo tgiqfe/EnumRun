@@ -31,7 +31,7 @@ namespace EnumRun.Lib
 
         public void SetLast()
         {
-            this.ProcessName = Item.ExecFileName;
+            this.ProcessName = Item.ProcessName;
 
             var mo = new ManagementClass("Win32_OperatingSystem").
                 GetInstances().
@@ -89,11 +89,11 @@ namespace EnumRun.Lib
             currentSession.SetLast();
 
             var result = new ExecSessionResult(
-                lastSessions.ContainsKey(Item.ExecFileName) ? lastSessions[Item.ExecFileName] : null,
+                lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null,
                 currentSession,
-                setting.RestTime);
+                setting.RestTime ?? 0);
 
-            lastSessions[Item.ExecFileName] = currentSession;
+            lastSessions[Item.ProcessName] = currentSession;
             sessionFilePath ??= Path.Combine(Item.WorkDirectory, Item.SESSION_FILE);
             ParentDirectory.Create(sessionFilePath);
             try

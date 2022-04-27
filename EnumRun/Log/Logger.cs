@@ -19,6 +19,7 @@ namespace EnumRun.Log
         /// </summary>
         public Logger() { }
 
+        /*
         /// <summary>
         /// 動的パラメータ付きコンストラクタ。
         /// ファイル名のパーツをパーツのまま指定するときに使用
@@ -39,6 +40,18 @@ namespace EnumRun.Log
         public Logger(string logDirectory, string logFileName)
         {
             this._logPath = Path.Combine(logDirectory, logFileName);
+            ParentDirectory.Create(_logPath);
+            _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
+            _body = new LogBody();
+            _body.Init();
+        }
+        */
+
+        public Logger(EnumRunSetting setting)
+        {
+            _logPath = Path.Combine(
+                setting.LogsPath, 
+                $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log");
             ParentDirectory.Create(_logPath);
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
             _body = new LogBody();

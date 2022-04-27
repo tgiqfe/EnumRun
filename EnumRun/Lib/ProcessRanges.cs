@@ -19,7 +19,7 @@ namespace EnumRun.Lib
         /// <returns>rangeのセットへの成功/失敗</returns>
         public bool SetCurrentRange()
         {
-            string key = Item.ExecFileName;
+            string key = Item.ProcessName;
 
             string currentRange = this.ContainsKey(key) ? this[key] : "";
             string[] fields = _delimiter.Split(currentRange).Select(x => x.Trim()).ToArray();
