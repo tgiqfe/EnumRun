@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Management;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-usign System.IO;
+using System.IO;
 
 namespace EnumRun.Lib
 {
@@ -24,7 +24,10 @@ namespace EnumRun.Lib
             public string Id { get; set; }
             public LogonSession(string time, string id)
             {
-                this.Time = DateTime.TryParse(time, out DateTime tempTime) ? tempTime : null;
+
+                this.Time = ManagementDateTimeConverter.ToDateTime(time as string);
+
+                //this.Time = DateTime.TryParse(time, out DateTime tempTime) ? tempTime : null;
                 this.Id = id;
             }
         }
@@ -39,7 +42,14 @@ namespace EnumRun.Lib
                 FirstOrDefault();
             if (mo != null)
             {
-                this.LastBootupTime = DateTime.TryParse(mo["LastBootUpTime"] as string, out DateTime tempTime) ? tempTime : null;
+                //this.LastBootupTime = mo["LastBootUpTime"] as DateTime?;
+
+
+                //var laaa = mo["LastBootUpTime"];
+
+                this.LastBootupTime = ManagementDateTimeConverter.ToDateTime(mo["LastBootUpTime"] as string);
+
+                //this.LastBootupTime = DateTime.TryParse(mo["LastBootUpTime"] as string, out DateTime tempTime) ? tempTime : null;
             }
 
             var session = new ManagementClass("Win32_LogonSession").
@@ -51,12 +61,20 @@ namespace EnumRun.Lib
                 FirstOrDefault();
             this.LastLogonTime = session?.Time;
             this.LastLogonId = session?.Id;
+
+            this.LastExecTime = DateTime.Now;
         }
 
-        public static void Check()
-        {
-            ExecSession session = null;
 
+
+        /// <summary>
+        /// 前回セッションの情報を参照し、今回セッションの実行可否を確認
+        /// </summary>
+        /// <param name="setting"></param>
+        /// <returns>trueの場合、実行可能</returns>
+        public static ExecSessionResult Check(EnumRunSetting setting)
+        {
+            Dictionary<string, ExecSession> lastSessions = null;
             string sessionFilePath = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.SESSION_FILE),
@@ -64,26 +82,43 @@ namespace EnumRun.Lib
             }.FirstOrDefault(x => File.Exists(x));
             if (sessionFilePath != null)
             {
-                using (var sr = new StreamReader(sessionFilePath, Encoding.UTF8))
+                try
                 {
-                    session = JsonSerializer.Deserialize<ExecSession>(sr.ReadToEnd());
+                    using (var sr = new StreamReader(sessionFilePath, Encoding.UTF8))
+                    {
+                        lastSessions = JsonSerializer.Deserialize<Dictionary<string, ExecSession>>(sr.ReadToEnd());
+                    }
+                }
+                catch { }
+            }
+            if (lastSessions == null)
+            {
+                lastSessions = new Dictionary<string, ExecSession>();
+            }
+
+            ExecSession currentSession = new ExecSession();
+            currentSession.SetLast();
+
+            var result = new ExecSessionResult(
+                lastSessions.ContainsKey(Item.AssemblyFile) ? lastSessions[Item.AssemblyFile] : null,
+                currentSession,
+                setting.RestTime);
+
+            lastSessions[Item.AssemblyFile] = currentSession;
+            sessionFilePath ??= Path.Combine(Item.WorkDirectory, Item.SESSION_FILE);
+            ParentDirectory.Create(sessionFilePath);
+            try
+            {
+                using (var sw = new StreamWriter(sessionFilePath, false, Encoding.UTF8))
+                {
+                    string json = JsonSerializer.Serialize(lastSessions,
+                        new JsonSerializerOptions() { WriteIndented = true });
+                    sw.WriteLine(json);
                 }
             }
-            if (session == null)
-            {
-                session = new ExecSession();
-                session.SetLast();
-            }
+            catch { }
 
-
-            //  ブートセッション管理用
-            //  途中！
-
-
-
-
-
-
+            return result;
         }
 
 

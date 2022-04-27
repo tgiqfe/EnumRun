@@ -10,7 +10,7 @@ namespace EnumRun.Lib
     {
         public static void Create(string targetPath)
         {
-            if (targetPath.Contains(Path.PathSeparator))
+            if (targetPath.Contains(Path.DirectorySeparatorChar))
             {
                 string parent = Path.GetDirectoryName(targetPath);
                 if (!Directory.Exists(parent))

@@ -13,7 +13,8 @@ namespace EnumRun
         /// <summary>
         /// 実行ファイルへのパス
         /// </summary>
-        public static readonly string AssemblyPath = Assembly.GetExecutingAssembly().Location;
+        //public static readonly string AssemblyPath = Assembly.GetExecutingAssembly().Location;
+        public static readonly string AssemblyPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
 
         /// <summary>
         /// 実行ファイルの名前
@@ -29,9 +30,9 @@ namespace EnumRun
         /// ワークフォルダー
         /// システムアカウントの場合は実行ファイルの場所。それ以外はTempフォルダー配下
         /// </summary>
-        public static readonly string WorkDirectory = 
+        public static readonly string WorkDirectory =
             EnumRun.Lib.UserAccount.IsSystemAccount ?
-                AssemblyDirectory : 
+                AssemblyDirectory :
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 
         #region File
