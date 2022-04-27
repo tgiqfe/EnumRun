@@ -33,7 +33,7 @@ using (var logger = new Logger(
     logger.Write(check.GetMessage());
     if (check.Runnable)
     {
-        if (Directory.Exists(setting.FilesPath))
+        if (!string.IsNullOrEmpty(setting.FilesPath) && Directory.Exists(setting.FilesPath))
         {
             var processes = Directory.GetFiles(setting.FilesPath).
                 ToList().

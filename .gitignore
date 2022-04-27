@@ -350,3 +350,4 @@ MigrationBackup/
 .ionide/
 
 !EnumRun/Log
+EnumRun/Program.cs
