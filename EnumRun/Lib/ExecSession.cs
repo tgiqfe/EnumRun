@@ -13,10 +13,10 @@ namespace EnumRun.Lib
     internal class ExecSession
     {
         public string ProcessName { get; set; }
-        public DateTime? LastBootupTime { get; set; }
-        public DateTime? LastLogonTime { get; set; }
-        public string LastLogonId { get; set; }
-        public DateTime? LastExecTime { get; set; }
+        public DateTime? BootupTime { get; set; }
+        public DateTime? LogonTime { get; set; }
+        public string LogonId { get; set; }
+        public DateTime? ExecTime { get; set; }
 
         private class LogonSession
         {
@@ -39,7 +39,7 @@ namespace EnumRun.Lib
                 FirstOrDefault();
             if (mo != null)
             {
-                this.LastBootupTime = ManagementDateTimeConverter.ToDateTime(mo["LastBootUpTime"] as string);
+                this.BootupTime = ManagementDateTimeConverter.ToDateTime(mo["LastBootUpTime"] as string);
             }
 
             var session = new ManagementClass("Win32_LogonSession").
@@ -49,10 +49,10 @@ namespace EnumRun.Lib
                 ToList().
                 OrderByDescending(x => x.Time).
                 FirstOrDefault();
-            this.LastLogonTime = session?.Time;
-            this.LastLogonId = session?.Id;
+            this.LogonTime = session?.Time;
+            this.LogonId = session?.Id;
 
-            this.LastExecTime = DateTime.Now;
+            this.ExecTime = DateTime.Now;
         }
 
         /// <summary>

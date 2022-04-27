@@ -15,6 +15,7 @@ namespace EnumRun.Log
         public string Date { get; set; }
         public LogLevel Level { get; set; }
         public string ProcessName { get; set; }
+        public string ScriptFile { get; set; }
         public string UserName { get; set; }
         public string HostName { get; set; }
         public string OS { get; set; }
@@ -46,10 +47,11 @@ namespace EnumRun.Log
             this.AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
-        public string GetLog(LogLevel level, string message)
+        public string GetLog(LogLevel level, string scriptFile, string message)
         {
             this.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
             this.Level = level;
+            this.ScriptFile = scriptFile;
             this.Message = message;
 
             return JsonSerializer.Serialize(this, _options);

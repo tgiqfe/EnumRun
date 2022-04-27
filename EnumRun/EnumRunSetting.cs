@@ -9,6 +9,7 @@ using System.IO;
 using System.Text.Json.Serialization;
 using Hnx8.ReadJEnc;
 using System.Text.RegularExpressions;
+using EnumRun.Log;
 
 namespace EnumRun
 {
@@ -45,15 +46,14 @@ namespace EnumRun
         public int RetentionPeriod { get; set; }
 
         /// <summary>
+        /// ログ出力の最低レベル
+        /// </summary>
+        public LogLevel? MinLogLevel { get; set; }
+
+        /// <summary>
         /// プロセスごとに実行可能なスクリプトファイルの番号の範囲
         /// </summary>
         public ProcessRanges Ranges { get; set; }
-
-
-
-        //  (案)最小ログレベル
-
-
 
         /// <summary>
         /// 初期値をセット
@@ -66,6 +66,7 @@ namespace EnumRun
             this.RestTime = 60;
             this.DefaultOutput = false;
             this.RetentionPeriod = 0;
+            this.MinLogLevel = LogLevel.Info;
             this.Ranges = new ProcessRanges()
             {
                 { "StartupScript", "0-9" },
@@ -177,6 +178,9 @@ namespace EnumRun
                             case "retentionperiod":
                                 setting.RetentionPeriod = int.TryParse(val, out int num2) ? num2 : 0;
                                 break;
+                            case "minloglevel":
+                                setting.MinLogLevel = Enum.TryParse(val, out LogLevel level) ? level : LogLevel.Info;
+                                break;
                             case "ranges":
                             case "range":
                                 setting.Ranges = new ProcessRanges();
@@ -234,7 +238,11 @@ namespace EnumRun
                     new JsonSerializerOptions()
                     {
                         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                        WriteIndented = true
+                        WriteIndented = true,
+                        Converters =
+                        {
+                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+                        }
                     });
                 sw.WriteLine(json);
             }
@@ -256,6 +264,7 @@ namespace EnumRun
                 sw.WriteLine($"RestTime: {this.RestTime}");
                 sw.WriteLine($"DefaultOutput: {this.DefaultOutput}");
                 sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
+                sw.WriteLine($"MinLogLevel: {this.MinLogLevel}");
                 sw.WriteLine("Ranges:");
                 foreach (var pair in this.Ranges)
                 {

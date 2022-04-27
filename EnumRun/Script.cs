@@ -30,6 +30,7 @@ namespace EnumRun
         public Script(string filePath, EnumRunSetting setting, LanguageCollection collection, Logger logger)
         {
             this.FilePath = filePath;
+            this.FileName = Path.GetFileName(filePath);
 
             Match match;
             this.FileNumber = (match = _pat_fileNum.Match(filePath)).Success ?
@@ -43,6 +44,9 @@ namespace EnumRun
                 this._language = collection.GetLanguage(this.FilePath);
                 this._logger = logger;
 
+                _logger.Write(LogLevel.Info, FileName, "Enabled");
+                _logger.Write(LogLevel.Debug, FileName, "Language:{0}", _language.ToString());
+                _logger.Write(LogLevel.Debug, FileName, Option.ToString());
                 //  [Log]Enable判定だったこと。
                 //  [Log]Language判定
                 //  [Log]含むオプション Option.ToString()
@@ -193,7 +197,7 @@ namespace EnumRun
             string outputPath = Path.Combine(
                 this._setting.OutputPath,
                 string.Format("{0}_{1}_{2}.txt",
-                    Path.GetFileName(FilePath),
+                    this.FileName,
                     Environment.ProcessId,
                     DateTime.Now.ToString("yyyyMMddHHmmss")));
             ParentDirectory.Create(outputPath);

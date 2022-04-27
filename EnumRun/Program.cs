@@ -5,28 +5,16 @@ using EnumRun.Log;
 using System.IO;
 
 
-/*
-using (System.Diagnostics.Process proc = new System.Diagnostics.Process())
-{
-    Console.WriteLine(proc.Id);
-
-    proc.StartInfo.FileName = "cmd";
-    proc.StartInfo.Arguments = "/c ping localhost -n 5";
-    proc.Start();
-    proc.WaitForExit();
-}
-*/
 
 
-/*
-EnumRunSetting setting = new EnumRunSetting();
-setting.SetDefault();
-setting.Serialize("Setting.json");
-setting.Serialize("Setting.txt");
+EnumRunSetting setting_def = new EnumRunSetting();
+setting_def.SetDefault();
+setting_def.Serialize("Setting.json");
+setting_def.Serialize("Setting.txt");
 
-LanguageCollection collection = LanguageCollection.Deserialize();
-collection.Save("Language.json");
-*/
+LanguageCollection collection_def = LanguageCollection.Deserialize();
+collection_def.Save("Language.json");
+
 
 
 
@@ -42,9 +30,9 @@ using (var logger = new Logger(
     logger.Write("開始");
 
     ExecSessionResult check = ExecSession.Check(setting);
+    logger.Write(check.GetMessage());
     if (check.Runnable)
     {
-        
         if (Directory.Exists(setting.FilesPath))
         {
             var processes = Directory.GetFiles(setting.FilesPath).

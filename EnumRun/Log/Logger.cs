@@ -49,19 +49,42 @@ namespace EnumRun.Log
         /// ログ出力
         /// </summary>
         /// <param name="level"></param>
+        /// <param name="scriptFile"></param>
         /// <param name="message"></param>
-        public void Write(LogLevel level, string message)
+        public void Write(LogLevel level, string scriptFile, string message)
         {
-            _writer.WriteLine(_body.GetLog(level, message));
+            _writer.WriteLine(_body.GetLog(level, scriptFile, message));
         }
 
         /// <summary>
-        /// ログ出力 (レベル: Info)
+        /// ログ出力 (strign.Format対応)
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="scriptFile"></param>
+        /// <param name="format"></param>
+        /// <param name="messages"></param>
+        public void Write(LogLevel level, string scriptFile, string format, params string[] messages)
+        {
+            _writer.WriteLine(_body.GetLog(level, scriptFile, string.Format(format, messages)));
+        }
+
+        /// <summary>
+        /// ログ出力 (スクリプトファイル:無し)
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="message"></param>
+        public void Write(LogLevel level, string message)
+        {
+            _writer.WriteLine(_body.GetLog(level, null, message));
+        }
+
+        /// <summary>
+        /// ログ出力 (レベル:Info, スクリプトファイル:無し)
         /// </summary>
         /// <param name="message"></param>
         public void Write(string message)
         {
-            _writer.WriteLine(_body.GetLog(LogLevel.Info, message));
+            _writer.WriteLine(_body.GetLog(LogLevel.Info, null, message));
         }
 
 
