@@ -8,6 +8,7 @@ using System.IO;
 using EnumRun.Lib;
 using System.Threading;
 using System.Diagnostics;
+using EnumRun.Log;
 
 namespace EnumRun
 {
@@ -16,28 +17,31 @@ namespace EnumRun
         public string FilePath { get; set; }
         public string FileName { get; set; }
         public int FileNumber { get; set; }
-        public EnumRunSetting Setting { get; set; }
-        public Language Language { get; set; }
         public bool Enabled { get; set; }
         public EnumRunOption Option { get; set; }
-        
-        private static readonly Regex pattern_fileNum = new Regex(@"^\d+(?=_)");
+
+        private EnumRunSetting _setting { get; set; }
+        private Language _language { get; set; }
+        private Logger _logger { get; set; }
+
+        private static readonly Regex _pat_fileNum = new Regex(@"^\d+(?=_)");
 
         public Script() { }
-        public Script(string filePath, EnumRunSetting setting, LanguageCollection collection)
+        public Script(string filePath, EnumRunSetting setting, LanguageCollection collection, Logger logger)
         {
             this.FilePath = filePath;
 
             Match match;
-            this.FileNumber = (match = pattern_fileNum.Match(filePath)).Success ?
+            this.FileNumber = (match = _pat_fileNum.Match(filePath)).Success ?
                 int.Parse(match.Value) : -1;
 
             if (setting.Ranges.Within(this.FileNumber))
             {
                 this.Enabled = true;
-                this.Setting = setting;
-                this.Language = collection.GetLanguage(this.FilePath);
                 this.Option = new EnumRunOption(this.FilePath);
+                this._setting = setting;
+                this._language = collection.GetLanguage(this.FilePath);
+                this._logger = logger;
 
                 //  [Log]Enable判定だったこと。
                 //  [Log]Language判定
@@ -61,7 +65,7 @@ namespace EnumRun
             //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
             //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
             //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
-            Task task = this.Setting.DefaultOutput || this.Option.Contains(OptionType.Output) ?
+            Task task = this._setting.DefaultOutput || this.Option.Contains(OptionType.Output) ?
                 ProcessThreadAndOutput() :
                 ProcessThread();
             if (Option.Contains(OptionType.WaitForExit))
@@ -166,7 +170,7 @@ namespace EnumRun
         {
             await Task.Run(async () =>
             {
-                using (Process proc = this.Language.GetProcess(this.FilePath, ""))
+                using (Process proc = this._language.GetProcess(this.FilePath, ""))
                 {
                     proc.StartInfo.Verb = this.Option.Contains(OptionType.RunAsAdmin) ? "RunAs" : "";
                     proc.StartInfo.CreateNoWindow = true;
@@ -187,7 +191,7 @@ namespace EnumRun
         private async Task ProcessThreadAndOutput()
         {
             string outputPath = Path.Combine(
-                this.Setting.OutputPath,
+                this._setting.OutputPath,
                 string.Format("{0}_{1}_{2}.txt",
                     Path.GetFileName(FilePath),
                     Environment.ProcessId,
@@ -196,7 +200,7 @@ namespace EnumRun
 
             await Task.Run(() =>
             {
-                using (Process proc = this.Language.GetProcess(this.FilePath, ""))
+                using (Process proc = this._language.GetProcess(this.FilePath, ""))
                 using (StreamWriter sw = new StreamWriter(outputPath, false, new UTF8Encoding(false)))
                 {
                     proc.StartInfo.Verb = this.Option.Contains(OptionType.RunAsAdmin) ? "RunAs" : "";

@@ -1,6 +1,7 @@
 ﻿
 using EnumRun.Lib;
 using EnumRun;
+using EnumRun.Log;
 using System.IO;
 
 
@@ -34,24 +35,29 @@ collection.Save("Language.json");
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
-ExecSessionResult check = ExecSession.Check(setting);
-if (check.Runnable)
+using (var logger = new Logger(
+    setting.LogsPath,
+    "{0}_{1}.log", Item.ExecFileName, DateTime.Now.ToString("yyyyMMdd")))
 {
-    Console.WriteLine("開始");
-}
+    logger.Write("開始");
 
-/*
-if (Directory.Exists(setting.FilesPath))
-{
-    var processes = Directory.GetFiles(setting.FilesPath).
-        ToList().
-        Select(x => new Script(x, setting, collection)).
-        Where(x => x.Enabled).
-        Select(x => x.Process());
-    Task.WhenAll(processes);
-}
-*/
+    ExecSessionResult check = ExecSession.Check(setting);
+    if (check.Runnable)
+    {
+        
+        if (Directory.Exists(setting.FilesPath))
+        {
+            var processes = Directory.GetFiles(setting.FilesPath).
+                ToList().
+                Select(x => new Script(x, setting, collection, logger)).
+                Where(x => x.Enabled).
+                Select(x => x.Process());
+            //Task.WhenAll(processes);
+        }
+    }
 
+    logger.Write("終了");
+}
 
 Console.ReadLine();
 

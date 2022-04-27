@@ -9,7 +9,6 @@ namespace EnumRun.Lib
     internal class ExecSessionResult
     {
         public bool Runnable { get; set; }
-        public string Message { get; set; }
 
         private bool _matchBootupTime { get; set; }
         private bool _matchLogonTime { get; set; }

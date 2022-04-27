@@ -24,9 +24,9 @@ namespace EnumRun
         /// </summary>
         public int AfterTime { get; set; }
 
-        private static readonly Regex pattern_option = new Regex(@"(\[[0-9a-zA-Z]+\])+(?=\.[^.]+$)");
-        private static readonly Regex pattern_befWait = new Regex(@"\d{1,3}(?=r)");
-        private static readonly Regex pattern_aftWait = new Regex(@"(?<=r)\d{1,3}");
+        private static readonly Regex _pat_option = new Regex(@"(\[[0-9a-zA-Z]+\])+(?=\.[^.]+$)");
+        private static readonly Regex _pat_befWait = new Regex(@"\d{1,3}(?=r)");
+        private static readonly Regex _pat_aftWait = new Regex(@"(?<=r)\d{1,3}");
 
         /// <summary>
         /// コンストラクタ (引数無し)
@@ -44,7 +44,7 @@ namespace EnumRun
             OptionType = OptionType.None;
 
             Match match;
-            if ((match = pattern_option.Match(fileName)).Success)
+            if ((match = _pat_option.Match(fileName)).Success)
             {
                 string matchText = match.Value;
 
@@ -60,12 +60,12 @@ namespace EnumRun
                 if (matchText.Contains("t")) { OptionType |= OptionType.TrustedOnly; }
                 if (matchText.Contains("o")) { OptionType |= OptionType.Output; }
 
-                if ((match = pattern_befWait.Match(matchText)).Success)
+                if ((match = _pat_befWait.Match(matchText)).Success)
                 {
                     BeforeTime = int.Parse(match.Value);
                     OptionType |= OptionType.BeforeWait;
                 }
-                if ((match = pattern_aftWait.Match(matchText)).Success)
+                if ((match = _pat_aftWait.Match(matchText)).Success)
                 {
                     AfterTime = int.Parse(match.Value);
                     OptionType |= OptionType.AfterWait;

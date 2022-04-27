@@ -51,6 +51,10 @@ namespace EnumRun
 
 
 
+        //  (案)最小ログレベル
+
+
+
         /// <summary>
         /// 初期値をセット
         /// </summary>
@@ -82,7 +86,7 @@ namespace EnumRun
             string jsonConfigPath = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.CONFIG_JSON),
-                Path.Combine(Item.AssemblyDirectory, Item.CONFIG_JSON),
+                Path.Combine(Item.ExecDirectoryPath, Item.CONFIG_JSON),
             }.FirstOrDefault(x => File.Exists(x));
             if (jsonConfigPath != null)
             {
@@ -92,7 +96,7 @@ namespace EnumRun
             string textConfigPath = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.CONFIG_TXT),
-                Path.Combine(Item.AssemblyDirectory, Item.CONFIG_TXT),
+                Path.Combine(Item.ExecDirectoryPath, Item.CONFIG_TXT),
             }.FirstOrDefault(x => File.Exists(x));
             if (textConfigPath != null)
             {
@@ -177,10 +181,10 @@ namespace EnumRun
                             case "range":
                                 setting.Ranges = new ProcessRanges();
                                 string readLine2 = "";
-                                Regex pattern_indent = new Regex(@"^(\s{2})+");
+                                Regex pat_indent = new Regex(@"^(\s{2})+");
                                 while ((readLine2 = sr.ReadLine()) != null)
                                 {
-                                    if (!pattern_indent.IsMatch(readLine2))
+                                    if (!pat_indent.IsMatch(readLine2))
                                     {
                                         break;
                                     }

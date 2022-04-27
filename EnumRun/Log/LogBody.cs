@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Management;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace EnumRun.Log
 {
@@ -13,6 +14,7 @@ namespace EnumRun.Log
     {
         public string Date { get; set; }
         public LogLevel Level { get; set; }
+        public string ProcessName { get; set; }
         public string UserName { get; set; }
         public string HostName { get; set; }
         public string OS { get; set; }
@@ -20,8 +22,18 @@ namespace EnumRun.Log
         public string AppVersion { get; set; }
         public string Message { get; set; }
 
+        private JsonSerializerOptions _options = new JsonSerializerOptions()
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Converters =
+            {
+                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+            }
+        };
+
         public void Init()
         {
+            this.ProcessName = Item.ExecFileName;
             this.UserName = Environment.UserName;
             this.HostName = Environment.MachineName;
 
@@ -34,18 +46,13 @@ namespace EnumRun.Log
             this.AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
-        public string GetLog(string message)
-        {
-            return GetLog(LogLevel.Info, message);
-        }
-
         public string GetLog(LogLevel level, string message)
         {
             this.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
             this.Level = level;
             this.Message = message;
 
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, _options);
         }
     }
 }

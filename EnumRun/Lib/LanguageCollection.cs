@@ -21,7 +21,7 @@ namespace EnumRun.Lib
             string[] _targetCandidate = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.LANG_JSON),
-                Path.Combine(Item.AssemblyDirectory, Item.LANG_JSON),
+                Path.Combine(Item.ExecDirectoryPath, Item.LANG_JSON),
             };
             string configPath = _targetCandidate.
                 FirstOrDefault(x => File.Exists(x));

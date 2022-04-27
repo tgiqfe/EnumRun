@@ -12,19 +12,20 @@ namespace EnumRun
     {
         /// <summary>
         /// 実行ファイルへのパス
+        /// 単一実行ファイルにした場合、Assembly.Locationが使用できないので、Processからファイルパスを取得
         /// </summary>
         //public static readonly string AssemblyPath = Assembly.GetExecutingAssembly().Location;
-        public static readonly string AssemblyPath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+        public static readonly string ExecFilePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
 
         /// <summary>
         /// 実行ファイルの名前
         /// </summary>
-        public static readonly string AssemblyFile = Path.GetFileName(AssemblyPath);
+        public static readonly string ExecFileName = Path.GetFileNameWithoutExtension(ExecFilePath);
 
         /// <summary>
         /// 実行ファイルの場所
         /// </summary>
-        public static readonly string AssemblyDirectory = Path.GetDirectoryName(AssemblyPath);
+        public static readonly string ExecDirectoryPath = Path.GetDirectoryName(ExecFilePath);
 
         /// <summary>
         /// ワークフォルダー
@@ -32,7 +33,7 @@ namespace EnumRun
         /// </summary>
         public static readonly string WorkDirectory =
             EnumRun.Lib.UserAccount.IsSystemAccount ?
-                AssemblyDirectory :
+                ExecDirectoryPath :
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 
         #region File

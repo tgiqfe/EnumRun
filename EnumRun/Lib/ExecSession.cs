@@ -24,17 +24,14 @@ namespace EnumRun.Lib
             public string Id { get; set; }
             public LogonSession(string time, string id)
             {
-
                 this.Time = ManagementDateTimeConverter.ToDateTime(time as string);
-
-                //this.Time = DateTime.TryParse(time, out DateTime tempTime) ? tempTime : null;
                 this.Id = id;
             }
         }
 
         public void SetLast()
         {
-            this.ProcessName = Item.AssemblyFile;
+            this.ProcessName = Item.ExecFileName;
 
             var mo = new ManagementClass("Win32_OperatingSystem").
                 GetInstances().
@@ -42,14 +39,7 @@ namespace EnumRun.Lib
                 FirstOrDefault();
             if (mo != null)
             {
-                //this.LastBootupTime = mo["LastBootUpTime"] as DateTime?;
-
-
-                //var laaa = mo["LastBootUpTime"];
-
                 this.LastBootupTime = ManagementDateTimeConverter.ToDateTime(mo["LastBootUpTime"] as string);
-
-                //this.LastBootupTime = DateTime.TryParse(mo["LastBootUpTime"] as string, out DateTime tempTime) ? tempTime : null;
             }
 
             var session = new ManagementClass("Win32_LogonSession").
@@ -65,10 +55,9 @@ namespace EnumRun.Lib
             this.LastExecTime = DateTime.Now;
         }
 
-
-
         /// <summary>
         /// 前回セッションの情報を参照し、今回セッションの実行可否を確認
+        /// ※後でもう少し整理する予定
         /// </summary>
         /// <param name="setting"></param>
         /// <returns>trueの場合、実行可能</returns>
@@ -78,7 +67,7 @@ namespace EnumRun.Lib
             string sessionFilePath = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.SESSION_FILE),
-                Path.Combine(Item.AssemblyDirectory, Item.SESSION_FILE),
+                Path.Combine(Item.ExecDirectoryPath, Item.SESSION_FILE),
             }.FirstOrDefault(x => File.Exists(x));
             if (sessionFilePath != null)
             {
@@ -100,11 +89,11 @@ namespace EnumRun.Lib
             currentSession.SetLast();
 
             var result = new ExecSessionResult(
-                lastSessions.ContainsKey(Item.AssemblyFile) ? lastSessions[Item.AssemblyFile] : null,
+                lastSessions.ContainsKey(Item.ExecFileName) ? lastSessions[Item.ExecFileName] : null,
                 currentSession,
                 setting.RestTime);
 
-            lastSessions[Item.AssemblyFile] = currentSession;
+            lastSessions[Item.ExecFileName] = currentSession;
             sessionFilePath ??= Path.Combine(Item.WorkDirectory, Item.SESSION_FILE);
             ParentDirectory.Create(sessionFilePath);
             try
