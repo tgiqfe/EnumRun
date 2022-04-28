@@ -10,18 +10,24 @@ using System.Text.Json.Serialization;
 using Hnx8.ReadJEnc;
 using System.Text.RegularExpressions;
 using EnumRun.Log;
+using System.Reflection;
 
 namespace EnumRun
 {
     internal class EnumRunSetting
     {
+        private string _FilesPath = null;
         private string _logsPath = null;
         private string _outputPath = null;
 
         /// <summary>
         /// スクリプトファイルの保存先フォルダーのパス
         /// </summary>
-        public string FilesPath { get; set; }
+        public string FilesPath
+        {
+            get { return _FilesPath ?? Path.Combine(Item.WorkDirectory, "Files"); }
+            set { _FilesPath = value; }
+        }
 
         /// <summary>
         /// ログ出力先フｒダーのパス
@@ -132,7 +138,15 @@ namespace EnumRun
                 {
                     using (var sr = new StreamReader(filePath, Encoding.UTF8))
                     {
-                        setting = JsonSerializer.Deserialize<EnumRunSetting>(sr.ReadToEnd());
+                        setting = JsonSerializer.Deserialize<EnumRunSetting>(
+                            sr.ReadToEnd(),
+                            new JsonSerializerOptions()
+                            {
+                                Converters =
+                                {
+                                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+                                }
+                            });
                     }
                 }
                 catch { }
@@ -285,5 +299,17 @@ namespace EnumRun
         }
 
         #endregion
+
+        /// <summary>
+        /// ログ出力用メソッド
+        /// </summary>
+        /// <returns></returns>
+        public string ToLog()
+        {
+            var props = this.GetType().GetProperties(
+                BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+            return string.Join(", ", 
+                props.Select(x => x.Name + " => " + x.GetValue(this).ToString()));
+        }
     }
 }

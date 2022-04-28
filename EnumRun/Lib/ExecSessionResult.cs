@@ -10,10 +10,14 @@ namespace EnumRun.Lib
     {
         public bool Runnable { get; set; }
 
+        public bool _existsFilesPath { get; set; }
+
         private bool _matchBootupTime { get; set; }
         private bool _matchLogonTime { get; set; }
         private bool _matchLogonId { get; set; }
         private bool _withinExecTime { get; set; }
+
+
 
         //  (案)前回ブート時間/今回ブート時間
         //  (案)前回ログオン時間/今回ログオン時間
@@ -39,16 +43,27 @@ namespace EnumRun.Lib
 
             this.Runnable = !_withinExecTime ||
                 (!_matchBootupTime && !_matchLogonTime && !_matchLogonId);
+            this.Runnable &= _existsFilesPath;
         }
 
         public string GetMessage()
         {
-            return string.Format("Runnable:{0}, Bootup:{1}, Logon:{2}, Id:{3}, Exec:{4}",
-                Runnable,
-                _matchBootupTime,
-                _matchLogonTime,
-                _matchLogonId,
-                _withinExecTime);
+            if (this.Runnable)
+            {
+                return "Runnable:True";
+            }
+            else if (!_existsFilesPath)
+            {
+                return "Runnable:False, FilesPath:missing";
+            }
+            else
+            {
+                return string.Format("Runnable:False, Bootup:{0}, Logon:{1}, Id:{2}, Exec:{3}",
+                    _matchBootupTime,
+                    _matchLogonTime,
+                    _matchLogonId,
+                    _withinExecTime);
+            }
         }
     }
 }

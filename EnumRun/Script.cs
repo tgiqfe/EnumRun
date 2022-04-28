@@ -16,13 +16,13 @@ namespace EnumRun
     {
         public string FilePath { get; set; }
         public string FileName { get; set; }
+        private Logger _logger { get; set; }
         public int FileNumber { get; set; }
+
         public bool Enabled { get; set; }
         public EnumRunOption Option { get; set; }
-
         private EnumRunSetting _setting { get; set; }
         private Language _language { get; set; }
-        private Logger _logger { get; set; }
 
         private static readonly Regex _pat_fileNum = new Regex(@"^\d+(?=_)");
 
@@ -31,9 +31,10 @@ namespace EnumRun
         {
             this.FilePath = filePath;
             this.FileName = Path.GetFileName(filePath);
+            this._logger = logger;
 
             Match match;
-            this.FileNumber = (match = _pat_fileNum.Match(filePath)).Success ?
+            this.FileNumber = (match = _pat_fileNum.Match(FileName)).Success ?
                 int.Parse(match.Value) : -1;
 
             if (setting.Ranges?.Within(this.FileNumber) ?? false)
@@ -42,20 +43,20 @@ namespace EnumRun
                 this.Option = new EnumRunOption(this.FilePath);
                 this._setting = setting;
                 this._language = collection.GetLanguage(this.FilePath);
-                this._logger = logger;
-
+                
                 _logger.Write(LogLevel.Info, FileName, "Enabled");
-                _logger.Write(LogLevel.Debug, FileName, "Language:{0}", _language.ToString());
-                _logger.Write(LogLevel.Debug, FileName, Option.ToString());
-                //  [Log]Enable判定だったこと。
-                //  [Log]Language判定
-                //  [Log]含むオプション Option.ToString()
+                _logger.Write(LogLevel.Debug, FileName, "Language => {0}", _language.ToString());
+                _logger.Write(LogLevel.Debug, FileName, "Option => [{0}]", Option.OptionType.ToString());
+            }
+            else
+            {
+                _logger.Write(LogLevel.Info, FileName, "Disabled");
             }
         }
 
         public Task Process()
         {
-            if (StopByOption()) { return null; }
+            if (CheckStopByOption()) { return null; }
 
             //  実行前待機
             if (this.Option.Contains(OptionType.BeforeWait) && Option.BeforeTime > 0)
@@ -91,7 +92,7 @@ namespace EnumRun
         /// オプションによって実行対象外と判定するかどうか
         /// </summary>
         /// <returns>実行対象外の場合にtrue</returns>
-        private bool StopByOption()
+        private bool CheckStopByOption()
         {
             //  [n]オプション
             //  実行対象外

@@ -19,43 +19,17 @@ namespace EnumRun.Log
         /// </summary>
         public Logger() { }
 
-        /*
-        /// <summary>
-        /// 動的パラメータ付きコンストラクタ。
-        /// ファイル名のパーツをパーツのまま指定するときに使用
-        /// </summary>
-        /// <param name="logDirectory"></param>
-        /// <param name="format"></param>
-        /// <param name="fileNameParts"></param>
-        public Logger(string logDirectory, string format, params string[] fileNameParts) :
-            this(logDirectory, string.Format(format, fileNameParts))
-        {
-        }
-
-        /// <summary>
-        /// ファイル名を指定するコンストラクタ
-        /// </summary>
-        /// <param name="logDirectory"></param>
-        /// <param name="logFileName"></param>
-        public Logger(string logDirectory, string logFileName)
-        {
-            this._logPath = Path.Combine(logDirectory, logFileName);
-            ParentDirectory.Create(_logPath);
-            _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
-            _body = new LogBody();
-            _body.Init();
-        }
-        */
-
         public Logger(EnumRunSetting setting)
         {
             _logPath = Path.Combine(
-                setting.LogsPath, 
+                setting.LogsPath,
                 $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log");
             ParentDirectory.Create(_logPath);
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
             _body = new LogBody();
             _body.Init();
+
+            Write("開始");
         }
 
         /// <summary>
@@ -101,8 +75,14 @@ namespace EnumRun.Log
         }
 
 
-
-
+        public void Close()
+        {
+            if (_writer != null)
+            {
+                Write("終了");
+                _writer.Dispose();
+            }
+        }
 
 
         #region Dispose
@@ -115,10 +95,7 @@ namespace EnumRun.Log
             {
                 if (disposing)
                 {
-                    if (_writer != null)
-                    {
-                        _writer.Dispose();
-                    }
+                    Close();
                 }
                 disposedValue = true;
             }

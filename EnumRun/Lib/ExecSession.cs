@@ -92,6 +92,8 @@ namespace EnumRun.Lib
                 lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null,
                 currentSession,
                 setting.RestTime ?? 0);
+            result._existsFilesPath = File.Exists(setting.FilesPath);
+
 
             lastSessions[Item.ProcessName] = currentSession;
             sessionFilePath ??= Path.Combine(Item.WorkDirectory, Item.SESSION_FILE);

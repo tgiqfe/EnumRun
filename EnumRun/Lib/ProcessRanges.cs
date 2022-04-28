@@ -51,5 +51,14 @@ namespace EnumRun.Lib
             }
             return num >= _CurrentRange[0] && num <= _CurrentRange[1];
         }
+
+        /// <summary>
+        /// tostring
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return string.Join(" ", this.Select(x => $"[{x.Key}]{x.Value}"));
+        }
     }
 }
