@@ -24,13 +24,6 @@ namespace EnumRun.Lib
             public static Dictionary<string, Session> Deserialize()
             {
                 Dictionary<string, Session> sessions = null;
-                /*
-                string filePath = new string[]
-                {
-                    Path.Combine(Item.WorkDirectory, Item.SESSION_FILE),
-                    Path.Combine(Item.ExecDirectoryPath, Item.SESSION_FILE),
-                }.FirstOrDefault(x => File.Exists(x));
-                */
                 string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
 
                 try
@@ -47,14 +40,6 @@ namespace EnumRun.Lib
 
             public static void Serialize(Dictionary<string, Session> sessions)
             {
-                /*
-                string filePath = new string[]
-                {
-                    Path.Combine(Item.WorkDirectory, Item.SESSION_FILE),
-                    Path.Combine(Item.ExecDirectoryPath, Item.SESSION_FILE),
-                }.FirstOrDefault(x => File.Exists(x));
-                filePath ??= Path.Combine(Item.WorkDirectory, Item.SESSION_FILE);
-                */
                 string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
                 using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
                 {

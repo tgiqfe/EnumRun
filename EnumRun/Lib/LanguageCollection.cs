@@ -14,16 +14,6 @@ namespace EnumRun.Lib
         public static LanguageCollection Deserialize()
         {
             string configPath = TargetDirectory.GetFile(Item.LANG_JSON);
-            /*
-            string[] _targetCandidate = new string[]
-            {
-                Path.Combine(Item.WorkDirectory, Item.LANG_JSON),
-                Path.Combine(Item.ExecDirectoryPath, Item.LANG_JSON),
-            };
-            string configPath = _targetCandidate.
-                FirstOrDefault(x => File.Exists(x));
-            */
-
             var collection = new LanguageCollection();
             collection.Load(configPath);
 

@@ -108,30 +108,6 @@ namespace EnumRun
                 return DeserializeText(textFilePath);
             }
             return DeserializeJson(jsonFilePath);
-
-
-
-            /*
-            string jsonConfigPath = new string[]
-            {
-                Path.Combine(Item.WorkDirectory, Item.CONFIG_JSON),
-                Path.Combine(Item.ExecDirectoryPath, Item.CONFIG_JSON),
-            }.FirstOrDefault(x => File.Exists(x));
-            if (jsonConfigPath != null)
-            {
-                return DeserializeJson(jsonConfigPath);
-            }
-
-            string textConfigPath = new string[]
-            {
-                Path.Combine(Item.WorkDirectory, Item.CONFIG_TXT),
-                Path.Combine(Item.ExecDirectoryPath, Item.CONFIG_TXT),
-            }.FirstOrDefault(x => File.Exists(x));
-            if (textConfigPath != null)
-            {
-                return DeserializeText(textConfigPath);
-            }
-            */
         }
 
         /// <summary>

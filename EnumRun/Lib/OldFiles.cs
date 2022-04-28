@@ -31,17 +31,6 @@ namespace EnumRun.Lib
         public static void Clean(EnumRunSetting setting)
         {
             string filePath = TargetDirectory.GetFile(Item.CLEAN_FILE);
-
-                /*
-            string filePath = new string[]
-            {
-                Path.Combine(Item.WorkDirectory, Item.CLEAN_FILE),
-                Path.Combine(Item.ExecDirectoryPath, Item.CLEAN_FILE),
-            }.FirstOrDefault(x => File.Exists(x));
-            filePath ??= Path.Combine(Item.WorkDirectory, Item.CLEAN_FILE);
-
-                */
-
             try
             {
                 using (var sr = new StreamReader(filePath, Encoding.UTF8))
