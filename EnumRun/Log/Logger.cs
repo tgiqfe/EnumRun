@@ -6,6 +6,7 @@ namespace EnumRun.Log
     internal class Logger : IDisposable
     {
         private string _logPath = null;
+        private LogLevel _minLogLevel = LogLevel.Info;
         private StreamWriter _writer = null;
         private LogBody _body = null;
 
@@ -20,12 +21,16 @@ namespace EnumRun.Log
                 setting.LogsPath,
                 $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log");
             ParentDirectory.Create(_logPath);
+
+            _minLogLevel = setting.MinLogLevel ?? LogLevel.Info;
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
             _body = new LogBody();
             _body.Init();
 
             Write("開始");
         }
+
+        #region Log output
 
         /// <summary>
         /// ログ出力
@@ -35,7 +40,10 @@ namespace EnumRun.Log
         /// <param name="message"></param>
         public void Write(LogLevel level, string scriptFile, string message)
         {
-            _writer.WriteLine(_body.GetLog(level, scriptFile, message));
+            if(level >= _minLogLevel)
+            {
+                _writer.WriteLine(_body.GetLog(level, scriptFile, message));
+            }
         }
 
         /// <summary>
@@ -47,7 +55,10 @@ namespace EnumRun.Log
         /// <param name="messages"></param>
         public void Write(LogLevel level, string scriptFile, string format, params object[] messages)
         {
-            _writer.WriteLine(_body.GetLog(level, scriptFile, string.Format(format, messages)));
+            if (level >= _minLogLevel)
+            {
+                _writer.WriteLine(_body.GetLog(level, scriptFile, string.Format(format, messages)));
+            }   
         }
 
         /// <summary>
@@ -57,7 +68,10 @@ namespace EnumRun.Log
         /// <param name="message"></param>
         public void Write(LogLevel level, string message)
         {
-            _writer.WriteLine(_body.GetLog(level, null, message));
+            if (level >= _minLogLevel)
+            {
+                _writer.WriteLine(_body.GetLog(level, null, message));
+            }   
         }
 
         /// <summary>
@@ -66,9 +80,13 @@ namespace EnumRun.Log
         /// <param name="message"></param>
         public void Write(string message)
         {
-            _writer.WriteLine(_body.GetLog(LogLevel.Info, null, message));
+            if (LogLevel.Info >= _minLogLevel)
+            {
+                _writer.WriteLine(_body.GetLog(LogLevel.Info, null, message));
+            }   
         }
 
+        #endregion
 
         public void Close()
         {
