@@ -20,17 +20,6 @@ EnumRunSetting setting = EnumRunSetting.Deserialize();
 
 
 
-/*
-string[] aaaa = new string[] { "aa", "bb", "cc", "dd" };
-//var keka = aaaa.FirstOrDefault(x => x == "aa");
-var keka = aaaa.FirstOrDefault();
-
-Console.WriteLine(keka);
-
-Console.ReadLine();
-Environment.Exit(0);
-*/
-
 using (var logger = new Logger(setting))
 {
     logger.Write(setting.ToLog());
