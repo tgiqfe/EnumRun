@@ -15,14 +15,18 @@ LanguageCollection collection_def = LanguageCollection.Deserialize();
 collection_def.Save("Language.json");
 */
 
+
+
+
+
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
-
-
 
 using (var logger = new Logger(setting))
 {
     logger.Write(setting.ToLog());
+
+    OldFiles.Clean(setting);
 
     var result = ExecSession.Check(setting);
 
