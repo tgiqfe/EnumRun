@@ -97,7 +97,6 @@ namespace EnumRun.Log
             }
         }
 
-
         #region Dispose
 
         private bool disposedValue;

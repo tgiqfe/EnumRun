@@ -74,7 +74,7 @@ namespace EnumRun
                 string outputPath = Path.Combine(
                     this._setting.OutputPath,
                     string.Format("{0}_{1}_{2}.txt",
-                        this.FileName,
+                        Path.GetFileNameWithoutExtension(this.FilePath),
                         Environment.ProcessId,
                         DateTime.Now.ToString("yyyyMMddHHmmss")));
                 _logger.Write(LogLevel.Info, FileName, "Output => {0}", outputPath);

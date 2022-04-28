@@ -36,6 +36,11 @@
         public const string SESSION_FILE = "session.json";
 
         /// <summary>
+        /// 旧ファイルのクリーンの管理用ファイル
+        /// </summary>
+        public const string CLEAN_FILE = "clean.json";
+
+        /// <summary>
         /// 設定ファイル(JSON)
         /// </summary>
         public const string CONFIG_JSON = "Setting.json";
