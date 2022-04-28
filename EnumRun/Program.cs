@@ -22,12 +22,11 @@ using (var logger = new Logger(setting))
 {
     logger.Write(setting.ToLog());
 
-    //ExecSessionResult check = ExecSession.Check(setting);
-    var check = ExecSession2.Check(setting);
+    var result = ExecSession.Check(setting);
 
-    if (check.Runnable)
+    if (result.Runnable)
     {
-        logger.Write(LogLevel.Debug, check.ToLog());
+        logger.Write(LogLevel.Debug, result.ToLog());
 
         var processes = Directory.GetFiles(setting.FilesPath).
             Select(x => new Script(x, setting, collection, logger)).
@@ -38,7 +37,7 @@ using (var logger = new Logger(setting))
     }
     else
     {
-        logger.Write(LogLevel.Warn, check.ToLog());
+        logger.Write(LogLevel.Warn, result.ToLog());
     }
 }
 
