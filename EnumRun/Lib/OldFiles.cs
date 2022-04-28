@@ -11,13 +11,28 @@ namespace EnumRun.Lib
 {
     internal class OldFiles
     {
+        //  (案)ExecSessionの中に組み込みに。Clean専用のログファイルはちょっともったいないかも
+
         public class CleanLog
         {
             public DateTime? LastCleanDate { get; set; }
+            public int Retention { get; set; }
+            public Dictionary<string, List<string>> DeletedFiles { get; set; }
+
+            public CleanLog() { }
+            public CleanLog(int retention)
+            {
+                this.LastCleanDate = DateTime.Now;
+                this.Retention = retention;
+                this.DeletedFiles = new Dictionary<string, List<string>>();
+            }
         }
 
         public static void Clean(EnumRunSetting setting)
         {
+            string filePath = TargetDirectory.GetFile(Item.CLEAN_FILE);
+
+                /*
             string filePath = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.CLEAN_FILE),
@@ -25,12 +40,14 @@ namespace EnumRun.Lib
             }.FirstOrDefault(x => File.Exists(x));
             filePath ??= Path.Combine(Item.WorkDirectory, Item.CLEAN_FILE);
 
+                */
+
             try
             {
                 using (var sr = new StreamReader(filePath, Encoding.UTF8))
                 {
-                    var cleanLog = JsonSerializer.Deserialize<CleanLog>(sr.ReadToEnd());
-                    if (cleanLog.LastCleanDate?.Date >= DateTime.Today)
+                    var lastCleanLog = JsonSerializer.Deserialize<CleanLog>(sr.ReadToEnd());
+                    if (lastCleanLog.LastCleanDate?.Date >= DateTime.Today)
                     {
                         return;
                     }
@@ -38,36 +55,38 @@ namespace EnumRun.Lib
             }
             catch { }
 
-            Cle(setting.OutputPath, setting.RetentionPeriod ?? 0);
-            Cle(setting.LogsPath, setting.RetentionPeriod ?? 0);
+            var cleanLog = new CleanLog(setting.RetentionPeriod ?? 0);
+            DeleteOldFile(setting.OutputPath, cleanLog);
+            DeleteOldFile(setting.LogsPath, cleanLog);
 
-            using(var sw = new StreamWriter(filePath, false, Encoding.UTF8))
+            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
             {
-                string json = JsonSerializer.Serialize(
-                    new CleanLog() { LastCleanDate = DateTime.Now });
+                string json = JsonSerializer.Serialize(cleanLog);
                 sw.WriteLine(json);
             }
-
         }
 
-        private static void Cle(string targetDirectory, int retention)
+        public static void DeleteOldFile(string targetDirectory, CleanLog cleanLog)
         {
-            if(retention > 0)
+            if (cleanLog.Retention > 0)
             {
-                DateTime borderDate = DateTime.Now.AddDays(retention * -1);
+                DateTime border = DateTime.Now.AddDays(cleanLog.Retention * -1);
 
                 var files = (Directory.Exists(targetDirectory) ?
                     Directory.GetFiles(targetDirectory) :
                     new string[] { }).
-                        Where(x => new FileInfo(x).LastWriteTime < borderDate);
-                foreach (var target in files)
+                        Where(x => new FileInfo(x).LastWriteTime < border);
+                try
                 {
-                    File.Delete(target);
+                    cleanLog.DeletedFiles[targetDirectory] = new List<string>();
+                    foreach (var target in files)
+                    {
+                        File.Delete(target);
+                        cleanLog.DeletedFiles[targetDirectory].Add(target);
+                    }
                 }
+                catch { }
             }
         }
-
-        //  (案)戻り値で削除したファイルを返す。
-        //  (案)削除したファイル名をログもしくはCleanログに出力
     }
 }

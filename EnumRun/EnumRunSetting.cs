@@ -25,7 +25,7 @@ namespace EnumRun
         }
 
         /// <summary>
-        /// ログ出力先フｒダーのパス
+        /// ログ出力先フォルダーのパス
         /// </summary>
         public string LogsPath
         {
@@ -96,6 +96,22 @@ namespace EnumRun
         /// <returns></returns>
         public static EnumRunSetting Deserialize()
         {
+            string jsonFilePath = TargetDirectory.GetFile(Item.CONFIG_JSON);
+            string textFilePath = TargetDirectory.GetFile(Item.CONFIG_TXT);
+
+            if (File.Exists(jsonFilePath))
+            {
+                return DeserializeJson(jsonFilePath);
+            }
+            else if (File.Exists(textFilePath))
+            {
+                return DeserializeText(textFilePath);
+            }
+            return DeserializeJson(jsonFilePath);
+
+
+
+            /*
             string jsonConfigPath = new string[]
             {
                 Path.Combine(Item.WorkDirectory, Item.CONFIG_JSON),
@@ -115,8 +131,7 @@ namespace EnumRun
             {
                 return DeserializeText(textConfigPath);
             }
-
-            return null;
+            */
         }
 
         /// <summary>
@@ -173,8 +188,8 @@ namespace EnumRun
                     string readLine = "";
                     while ((readLine = sr.ReadLine()) != null)
                     {
-                        string key = readLine.Substring(0, readLine.IndexOf(":"));
-                        string val = readLine.Substring(readLine.IndexOf(":") + 1);
+                        string key = readLine.Substring(0, readLine.IndexOf(":")).Trim();
+                        string val = readLine.Substring(readLine.IndexOf(":") + 1).Trim();
                         switch (key.ToLower())
                         {
                             case "filespath":
@@ -199,7 +214,7 @@ namespace EnumRun
                                 setting.RetentionPeriod = int.TryParse(val, out int num2) ? num2 : 0;
                                 break;
                             case "minloglevel":
-                                setting.MinLogLevel = Enum.TryParse(val, out LogLevel level) ? level : LogLevel.Info;
+                                setting.MinLogLevel = Enum.TryParse(val, ignoreCase: true, out LogLevel level) ? level : LogLevel.Info;
                                 break;
                             case "ranges":
                             case "range":
@@ -234,7 +249,7 @@ namespace EnumRun
         /// <param name="filePath"></param>
         public void Serialize(string filePath)
         {
-            ParentDirectory.Create(filePath);
+            TargetDirectory.CreateParent(filePath);
             switch (Path.GetExtension(filePath))
             {
                 case ".json":

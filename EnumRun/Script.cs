@@ -222,7 +222,7 @@ namespace EnumRun
         /// <returns></returns>
         private async Task ProcessThreadAndOutput(string outputPath)
         {
-            ParentDirectory.Create(outputPath);
+            TargetDirectory.CreateParent(outputPath);
 
             await Task.Run(() =>
             {

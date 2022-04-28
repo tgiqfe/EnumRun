@@ -20,7 +20,7 @@ namespace EnumRun.Log
             _logPath = Path.Combine(
                 setting.LogsPath,
                 $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log");
-            ParentDirectory.Create(_logPath);
+            TargetDirectory.CreateParent(_logPath);
 
             _minLogLevel = setting.MinLogLevel ?? LogLevel.Info;
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
