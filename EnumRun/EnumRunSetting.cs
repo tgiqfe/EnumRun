@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EnumRun.Lib;
-using System.Text.Json;
-using System.IO;
-using System.Text.Json.Serialization;
-using Hnx8.ReadJEnc;
-using System.Text.RegularExpressions;
+﻿using EnumRun.Lib;
 using EnumRun.Log;
+using Hnx8.ReadJEnc;
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace EnumRun
 {
@@ -308,7 +303,7 @@ namespace EnumRun
         {
             var props = this.GetType().GetProperties(
                 BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-            return string.Join(", ", 
+            return string.Join(", ",
                 props.Select(x => x.Name + " => " + x.GetValue(this).ToString()));
         }
     }

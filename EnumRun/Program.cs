@@ -1,8 +1,7 @@
 ﻿
-using EnumRun.Lib;
 using EnumRun;
+using EnumRun.Lib;
 using EnumRun.Log;
-using System.IO;
 
 
 
@@ -23,10 +22,12 @@ using (var logger = new Logger(setting))
 {
     logger.Write(setting.ToLog());
 
-    ExecSessionResult check = ExecSession.Check(setting);
+    //ExecSessionResult check = ExecSession.Check(setting);
+    var check = ExecSession2.Check(setting);
+
     if (check.Runnable)
     {
-        logger.Write(LogLevel.Info, check.GetMessage());
+        logger.Write(LogLevel.Debug, check.ToLog());
 
         var processes = Directory.GetFiles(setting.FilesPath).
             Select(x => new Script(x, setting, collection, logger)).
@@ -37,7 +38,7 @@ using (var logger = new Logger(setting))
     }
     else
     {
-        logger.Write(LogLevel.Warn, check.GetMessage());
+        logger.Write(LogLevel.Warn, check.ToLog());
     }
 }
 

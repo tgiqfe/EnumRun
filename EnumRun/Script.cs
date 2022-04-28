@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using System.IO;
-using EnumRun.Lib;
-using System.Threading;
-using System.Diagnostics;
+﻿using EnumRun.Lib;
 using EnumRun.Log;
+using System.Diagnostics;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EnumRun
 {
@@ -43,7 +37,7 @@ namespace EnumRun
                 this.Option = new EnumRunOption(this.FilePath);
                 this._setting = setting;
                 this._language = collection.GetLanguage(this.FilePath);
-                
+
                 _logger.Write(LogLevel.Info, FileName, "Enabled");
                 _logger.Write(LogLevel.Debug, FileName, "Language => {0}", _language.ToString());
                 _logger.Write(LogLevel.Debug, FileName, "Option => [{0}]", Option.OptionType.ToString());
