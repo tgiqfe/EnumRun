@@ -114,6 +114,16 @@ namespace EnumRun
                 return true;
             }
 
+            //  [a]オプション
+            //  ユーザーアカウント制御が「通知しない」場合のみ
+            //  Administratorsグループのチェックは行わない。一般ユーザーでも、とりあえずrunasで実行。
+            if (this.Option.Contains(OptionType.RunAsAdmin) && !UserAccount.IsDisableUAC())
+            {
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [a]option.");
+                _logger.Write(LogLevel.Debug, FileName, "Enable User Account Control setting.");
+                return true;
+            }
+
             //  [m]オプション
             //  ドメイン参加PCのみ
             if (this.Option.Contains(OptionType.DomainPCOnly) && !Machine.IsDomain)
@@ -212,14 +222,6 @@ namespace EnumRun
         /// <returns></returns>
         private async Task ProcessThreadAndOutput(string outputPath)
         {
-            /*
-            string outputPath = Path.Combine(
-                this._setting.OutputPath,
-                string.Format("{0}_{1}_{2}.txt",
-                    this.FileName,
-                    Environment.ProcessId,
-                    DateTime.Now.ToString("yyyyMMddHHmmss")));
-            */
             ParentDirectory.Create(outputPath);
 
             await Task.Run(() =>
