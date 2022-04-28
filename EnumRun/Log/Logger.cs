@@ -45,7 +45,7 @@ namespace EnumRun.Log
         /// <param name="scriptFile"></param>
         /// <param name="format"></param>
         /// <param name="messages"></param>
-        public void Write(LogLevel level, string scriptFile, string format, params string[] messages)
+        public void Write(LogLevel level, string scriptFile, string format, params object[] messages)
         {
             _writer.WriteLine(_body.GetLog(level, scriptFile, string.Format(format, messages)));
         }
