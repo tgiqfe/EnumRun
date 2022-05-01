@@ -57,8 +57,17 @@ namespace EnumRun.Log.ProcessLog
         {
             if (level >= _minLogLevel)
             {
-                _body.Update(level, scriptFile, message);
-                Send().ConfigureAwait(false);
+                
+                //_body.Update(level, scriptFile, message);
+                //Send().ConfigureAwait(false);
+
+                SendAsync(new LogBody(init: true)
+                {
+                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
+                    Level = level,
+                    ScriptFile = scriptFile,
+                    Message = message,
+                }).ConfigureAwait(false);
             }
         }
 
@@ -94,6 +103,49 @@ namespace EnumRun.Log.ProcessLog
         }
 
         #endregion
+
+
+
+        private async Task SendAsync(LogBody body)
+        {
+            try
+            {
+                _rwLock.AcquireWriterLock(10000);
+
+                string json = body.GetJson();
+
+                //ファイル書き込み
+                await _writer.WriteLineAsync(json);
+
+                //  Logstash転送
+                if (_transport?.Enabled ?? false)
+                {
+                    bool res = await _transport.SendAsync(json);
+
+                    if (!res! && _collection != null)
+                    {
+                        if (_liteDB == null)
+                        {
+                            string localDBPath = Path.Combine(
+                                Path.GetDirectoryName(_logPath),
+                                "Logstash_Test_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                            _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
+                            _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG);
+                            _collection.EnsureIndex(x => x.Serial, true);
+                        }
+                        _collection.Upsert(body);
+                    }
+                }
+            }
+            catch { }
+            finally
+            {
+                _rwLock.ReleaseWriterLock();
+            }
+        }
+
+
+
 
         private async Task Send()
         {
@@ -132,9 +184,23 @@ namespace EnumRun.Log.ProcessLog
         }
 
 
+
+
+
+
+
         public void Close()
         {
             Write("終了");
+
+            //  一応1000ミリ秒待機
+            try
+            {
+                _rwLock.AcquireWriterLock(10000);
+                _rwLock.ReleaseWriterLock();
+            }
+            catch { }
+
             if (_writer != null) { _writer.Dispose(); }
             if (_liteDB != null) { _liteDB.Dispose(); }
         }

@@ -27,7 +27,7 @@ namespace EnumRun.Log.ProcessLog
         /// <summary>
         /// シリアル番号の末尾に付ける数値
         /// </summary>
-        private int _index = 0;
+        private int _index2 = 0;
 
         #endregion
         #region Public parameter
@@ -42,8 +42,8 @@ namespace EnumRun.Log.ProcessLog
         public string Message { get; set; }
 
         #endregion
-
-        private JsonSerializerOptions _options = new JsonSerializerOptions()
+        
+        private static JsonSerializerOptions _options = new JsonSerializerOptions()
         {
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             //IgnoreReadOnlyProperties = true,
@@ -51,6 +51,28 @@ namespace EnumRun.Log.ProcessLog
             //WriteIndented = true,
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
         };
+
+        private static int _index = 0;
+
+        public LogBody() { }
+        public LogBody(bool init)
+        {
+            this.ProcessName = Item.ProcessName;
+            this.UserName = Environment.UserName;
+            this.HostName = Environment.MachineName;
+            this.Serial = $"{Item.Serial}_{_index++}";
+        }
+
+        public string GetJson()
+        {
+            return JsonSerializer.Serialize(this, _options);
+        }
+
+
+
+
+
+
 
         public void Init()
         {
@@ -77,9 +99,6 @@ namespace EnumRun.Log.ProcessLog
             this.Serial = $"{_seed}_{_index++}";
         }
 
-        public string GetJson()
-        {
-            return JsonSerializer.Serialize(this, _options);
-        }
+
     }
 }
