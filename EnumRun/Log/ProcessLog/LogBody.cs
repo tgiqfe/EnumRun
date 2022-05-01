@@ -20,14 +20,9 @@ namespace EnumRun.Log.ProcessLog
         public string Serial { get; set; }
 
         /// <summary>
-        /// シリアル番号の元データ
+        /// Serialの通し番号
         /// </summary>
-        private string _seed = null;
-
-        /// <summary>
-        /// シリアル番号の末尾に付ける数値
-        /// </summary>
-        private int _index2 = 0;
+        private static int _index = 0;
 
         #endregion
         #region Public parameter
@@ -52,8 +47,6 @@ namespace EnumRun.Log.ProcessLog
             Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
         };
 
-        private static int _index = 0;
-
         public LogBody() { }
         public LogBody(bool init)
         {
@@ -67,38 +60,5 @@ namespace EnumRun.Log.ProcessLog
         {
             return JsonSerializer.Serialize(this, _options);
         }
-
-
-
-
-
-
-
-        public void Init()
-        {
-            this.ProcessName = Item.ProcessName;
-            this.UserName = Environment.UserName;
-            this.HostName = Environment.MachineName;
-        }
-
-        public void Update(LogLevel level, string scriptFile, string message)
-        {
-            this.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
-            this.Level = level;
-            this.ScriptFile = scriptFile;
-            this.Message = message;
-
-            if (_seed == null)
-            {
-                var md5 = System.Security.Cryptography.MD5.Create();
-                var bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(
-                    DateTime.Now.Ticks.ToString() + this.GetHashCode().ToString()));
-                _seed = BitConverter.ToString(bytes).Replace("-", "");
-                md5.Clear();
-            }
-            this.Serial = $"{_seed}_{_index++}";
-        }
-
-
     }
 }

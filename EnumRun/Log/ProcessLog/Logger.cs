@@ -9,8 +9,6 @@ namespace EnumRun.Log.ProcessLog
         private string _logPath = null;
         private LogLevel _minLogLevel = LogLevel.Info;
         private StreamWriter _writer = null;
-        private LogBody _body = null;
-
         private ReaderWriterLock _rwLock = null;
 
         private LogstashTransport _transport = null;
@@ -32,9 +30,6 @@ namespace EnumRun.Log.ProcessLog
 
             _minLogLevel = setting.MinLogLevel ?? LogLevel.Info;
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
-            _body = new LogBody();
-            _body.Init();
-
             _rwLock = new ReaderWriterLock();
 
             if (!string.IsNullOrEmpty(setting.LogstashServer))
@@ -57,10 +52,6 @@ namespace EnumRun.Log.ProcessLog
         {
             if (level >= _minLogLevel)
             {
-                
-                //_body.Update(level, scriptFile, message);
-                //Send().ConfigureAwait(false);
-
                 SendAsync(new LogBody(init: true)
                 {
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
@@ -104,8 +95,6 @@ namespace EnumRun.Log.ProcessLog
 
         #endregion
 
-
-
         private async Task SendAsync(LogBody body)
         {
             try
@@ -143,51 +132,6 @@ namespace EnumRun.Log.ProcessLog
                 _rwLock.ReleaseWriterLock();
             }
         }
-
-
-
-
-        private async Task Send()
-        {
-            try
-            {
-                _rwLock.AcquireWriterLock(10000);
-
-                string json = _body.GetJson();
-
-                //  ファイル書き込み
-                await _writer.WriteLineAsync(json);
-
-                //  Logstash転送
-                if (_transport?.Enabled ?? false)
-                {
-                    bool res = await _transport.SendAsync(json);
-
-                    if (!res! && _collection != null)
-                    {
-                        if (_liteDB == null)
-                        {
-                            string localDBPath = Path.Combine(
-                                Path.GetDirectoryName(_logPath),
-                                "Logstash_Test_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
-                            _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                            _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG);
-                            _collection.EnsureIndex(x => x.Serial, true);
-                        }
-                        _collection.Upsert(_body);
-                    }
-                }
-            }
-            catch { }
-
-            _rwLock.ReleaseWriterLock();
-        }
-
-
-
-
-
-
 
         public void Close()
         {
