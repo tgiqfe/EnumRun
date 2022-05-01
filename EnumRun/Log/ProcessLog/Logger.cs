@@ -57,14 +57,8 @@ namespace EnumRun.Log.ProcessLog
         {
             if (level >= _minLogLevel)
             {
-                try
-                {
-                    _rwLock.AcquireWriterLock(10000);
-                    _body.Update(level, scriptFile, message);
-                    Send().ConfigureAwait(false);
-                }
-                catch { }
-                _rwLock.ReleaseWriterLock();
+                _body.Update(level, scriptFile, message);
+                Send().ConfigureAwait(false);
             }
         }
 
@@ -103,30 +97,38 @@ namespace EnumRun.Log.ProcessLog
 
         private async Task Send()
         {
-            string json = _body.GetJson();
-
-            //  ファイル書き込み
-            _writer.WriteLine(json);
-
-            //  Logstash転送
-            if (_transport?.Enabled ?? false)
+            try
             {
-                bool res = await _transport.SendAsync(json);
+                _rwLock.AcquireWriterLock(10000);
 
-                if (!res! && _collection != null)
+                string json = _body.GetJson();
+
+                //  ファイル書き込み
+                await _writer.WriteLineAsync(json);
+
+                //  Logstash転送
+                if (_transport?.Enabled ?? false)
                 {
-                    if (_liteDB == null)
+                    bool res = await _transport.SendAsync(json);
+
+                    if (!res! && _collection != null)
                     {
-                        string localDBPath = Path.Combine(
-                            Path.GetDirectoryName(_logPath),
-                            "Logstash_Test_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
-                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                        _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG);
-                        _collection.EnsureIndex(x => x.Serial, true);
+                        if (_liteDB == null)
+                        {
+                            string localDBPath = Path.Combine(
+                                Path.GetDirectoryName(_logPath),
+                                "Logstash_Test_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                            _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
+                            _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG);
+                            _collection.EnsureIndex(x => x.Serial, true);
+                        }
+                        _collection.Upsert(_body);
                     }
-                    _collection.Upsert(_body);
                 }
             }
+            catch { }
+
+            _rwLock.ReleaseWriterLock();
         }
 
 

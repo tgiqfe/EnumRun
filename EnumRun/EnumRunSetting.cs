@@ -4,7 +4,6 @@ using Hnx8.ReadJEnc;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace EnumRun
@@ -85,6 +84,7 @@ namespace EnumRun
             this.DefaultOutput = false;
             this.RetentionPeriod = 0;
             this.MinLogLevel = LogLevel.Info;
+            this.LogstashServer = null;
             this.Ranges = new ProcessRanges()
             {
                 { "StartupScript", "0-9" },
@@ -134,10 +134,11 @@ namespace EnumRun
                             sr.ReadToEnd(),
                             new JsonSerializerOptions()
                             {
-                                Converters =
-                                {
-                                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-                                }
+                                //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                                //IgnoreReadOnlyProperties = true,
+                                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                                //WriteIndented = true,
+                                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                             });
                     }
                 }
@@ -198,6 +199,9 @@ namespace EnumRun
                             case "minloglevel":
                                 setting.MinLogLevel = Enum.TryParse(val, ignoreCase: true, out LogLevel level) ? level : LogLevel.Info;
                                 break;
+                            case "logstashserver":
+                                setting.LogstashServer = val;
+                                break;
                             case "ranges":
                             case "range":
                                 setting.Ranges = new ProcessRanges();
@@ -255,11 +259,10 @@ namespace EnumRun
                     new JsonSerializerOptions()
                     {
                         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                        IgnoreReadOnlyProperties = true,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
                         WriteIndented = true,
-                        Converters =
-                        {
-                            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-                        }
+                        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                     });
                 sw.WriteLine(json);
             }
@@ -282,6 +285,7 @@ namespace EnumRun
                 sw.WriteLine($"DefaultOutput: {this.DefaultOutput}");
                 sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
                 sw.WriteLine($"MinLogLevel: {this.MinLogLevel}");
+                sw.WriteLine($"LogstashServer: {this.LogstashServer}");
                 sw.WriteLine("Ranges:");
                 foreach (var pair in this.Ranges)
                 {
@@ -301,7 +305,7 @@ namespace EnumRun
             var props = this.GetType().GetProperties(
                 BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             return string.Join(", ",
-                props.Select(x => x.Name + " => " + x.GetValue(this).ToString()));
+                props.Select(x => x.Name + " => " + x.GetValue(this)?.ToString()));
         }
     }
 }
