@@ -1,5 +1,5 @@
 ﻿using EnumRun.Lib;
-using EnumRun.Log;
+using EnumRun.Log.ProcessLog;
 using Hnx8.ReadJEnc;
 using System.Reflection;
 using System.Text;
@@ -61,6 +61,12 @@ namespace EnumRun
         /// ログ出力の最低レベル
         /// </summary>
         public LogLevel? MinLogLevel { get; set; }
+
+        /// <summary>
+        /// ログ転送先サーバ(Logstash)のサーバ
+        /// 記述例⇒http://192.168.10.100:8080/
+        /// </summary>
+        public string LogstashServer { get; set; }
 
         /// <summary>
         /// プロセスごとに実行可能なスクリプトファイルの番号の範囲

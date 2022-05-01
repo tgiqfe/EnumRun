@@ -1,5 +1,5 @@
 ﻿using EnumRun.Lib;
-using EnumRun.Log;
+using EnumRun.Log.ProcessLog;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;

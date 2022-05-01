@@ -46,7 +46,7 @@ namespace EnumRun.Log
         public string OSVersion { get; set; }
         public string AppFilePath { get; set; }
         public string AppVersion { get; set; }
-        public NIC[] NetworkInterfaces { get; set; }
+        public Nic[] NetworkInterfaces { get; set; }
         public DateTime BootupTime { get; set; }
         public DateTime LogonTime { get; set; }
 

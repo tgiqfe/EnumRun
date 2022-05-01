@@ -1,7 +1,8 @@
 ﻿using EnumRun.Lib;
 using System.Text;
+using LiteDB;
 
-namespace EnumRun.Log
+namespace EnumRun.Log.ProcessLog
 {
     internal class Logger : IDisposable
     {
@@ -9,6 +10,13 @@ namespace EnumRun.Log
         private LogLevel _minLogLevel = LogLevel.Info;
         private StreamWriter _writer = null;
         private LogBody _body = null;
+
+        private ReaderWriterLock _rwLock = null;
+
+        private LogstashTransport _transport = null;
+        private LiteDatabase _liteDB = null;
+        private ILiteCollection<LogBody> _collection = null;
+
 
         /// <summary>
         /// 引数無しコンストラクタ
@@ -27,6 +35,13 @@ namespace EnumRun.Log
             _body = new LogBody();
             _body.Init();
 
+            _rwLock = new ReaderWriterLock();
+
+            if (!string.IsNullOrEmpty(setting.LogstashServer))
+            {
+                _transport = new LogstashTransport(setting.LogstashServer);
+            }
+
             Write("開始");
         }
 
@@ -40,9 +55,16 @@ namespace EnumRun.Log
         /// <param name="message"></param>
         public void Write(LogLevel level, string scriptFile, string message)
         {
-            if(level >= _minLogLevel)
+            if (level >= _minLogLevel)
             {
-                _writer.WriteLine(_body.GetLog(level, scriptFile, message));
+                try
+                {
+                    _rwLock.AcquireWriterLock(10000);
+                    _body.Update(level, scriptFile, message);
+                    Send().ConfigureAwait(false);
+                }
+                catch { }
+                _rwLock.ReleaseWriterLock();
             }
         }
 
@@ -52,13 +74,10 @@ namespace EnumRun.Log
         /// <param name="level"></param>
         /// <param name="scriptFile"></param>
         /// <param name="format"></param>
-        /// <param name="messages"></param>
-        public void Write(LogLevel level, string scriptFile, string format, params object[] messages)
+        /// <param name="args"></param>
+        public void Write(LogLevel level, string scriptFile, string format, params object[] args)
         {
-            if (level >= _minLogLevel)
-            {
-                _writer.WriteLine(_body.GetLog(level, scriptFile, string.Format(format, messages)));
-            }   
+            Write(level, scriptFile, string.Format(format, args));
         }
 
         /// <summary>
@@ -68,10 +87,7 @@ namespace EnumRun.Log
         /// <param name="message"></param>
         public void Write(LogLevel level, string message)
         {
-            if (level >= _minLogLevel)
-            {
-                _writer.WriteLine(_body.GetLog(level, null, message));
-            }   
+            Write(level, null, message);
         }
 
         /// <summary>
@@ -80,21 +96,45 @@ namespace EnumRun.Log
         /// <param name="message"></param>
         public void Write(string message)
         {
-            if (LogLevel.Info >= _minLogLevel)
-            {
-                _writer.WriteLine(_body.GetLog(LogLevel.Info, null, message));
-            }   
+            Write(LogLevel.Info, null, message);
         }
 
         #endregion
 
+        private async Task Send()
+        {
+            string json = _body.GetJson();
+
+            //  ファイル書き込み
+            _writer.WriteLine(json);
+
+            //  Logstash転送
+            if (_transport?.Enabled ?? false)
+            {
+                bool res = await _transport.SendAsync(json);
+
+                if (!res! && _collection != null)
+                {
+                    if (_liteDB == null)
+                    {
+                        string localDBPath = Path.Combine(
+                            Path.GetDirectoryName(_logPath),
+                            "Logstash_Test_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
+                        _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG);
+                        _collection.EnsureIndex(x => x.Serial, true);
+                    }
+                    _collection.Upsert(_body);
+                }
+            }
+        }
+
+
         public void Close()
         {
-            if (_writer != null)
-            {
-                Write("終了");
-                _writer.Dispose();
-            }
+            Write("終了");
+            if (_writer != null) { _writer.Dispose(); }
+            if (_liteDB != null) { _liteDB.Dispose(); }
         }
 
         #region Dispose
