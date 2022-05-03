@@ -65,12 +65,16 @@ namespace EnumRun
         /// </summary>
         public LogLevel? MinLogLevel { get; set; }
 
+        /*
         /// <summary>
         /// ログ転送先サーバ(Logstash)のサーバ
         /// 記述例⇒http://192.168.10.100:8080/
         /// </summary>
         public string LogstashServer { get; set; }
+        */
+        public ParamLogstash Logstash { get; set; }
 
+        /*
         /// <summary>
         /// ログ転送先のSyslogサーバのアドレス
         /// 例)
@@ -124,12 +128,18 @@ namespace EnumRun
         /// 無効化していた場合、クライアント証明書は使用できないので注意
         /// </summary>
         public bool? SyslogSslIgnoreCheck { get; set; }
+        */
+
+        public ParamSyslog Syslog { get; set; }
 
         /// <summary>
         /// プロセスごとに実行可能なスクリプトファイルの番号の範囲
         /// </summary>
-        public ProcessRanges Ranges { get; set; }
+        public ParamRanges Ranges { get; set; }
 
         #endregion
+
+
+
     }
 }

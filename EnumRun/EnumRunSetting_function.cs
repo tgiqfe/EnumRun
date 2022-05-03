@@ -23,7 +23,14 @@ namespace EnumRun
             this.DefaultOutput = false;
             this.RetentionPeriod = 0;
             this.MinLogLevel = LogLevel.Info;
+            /*
             this.LogstashServer = null;
+            */
+            this.Logstash = new ParamLogstash()
+            {
+                Server = null
+            };
+            /*
             this.SyslogServer = null;
             this.SyslogFacility = "user";
             this.SyslogFormat = "RFC3164";
@@ -33,7 +40,20 @@ namespace EnumRun
             this.SyslogSslCertPassword = null;
             this.SyslogSslCertFriendryName = "syslog";
             this.SyslogSslIgnoreCheck = false;
-            this.Ranges = new ProcessRanges()
+            */
+            this.Syslog = new ParamSyslog()
+            {
+                Server = null,
+                Facility = "user",
+                Format = "RFC3164",
+                SslEncrypt = false,
+                SslTimeout = 3000,
+                SslCertFile = null,
+                SslCertPassword = null,
+                SslCertFriendryName = null,
+                SslIgnoreCheck = false
+            };
+            this.Ranges = new ParamRanges()
             {
                 { "StartupScript", "0-9" },
                 { "ShutdownScript", "11-29" },
@@ -147,49 +167,57 @@ namespace EnumRun
                             case "minloglevel":
                                 setting.MinLogLevel = Enum.TryParse(val, ignoreCase: true, out LogLevel level) ? level : LogLevel.Info;
                                 break;
-                            case "logstashserver":
-                                setting.LogstashServer = val;
+
+                            /*
+                        case "logstashserver":
+                            setting.LogstashServer = val;
+                            break;
+                            */
+                            case "logstash":
+                                setting.Logstash = new ParamLogstash();
                                 break;
-                            case "syslogserver":
-                                setting.SyslogServer = val;
-                                break;
-                            case "syslogfacility":
-                                setting.SyslogFacility = val;
-                                break;
-                            case "syslogformat":
-                                setting.SyslogFormat = val;
-                                break;
-                            case "syslogsslencrypt":
-                                setting.SyslogSslEncrypt = !BooleanCandidate.IsFalse(val);
-                                break;
-                            case "syslogssltimeout":
-                                setting.SyslogSslTimeout = int.TryParse(val, out int num3) ? num3 : 0;
-                                break;
-                            case "syslogsslcertfile":
-                                setting.SyslogSslCertFile = val;
-                                break;
-                            case "syslogsslcertpassword":
-                                setting.SyslogSslCertPassword = val;
-                                break;
-                            case "syslogsslcertfriendryname":
-                                setting.SyslogSslCertFriendryName = val;
-                                break;
-                            case "syslogsslignorecheck":
-                                setting.SyslogSslIgnoreCheck = !BooleanCandidate.IsFalse(val);
-                                break;
+                            /*
+                        case "syslogserver":
+                            setting.SyslogServer = val;
+                            break;
+                        case "syslogfacility":
+                            setting.SyslogFacility = val;
+                            break;
+                        case "syslogformat":
+                            setting.SyslogFormat = val;
+                            break;
+                        case "syslogsslencrypt":
+                            setting.SyslogSslEncrypt = !BooleanCandidate.IsFalse(val);
+                            break;
+                        case "syslogssltimeout":
+                            setting.SyslogSslTimeout = int.TryParse(val, out int num3) ? num3 : 0;
+                            break;
+                        case "syslogsslcertfile":
+                            setting.SyslogSslCertFile = val;
+                            break;
+                        case "syslogsslcertpassword":
+                            setting.SyslogSslCertPassword = val;
+                            break;
+                        case "syslogsslcertfriendryname":
+                            setting.SyslogSslCertFriendryName = val;
+                            break;
+                        case "syslogsslignorecheck":
+                            setting.SyslogSslIgnoreCheck = !BooleanCandidate.IsFalse(val);
+                            break;
+                            */
                             case "ranges":
                             case "range":
-                                setting.Ranges = new ProcessRanges();
-                                string readLine2 = "";
-                                Regex pat_indent = new Regex(@"^(\s{2})+");
-                                while ((readLine2 = sr.ReadLine()) != null)
+                                setting.Ranges = new ParamRanges();
+                                string readLine4 = "";
+                                Regex pat_indent3 = new Regex(@"^(\s{2})+");
+                                while ((readLine4 = sr.ReadLine()) != null)
                                 {
-                                    if (!pat_indent.IsMatch(readLine2))
+                                    if (!pat_indent3.IsMatch(readLine4))
                                     {
                                         break;
                                     }
-                                    string key2 = readLine2.Substring(0, readLine2.IndexOf(":")).Trim();
-                                    string val2 = readLine2.Substring(readLine2.IndexOf(":") + 1).Trim();
+                                    string key2 = readLine4.Substring(0, readLine4.IndexOf(":")).Trim();
+                                    string val2 = readLine4.Substring(readLine4.IndexOf(":") + 1).Trim();
                                     setting.Ranges[key2] = val2;
                                 }
                                 break;
@@ -260,6 +288,11 @@ namespace EnumRun
                 sw.WriteLine($"DefaultOutput: {this.DefaultOutput}");
                 sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
                 sw.WriteLine($"MinLogLevel: {this.MinLogLevel}");
+                
+                sw.WriteLine("Logstash:");
+                sw.WriteLine($"  Server: {this.Logstash.Server}");
+
+                /*
                 sw.WriteLine($"LogstashServer: {this.LogstashServer}");
                 sw.WriteLine($"SyslogServer: {this.SyslogServer}");
                 sw.WriteLine($"SyslogFacility: {this.SyslogFacility}");
@@ -270,6 +303,18 @@ namespace EnumRun
                 sw.WriteLine($"SyslogSslCertPassword: {this.SyslogSslCertPassword}");
                 sw.WriteLine($"SyslogSslCertFriendryName: {this.SyslogSslCertFriendryName}");
                 sw.WriteLine($"SyslogSslIgnoreCheck: {this.SyslogSslIgnoreCheck}");
+                */
+                sw.WriteLine("Syslog:");
+                sw.WriteLine($"  Server: {this.Syslog.Server}");
+                sw.WriteLine($"  Facility: {this.Syslog.Facility}");
+                sw.WriteLine($"  Format: {this.Syslog.Format}");
+                sw.WriteLine($"  SslEncrypt: {this.Syslog.SslEncrypt}");
+                sw.WriteLine($"  SslTimeout: {this.Syslog.SslTimeout}");
+                sw.WriteLine($"  SslCertFile: {this.Syslog.SslCertFile}");
+                sw.WriteLine($"  SslCertPassword: {this.Syslog.SslCertPassword}");
+                sw.WriteLine($"  SslCertFriendryName: {this.Syslog.SslCertFriendryName}");
+                sw.WriteLine($"  SslIgnoreCheck: {this.Syslog.SslIgnoreCheck}");
+
                 sw.WriteLine("Ranges:");
                 foreach (var pair in this.Ranges)
                 {

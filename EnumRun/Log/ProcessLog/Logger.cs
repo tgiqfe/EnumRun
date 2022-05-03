@@ -35,14 +35,14 @@ namespace EnumRun.Log.ProcessLog
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
             _rwLock = new ReaderWriterLock();
 
-            if (!string.IsNullOrEmpty(setting.LogstashServer))
+            if (!string.IsNullOrEmpty(setting.Logstash.Server))
             {
-                _logstash = new LogstashTransport(setting.LogstashServer);
+                _logstash = new LogstashTransport(setting.Logstash.Server);
             }
-            if (!string.IsNullOrEmpty(setting.SyslogServer))
+            if (!string.IsNullOrEmpty(setting.Syslog.Server))
             {
                 _syslog = new SyslogTransport(setting);
-                _syslog.Facility = FacilityMapper.ToFacility(setting.SyslogFacility);
+                _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
                 _syslog.ProcId = Process.GetCurrentProcess().Id.ToString();
             }

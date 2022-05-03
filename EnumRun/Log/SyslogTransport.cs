@@ -70,8 +70,8 @@ namespace EnumRun.Log
         public SyslogTransport() { }
         public SyslogTransport(EnumRunSetting setting)
         {
-            var info = new ServerInfo(setting.SyslogServer);
-            Format format = FormatMapper.ToFormat(setting.SyslogFormat);
+            var info = new ServerInfo(setting.Syslog.Server);
+            Format format = FormatMapper.ToFormat(setting.Syslog.Format);
 
             if (info.Protocol == SyslogProtocol.UDP)
             {
@@ -83,16 +83,16 @@ namespace EnumRun.Log
                 if (new TcpConnect(info.Server, info.Port).TcpConnectSuccess)
                 {
                     this.Enabled = true;
-                    this.Sender = (setting.SyslogSslEncrypt ?? false) ?
+                    this.Sender = (setting.Syslog.SslEncrypt ?? false) ?
                         new SyslogTcpSenderTLS(
                             info.Server,
                             info.Port,
                             format,
-                            setting.SyslogSslTimeout,
-                            setting.SyslogSslCertFile,
-                            setting.SyslogSslCertPassword,
-                            setting.SyslogSslCertFriendryName,
-                            setting.SyslogSslIgnoreCheck ?? false) :
+                            setting.Syslog.SslTimeout,
+                            setting.Syslog.SslCertFile,
+                            setting.Syslog.SslCertPassword,
+                            setting.Syslog.SslCertFriendryName,
+                            setting.Syslog.SslIgnoreCheck ?? false) :
                         new SyslogTcpSender(
                             info.Server,
                             info.Port,
