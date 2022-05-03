@@ -17,7 +17,8 @@ namespace EnumRun.Log.ProcessLog
         private LogstashTransport _logstash = null;
         private SyslogTransport _syslog = null;
         private LiteDatabase _liteDB = null;
-        private ILiteCollection<LogBody> _collection = null;
+        private ILiteCollection<LogBody> _logstashCollection = null;
+        private ILiteCollection<LogBody> _syslogCollection = null;
 
         /// <summary>
         /// 引数無しコンストラクタ
@@ -117,27 +118,6 @@ namespace EnumRun.Log.ProcessLog
                 await _writer.WriteLineAsync(json);
 
                 //  Logstash転送
-                /*
-                if (_logstash?.Enabled ?? false)
-                {
-                    bool res = await _logstash.SendAsync(json);
-
-                    if (!res && _collection != null)
-                    {
-                        if (_liteDB == null)
-                        {
-                            string localDBPath = Path.Combine(
-                                Path.GetDirectoryName(_logPath),
-                                "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
-                            _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                            _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG);
-                            _collection.EnsureIndex(x => x.Serial, true);
-                        }
-                        _collection.Upsert(body);
-                    }
-                }
-                */
-                //  Logstash転送
                 //  事前の接続可否チェック(コンストラクタ実行時)で導通不可、あるいは、
                 //  ログ転送時のResponseでHTTPResult:200でない場合にローカルDBへ格納
                 bool res = false;
@@ -151,21 +131,17 @@ namespace EnumRun.Log.ProcessLog
                     {
                         string localDBPath = Path.Combine(
                             Path.GetDirectoryName(_logPath),
-                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
                         _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                        _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_logstash");
-                        _collection.EnsureIndex(x => x.Serial, true);
                     }
-                    _collection.Upsert(body);
+                    if (_logstashCollection == null)
+                    {
+                        _logstashCollection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_logstash");
+                        _logstashCollection.EnsureIndex(x => x.Serial, true);
+                    }
+                    _logstashCollection.Upsert(body);
                 }
 
-                //  Syslog転送
-                /*
-                if (_syslog?.Enabled ?? false)
-                {
-                    await _syslog.WriteAsync(body.Level, body.ScriptFile, body.Message);
-                }
-                */
                 //  Syslog転送
                 //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
                 if (_syslog?.Enabled ?? false)
@@ -178,12 +154,15 @@ namespace EnumRun.Log.ProcessLog
                     {
                         string localDBPath = Path.Combine(
                             Path.GetDirectoryName(_logPath),
-                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
                         _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                        _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_syslog");
-                        _collection.EnsureIndex(x => x.Serial, true);
                     }
-                    _collection.Upsert(body);
+                    if (_syslogCollection == null)
+                    {
+                        _syslogCollection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_syslog");
+                        _syslogCollection.EnsureIndex(x => x.Serial, true);
+                    }
+                    _syslogCollection.Upsert(body);
                 }
             }
             catch { }

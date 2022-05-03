@@ -74,7 +74,7 @@ namespace EnumRun
 
             public override string ToString()
             {
-                return string.Format("Server={0}", this.Server);
+                return string.Format("[ Server={0}] ", this.Server);
             }
         }
 
@@ -100,7 +100,7 @@ namespace EnumRun
             public override string ToString()
             {
                 return string.Format(
-                    "Server={0} Facility={1} Format={2} SslEncrypt={3} SslTimeout={4} SslCertFile={5} SslCertPassword={6} SslCertFriendryName={7} SslIgnoreCheck={8}",
+                    "[ Server={0} Facility={1} Format={2} SslEncrypt={3} SslTimeout={4} SslCertFile={5} SslCertPassword={6} SslCertFriendryName={7} SslIgnoreCheck={8} ]",
                     this.Server,
                     this.Facility,
                     this.Format,

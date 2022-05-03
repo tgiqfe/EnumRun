@@ -88,9 +88,10 @@ namespace EnumRun.Lib
                 {
                     var props =
                         this.GetType().GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-                    return "Runnable => False, " + string.Join(", ",
-                        props.Where(x => x.PropertyType == typeof(string)).
-                            Select(x => $"{x.Name} => {x.GetValue(this)}"));
+                    return "Runnable => False [ " +
+                        string.Join(" ", props.
+                            Where(x => x.PropertyType == typeof(string)).
+                            Select(x => $"{x.Name}={x.GetValue(this)}")) + " ]";
                 }
             }
         }
