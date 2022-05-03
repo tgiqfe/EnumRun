@@ -63,7 +63,7 @@ namespace EnumRun
         /// <summary>
         /// ログ出力の最低レベル
         /// </summary>
-        public LogLevel? MinLogLevel { get; set; }
+        public string MinLogLevel { get; set; }
 
         /// <summary>
         /// プロセスごとに実行可能なスクリプトファイルの番号の範囲

@@ -31,7 +31,7 @@ namespace EnumRun.Log.ProcessLog
                 $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log");
             TargetDirectory.CreateParent(_logPath);
 
-            _minLogLevel = setting.MinLogLevel ?? LogLevel.Info;
+            _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
             _rwLock = new ReaderWriterLock();
 

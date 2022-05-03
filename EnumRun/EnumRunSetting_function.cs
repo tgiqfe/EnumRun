@@ -22,7 +22,7 @@ namespace EnumRun
             this.RestTime = 60;
             this.DefaultOutput = false;
             this.RetentionPeriod = 0;
-            this.MinLogLevel = LogLevel.Info;
+            this.MinLogLevel = "info";
             this.Ranges = new ParamRanges()
             {
                 { "StartupScript", "0-9" },
@@ -126,110 +126,77 @@ namespace EnumRun
                     var lineList = new List<string>();
                     while ((readLine = sr.ReadLine()) != null) { lineList.Add(readLine); }
 
-                    PropertyInfo[] props = setting.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-                    Regex pat_indent = new Regex(@"^(\s{2})+");
-                    for (int i = 0; i < lineList.Count; i++)
-                    {
-                        string key = lineList[i].Substring(0, lineList[i].IndexOf(":")).Trim();
-                        string val = lineList[i].Substring(lineList[i].IndexOf(":") + 1).Trim();
-                        PropertyInfo prop = props.FirstOrDefault(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
-                        if (prop != null)
-                        {
-                            Type type = prop.PropertyType;
-                            if (type == typeof(string))
-                            {
-                                prop.SetValue(setting, val);
-                            }
-                            else if (type == typeof(int?))
-                            {
-                                prop.SetValue(setting, int.TryParse(val, out int tempInt) ? tempInt : null);
-                            }
-                            else if (type == typeof(bool?))
-                            {
-                                prop.SetValue(setting, !BooleanCandidate.IsNullableFalse(val));
-                            }
-                            else if (type == typeof(ParamRanges))
-                            {
-                                setting.Ranges = new ParamRanges();
-                                for (int j = i + 1; j < lineList.Count; j++)
-                                {
-                                    if (pat_indent.IsMatch(lineList[j]))
-                                    {
-                                        string key_sub = lineList[j].Substring(0, lineList[j].IndexOf(":")).Trim();
-                                        string val_sub = lineList[j].Substring(lineList[j].IndexOf(":") + 1).Trim();
-                                        setting.Ranges[key_sub] = val_sub;
-                                    }
-                                    else { i = j - 1; break; }
-                                }
-                            }
-                            else if (type == typeof(ParamLogstash))
-                            {
-                                setting.Logstash = new ParamLogstash();
-                                PropertyInfo[] props_sub = setting.Logstash.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-                                for (int j = i + 1; j < lineList.Count; j++)
-                                {
-                                    if (pat_indent.IsMatch(lineList[j]))
-                                    {
-                                        string key_sub = lineList[j].Substring(0, lineList[j].IndexOf(":")).Trim();
-                                        string val_sub = lineList[j].Substring(lineList[j].IndexOf(":") + 1).Trim();
-                                        PropertyInfo prop_sub = props_sub.FirstOrDefault(x => x.Name.Equals(key_sub, StringComparison.OrdinalIgnoreCase));
-                                        if(prop_sub != null)
-                                        {
-                                            Type type_sub = prop_sub.PropertyType;
-                                            if (type_sub == typeof(string))
-                                            {
-                                                prop_sub.SetValue(setting.Logstash, val_sub);
-                                            }
-                                            else if (type_sub == typeof(int?))
-                                            {
-                                                prop_sub.SetValue(setting.Logstash, int.TryParse(val_sub, out int tempInt) ? tempInt : null);
-                                            }
-                                            else if (type_sub == typeof(bool?))
-                                            {
-                                                prop_sub.SetValue(setting.Logstash, !BooleanCandidate.IsNullableFalse(val_sub));
-                                            }
-                                        }
-                                    }
-                                    else { i = j - 1; break; }
-                                }
-                            }
-                            else if (type == typeof(ParamSyslog))
-                            {
-                                setting.Syslog = new ParamSyslog();
-                                PropertyInfo[] props_sub = setting.Syslog.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-                                for (int j = i + 1; j < lineList.Count; j++)
-                                {
-                                    if (pat_indent.IsMatch(lineList[j]))
-                                    {
-                                        string key_sub = lineList[j].Substring(0, lineList[j].IndexOf(":")).Trim();
-                                        string val_sub = lineList[j].Substring(lineList[j].IndexOf(":") + 1).Trim();
-                                        PropertyInfo prop_sub = props_sub.FirstOrDefault(x => x.Name.Equals(key_sub, StringComparison.OrdinalIgnoreCase));
-                                        if (prop_sub != null)
-                                        {
-                                            Type type_sub = prop_sub.PropertyType;
-                                            if (type_sub == typeof(string))
-                                            {
-                                                prop_sub.SetValue(setting.Syslog, val_sub);
-                                            }
-                                            else if (type_sub == typeof(int?))
-                                            {
-                                                prop_sub.SetValue(setting.Syslog, int.TryParse(val_sub, out int tempInt) ? tempInt : null);
-                                            }
-                                            else if (type_sub == typeof(bool?))
-                                            {
-                                                prop_sub.SetValue(setting.Syslog, !BooleanCandidate.IsNullableFalse(val_sub));
-                                            }
-                                        }
-                                    }
-                                    else { i = j - 1; break; }
-                                }
-                            }
-                        }
-                    }
+                    int index = 0;
+                    setting = GetProperty(new EnumRunSetting(), lineList, ref index);
                 }
             }
 
             return setting;
+        }
+
+        private static T GetProperty<T>(T obj, List<string> list, ref int index, bool isRoot = true) where T : class
+        {
+            Regex pat_indent = new Regex(@"^(\s{2})+");
+            PropertyInfo[] props = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            for (int i = index; i < list.Count; i++, index++)
+            {
+                if (isRoot || pat_indent.IsMatch(list[i]))
+                {
+                    string key = list[i].Substring(0, list[i].IndexOf(":")).Trim();
+                    string val = list[i].Substring(list[i].IndexOf(":") + 1).Trim();
+                    PropertyInfo prop = props.FirstOrDefault(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
+                    if (prop != null)
+                    {
+                        Type type = prop.PropertyType;
+                        if (type == typeof(string))
+                        {
+                            prop.SetValue(obj, val);
+                        }
+                        else if (type == typeof(int?))
+                        {
+                            prop.SetValue(obj, int.TryParse(val, out int tempInt) ? tempInt : null);
+                        }
+                        else if (type == typeof(bool?))
+                        {
+                            prop.SetValue(obj, !BooleanCandidate.IsNullableFalse(val));
+                        }
+                        else if (type == typeof(ParamRanges))
+                        {
+                            var ranges = new ParamRanges();
+                            for (i++; i < list.Count; i++)
+                            {
+                                if (pat_indent.IsMatch(list[i]))
+                                {
+                                    key = list[i].Substring(0, list[i].IndexOf(":")).Trim();
+                                    val = list[i].Substring(list[i].IndexOf(":") + 1).Trim();
+                                    ranges[key] = val;
+                                }
+                                else
+                                {
+                                    i--;
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            (obj as EnumRunSetting).Ranges = ranges;
+                        }
+                        else if (type == typeof(ParamLogstash))
+                        {
+                            index++;
+                            (obj as EnumRunSetting).Logstash = GetProperty(new ParamLogstash(), list, ref index, false);
+                            i = --index;
+                        }
+                        else if (type == typeof(ParamSyslog))
+                        {
+                            index++;
+                            (obj as EnumRunSetting).Syslog = GetProperty(new ParamSyslog(), list, ref index, false);
+                            i = --index;
+                        }
+                    }
+                }
+                else { break; }
+            }
+            return obj;
         }
 
         #endregion
