@@ -1,4 +1,4 @@
-﻿namespace EnumRun.Log.ProcessLog
+﻿namespace EnumRun.Log
 {
     public enum LogLevel
     {

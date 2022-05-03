@@ -5,16 +5,19 @@ using EnumRun.Log;
 using EnumRun.Log.ProcessLog;
 
 
-bool initial = false;
+bool initial = true;
 if (initial)
 {
-    EnumRunSetting setting_def = new EnumRunSetting();
-    setting_def.SetDefault();
-    setting_def.Serialize("Setting.json");
-    setting_def.Serialize("Setting.txt");
+    EnumRunSetting setting_def = EnumRunSetting.Deserialize();
+    setting_def.Serialize(Item.CONFIG_JSON);
+    setting_def.Serialize(Item.CONFIG_TXT);
 
     LanguageCollection collection_def = LanguageCollection.Deserialize();
-    collection_def.Save("Language.json");
+    collection_def.Save(Item.LANG_JSON);
+
+    Console.WriteLine("設定ファイルを再セット");
+    Console.ReadLine();
+    Environment.Exit(0);
 }
 
 

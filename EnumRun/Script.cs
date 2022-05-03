@@ -3,6 +3,7 @@ using EnumRun.Log.ProcessLog;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using EnumRun.Log;
 
 namespace EnumRun
 {

@@ -5,14 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
+using EnumRun.Lib;
 
 namespace EnumRun.Log
 {
     internal class LogstashTransport
     {
-        /// <summary>
-        /// 接続テストに成功したかどうか
-        /// </summary>
         public bool Enabled { get; set; }
 
         private string _logstashServer { get; set; }
@@ -45,10 +43,10 @@ namespace EnumRun.Log
             this._port = int.Parse(tempPort);
 
             //  接続可否チェック
-            TestAsync().Wait();
-
-            if (this.Enabled)
+            if (new TcpConnect(_server, _port).TcpConnectSuccess)
             {
+                this.Enabled = true;
+
                 //  Requestの基本情報部分を事前生成
                 this._request = new HttpRequestMessage(HttpMethod.Post, _logstashServer);
             }
@@ -61,6 +59,10 @@ namespace EnumRun.Log
         /// <returns></returns>
         public async Task<bool> SendAsync(string json)
         {
+            if(_request == null)
+            {
+                return false;
+            }
             using (var client = new HttpClient())
             {
                 _request.Content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -70,6 +72,8 @@ namespace EnumRun.Log
             }
         }
 
+
+        /*
         /// <summary>
         /// LogstashサーバへTCP接続可否チェック
         /// </summary>
@@ -91,5 +95,6 @@ namespace EnumRun.Log
                 this.Enabled = client.Connected;
             }
         }
+        */
     }
 }
