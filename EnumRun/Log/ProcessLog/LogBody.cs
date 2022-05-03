@@ -8,7 +8,7 @@ namespace EnumRun.Log.ProcessLog
 {
     internal class LogBody
     {
-        public const string TAG = "EnumRun_ProcessLog";
+        public const string TAG = "ProcessLog";
 
         #region Serial parameter
 
