@@ -1,6 +1,9 @@
 ﻿using EnumRun.Lib;
 using System.Text;
 using LiteDB;
+using EnumRun.Log;
+using EnumRun.Log.Syslog;
+using System.Diagnostics;
 
 namespace EnumRun.Log.ProcessLog
 {
@@ -11,10 +14,10 @@ namespace EnumRun.Log.ProcessLog
         private StreamWriter _writer = null;
         private ReaderWriterLock _rwLock = null;
 
-        private LogstashTransport _transport = null;
+        private LogstashTransport _logstash = null;
+        private SyslogTransport _syslog = null;
         private LiteDatabase _liteDB = null;
         private ILiteCollection<LogBody> _collection = null;
-
 
         /// <summary>
         /// 引数無しコンストラクタ
@@ -34,7 +37,14 @@ namespace EnumRun.Log.ProcessLog
 
             if (!string.IsNullOrEmpty(setting.LogstashServer))
             {
-                _transport = new LogstashTransport(setting.LogstashServer);
+                _logstash = new LogstashTransport(setting.LogstashServer);
+            }
+            if (!string.IsNullOrEmpty(setting.SyslogServer))
+            {
+                _syslog = new SyslogTransport(setting);
+                _syslog.Facility = FacilityMapper.ToFacility(setting.SyslogFacility);
+                _syslog.AppName = Item.ProcessName;
+                _syslog.ProcId = Process.GetCurrentProcess().Id.ToString();
             }
 
             Write("開始");
@@ -107,23 +117,73 @@ namespace EnumRun.Log.ProcessLog
                 await _writer.WriteLineAsync(json);
 
                 //  Logstash転送
-                if (_transport?.Enabled ?? false)
+                /*
+                if (_logstash?.Enabled ?? false)
                 {
-                    bool res = await _transport.SendAsync(json);
+                    bool res = await _logstash.SendAsync(json);
 
-                    if (!res! && _collection != null)
+                    if (!res && _collection != null)
                     {
                         if (_liteDB == null)
                         {
                             string localDBPath = Path.Combine(
                                 Path.GetDirectoryName(_logPath),
-                                "Logstash_Test_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                                "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
                             _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
                             _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG);
                             _collection.EnsureIndex(x => x.Serial, true);
                         }
                         _collection.Upsert(body);
                     }
+                }
+                */
+                //  Logstash転送
+                //  事前の接続可否チェック(コンストラクタ実行時)で導通不可、あるいは、
+                //  ログ転送時のResponseでHTTPResult:200でない場合にローカルDBへ格納
+                bool res = false;
+                if (_logstash?.Enabled ?? false)
+                {
+                    res = await _logstash.SendAsync(json);
+                }
+                if (!res)
+                {
+                    if (_liteDB == null)
+                    {
+                        string localDBPath = Path.Combine(
+                            Path.GetDirectoryName(_logPath),
+                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
+                        _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_logstash");
+                        _collection.EnsureIndex(x => x.Serial, true);
+                    }
+                    _collection.Upsert(body);
+                }
+
+                //  Syslog転送
+                /*
+                if (_syslog?.Enabled ?? false)
+                {
+                    await _syslog.WriteAsync(body.Level, body.ScriptFile, body.Message);
+                }
+                */
+                //  Syslog転送
+                //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
+                if (_syslog?.Enabled ?? false)
+                {
+                    await _syslog.WriteAsync(body.Level, body.ScriptFile, body.Message);
+                }
+                else
+                {
+                    if (_liteDB == null)
+                    {
+                        string localDBPath = Path.Combine(
+                            Path.GetDirectoryName(_logPath),
+                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
+                        _collection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_syslog");
+                        _collection.EnsureIndex(x => x.Serial, true);
+                    }
+                    _collection.Upsert(body);
                 }
             }
             catch { }
@@ -147,6 +207,7 @@ namespace EnumRun.Log.ProcessLog
 
             if (_writer != null) { _writer.Dispose(); }
             if (_liteDB != null) { _liteDB.Dispose(); }
+            if (_syslog != null) { _syslog.Dispose(); }
         }
 
         #region Dispose

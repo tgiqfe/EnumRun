@@ -8,8 +8,9 @@ using System.Text.RegularExpressions;
 using System.Net.Sockets;
 using EnumRun.Log;
 using EnumRun.Log.ProcessLog;
+using EnumRun.Lib;
 
-namespace EnumRun.Log.Syslog
+namespace EnumRun.Log
 {
     internal class SyslogTransport : IDisposable
     {
@@ -56,6 +57,8 @@ namespace EnumRun.Log.Syslog
 
         #endregion
 
+        public bool Enabled { get; set; }
+
         public SyslogSender Sender { get; set; }
         public Facility Facility { get; set; }
         public Severity Severity { get; set; }
@@ -68,13 +71,34 @@ namespace EnumRun.Log.Syslog
         public SyslogTransport(EnumRunSetting setting)
         {
             var info = new ServerInfo(setting.SyslogServer);
-            SyslogFormat format = setting.SyslogFormat ?? SyslogFormat.RFC3164;
+            Format format = FormatMapper.ToFormat(setting.SyslogFormat);
 
-            this.Sender = info.Protocol == SyslogProtocol.UDP ?
-                new SyslogUdpSender(info.Server, info.Port, format) :
-                setting.SyslogSslEncrypt ?
-                    new SyslogTcpSenderTLS(info.Server, info.Port, format, setting.SyslogSslTimeout, setting.SyslogSslCertFile, setting.SyslogSslCertPassword, setting.SyslogSslCertFriendryName, setting.SyslogSslIgnoreCheck) :
-                    new SyslogTcpSender(info.Server, info.Port, format);
+            if (info.Protocol == SyslogProtocol.UDP)
+            {
+                this.Enabled = true;
+                this.Sender = new SyslogUdpSender(info.Server, info.Port, format);
+            }
+            else
+            {
+                if (new TcpConnect(info.Server, info.Port).TcpConnectSuccess)
+                {
+                    this.Enabled = true;
+                    this.Sender = (setting.SyslogSslEncrypt ?? false) ?
+                        new SyslogTcpSenderTLS(
+                            info.Server,
+                            info.Port,
+                            format,
+                            setting.SyslogSslTimeout,
+                            setting.SyslogSslCertFile,
+                            setting.SyslogSslCertPassword,
+                            setting.SyslogSslCertFriendryName,
+                            setting.SyslogSslIgnoreCheck ?? false) :
+                        new SyslogTcpSender(
+                            info.Server,
+                            info.Port,
+                            format);
+                }
+            }
         }
 
         #region Write
@@ -119,6 +143,11 @@ namespace EnumRun.Log.Syslog
                     structuredDataParams));
         }
 
+        public void Write(LogLevel level, string msgId, string message)
+        {
+            Write(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
+        }
+
         public async Task WriteAsync(string message)
         {
             await WriteAsync(DateTime.Now, this.Facility, this.Severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
@@ -157,6 +186,11 @@ namespace EnumRun.Log.Syslog
                     msgId,
                     message,
                     structuredDataParams));
+        }
+
+        public async Task WriteAsync(LogLevel level, string msgId, string message)
+        {
+            await WriteAsync(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
         }
 
         #endregion

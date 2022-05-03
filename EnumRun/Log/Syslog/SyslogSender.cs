@@ -9,17 +9,17 @@ namespace EnumRun.Log.Syslog
     internal class SyslogSender : IDisposable
     {
         protected const int _defaultPort = 514;
-        protected static readonly SyslogFormat _defaultFormat = SyslogFormat.RFC3164;
+        protected static readonly Format _defaultFormat = Format.RFC3164;
         protected const int _defaultTimeout = 3000;
 
         public virtual string Server { get; set; }
         public virtual int Port { get; set; }
-        public virtual SyslogFormat Format { get; set; }
+        public virtual Format Format { get; set; }
 
         public virtual void Send(SyslogMessage message) { Send(message, Format); }
-        public virtual void Send(SyslogMessage message, SyslogFormat format) { }
+        public virtual void Send(SyslogMessage message, Format format) { }
         public virtual async Task SendAsync(SyslogMessage message) { await SendAsync(message, Format); }
-        public virtual async Task SendAsync(SyslogMessage message, SyslogFormat format) { await Task.Run(() => { }); }
+        public virtual async Task SendAsync(SyslogMessage message, Format format) { await Task.Run(() => { }); }
         public virtual void Close() { }
 
         #region Dispose

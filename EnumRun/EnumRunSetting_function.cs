@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using EnumRun.Log;
-using EnumRun.Log.Syslog;
 
 namespace EnumRun
 {
@@ -27,7 +26,7 @@ namespace EnumRun
             this.LogstashServer = null;
             this.SyslogServer = null;
             this.SyslogFacility = "user";
-            this.SyslogFormat = Log.Syslog.SyslogFormat.RFC3164;
+            this.SyslogFormat = "RFC3164";
             this.SyslogSslEncrypt = false;
             this.SyslogSslTimeout = 3000;
             this.SyslogSslCertFile = null;
@@ -151,6 +150,33 @@ namespace EnumRun
                             case "logstashserver":
                                 setting.LogstashServer = val;
                                 break;
+                            case "syslogserver":
+                                setting.SyslogServer = val;
+                                break;
+                            case "syslogfacility":
+                                setting.SyslogFacility = val;
+                                break;
+                            case "syslogformat":
+                                setting.SyslogFormat = val;
+                                break;
+                            case "syslogsslencrypt":
+                                setting.SyslogSslEncrypt = !BooleanCandidate.IsFalse(val);
+                                break;
+                            case "syslogssltimeout":
+                                setting.SyslogSslTimeout = int.TryParse(val, out int num3) ? num3 : 0;
+                                break;
+                            case "syslogsslcertfile":
+                                setting.SyslogSslCertFile = val;
+                                break;
+                            case "syslogsslcertpassword":
+                                setting.SyslogSslCertPassword = val;
+                                break;
+                            case "syslogsslcertfriendryname":
+                                setting.SyslogSslCertFriendryName = val;
+                                break;
+                            case "syslogsslignorecheck":
+                                setting.SyslogSslIgnoreCheck = !BooleanCandidate.IsFalse(val);
+                                break;
                             case "ranges":
                             case "range":
                                 setting.Ranges = new ProcessRanges();
@@ -162,8 +188,8 @@ namespace EnumRun
                                     {
                                         break;
                                     }
-                                    string key2 = readLine2.Substring(0, readLine2.IndexOf(":"));
-                                    string val2 = readLine2.Substring(readLine2.IndexOf(":") + 1);
+                                    string key2 = readLine2.Substring(0, readLine2.IndexOf(":")).Trim();
+                                    string val2 = readLine2.Substring(readLine2.IndexOf(":") + 1).Trim();
                                     setting.Ranges[key2] = val2;
                                 }
                                 break;
@@ -235,6 +261,15 @@ namespace EnumRun
                 sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
                 sw.WriteLine($"MinLogLevel: {this.MinLogLevel}");
                 sw.WriteLine($"LogstashServer: {this.LogstashServer}");
+                sw.WriteLine($"SyslogServer: {this.SyslogServer}");
+                sw.WriteLine($"SyslogFacility: {this.SyslogFacility}");
+                sw.WriteLine($"SyslogFormat: {this.SyslogFormat}");
+                sw.WriteLine($"SyslogSslEncrypt: {this.SyslogSslEncrypt}");
+                sw.WriteLine($"SyslogSslTimeout: {this.SyslogSslTimeout}");
+                sw.WriteLine($"SyslogSslCertFile: {this.SyslogSslCertFile}");
+                sw.WriteLine($"SyslogSslCertPassword: {this.SyslogSslCertPassword}");
+                sw.WriteLine($"SyslogSslCertFriendryName: {this.SyslogSslCertFriendryName}");
+                sw.WriteLine($"SyslogSslIgnoreCheck: {this.SyslogSslIgnoreCheck}");
                 sw.WriteLine("Ranges:");
                 foreach (var pair in this.Ranges)
                 {

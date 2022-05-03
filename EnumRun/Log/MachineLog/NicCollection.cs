@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Net.NetworkInformation;
 using System.Management;
 
-namespace EnumRun.Log
+namespace EnumRun.Log.MachineLog
 {
     internal class NicCollection : List<Nic>
     {

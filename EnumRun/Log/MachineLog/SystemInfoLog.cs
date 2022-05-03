@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace EnumRun.Log
+namespace EnumRun.Log.MachineLog
 {
     internal class SystemInfoLog
     {

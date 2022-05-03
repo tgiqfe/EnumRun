@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnumRun.Log.Syslog
 {
-    internal enum SyslogFormat
+    internal enum Format
     {
         RFC3164,
         RFC5424,

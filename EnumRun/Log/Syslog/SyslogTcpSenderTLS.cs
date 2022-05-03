@@ -33,8 +33,8 @@ namespace EnumRun.Log.Syslog
         public SyslogTcpSenderTLS() { }
         public SyslogTcpSenderTLS(string server, bool octetCouting = true) : this(server, _defaultPort, _defaultFormat, _defaultTimeout, null, null, null, false, octetCouting) { }
         public SyslogTcpSenderTLS(string server, int port, bool octetCouting = true) : this(server, port, _defaultFormat, _defaultTimeout, null, null, null, false, octetCouting) { }
-        public SyslogTcpSenderTLS(string server, int port, SyslogFormat format, bool octetCounting = true) : this(server, port, format, _defaultTimeout, null, null, null, false, octetCounting) { }
-        public SyslogTcpSenderTLS(string server, int port, SyslogFormat format, int? timeout, string certFile, string certPassword, string certFriendryName, bool ignoreCheck, bool octetCouting = true)
+        public SyslogTcpSenderTLS(string server, int port, Format format, bool octetCounting = true) : this(server, port, format, _defaultTimeout, null, null, null, false, octetCounting) { }
+        public SyslogTcpSenderTLS(string server, int port, Format format, int? timeout, string certFile, string certPassword, string certFriendryName, bool ignoreCheck, bool octetCouting = true)
         {
             this.Server = server;
             this.Port = port;
@@ -146,7 +146,7 @@ namespace EnumRun.Log.Syslog
             if (_client != null) { _client.Dispose(); }
         }
 
-        public override void Send(SyslogMessage message, SyslogFormat format)
+        public override void Send(SyslogMessage message, Format format)
         {
             if (_stream == null || !_stream.CanWrite)
             {
@@ -158,8 +158,8 @@ namespace EnumRun.Log.Syslog
             {
                 byte[] datagram = format switch
                 {
-                    SyslogFormat.RFC3164 => SyslogSerializer.GetRfc3624(message),
-                    SyslogFormat.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
+                    Format.RFC3164 => SyslogSerializer.GetRfc3624(message),
+                    Format.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
                     _ => null,
                 };
 
@@ -185,7 +185,7 @@ namespace EnumRun.Log.Syslog
             }
         }
 
-        public override async Task SendAsync(SyslogMessage message, SyslogFormat format)
+        public override async Task SendAsync(SyslogMessage message, Format format)
         {
             if (_stream == null)
             {
@@ -196,8 +196,8 @@ namespace EnumRun.Log.Syslog
             {
                 byte[] datagram = format switch
                 {
-                    SyslogFormat.RFC3164 => SyslogSerializer.GetRfc3624(message),
-                    SyslogFormat.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
+                    Format.RFC3164 => SyslogSerializer.GetRfc3624(message),
+                    Format.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
                     _ => null,
                 };
 

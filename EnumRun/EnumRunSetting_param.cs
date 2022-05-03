@@ -88,12 +88,12 @@ namespace EnumRun
         /// Syslog転送時のフォーマット
         /// RFC3164、RFC5424の2種類から選択可能。無指定の場合はRFC3164
         /// </summary>
-        public SyslogFormat? SyslogFormat { get; set; }
+        public string SyslogFormat { get; set; }
 
         /// <summary>
         /// TCP接続時、暗号化通信を有効にするかどうか
         /// </summary>
-        public bool SyslogSslEncrypt { get; set; }
+        public bool? SyslogSslEncrypt { get; set; }
 
         /// <summary>
         /// 暗号化通信時の接続施行タイムアウト時間(ミリ秒)
@@ -123,7 +123,7 @@ namespace EnumRun
         /// TCP接続で暗号化通信時、証明書チェックを無効化するかどうか
         /// 無効化していた場合、クライアント証明書は使用できないので注意
         /// </summary>
-        public bool SyslogSslIgnoreCheck { get; set; }
+        public bool? SyslogSslIgnoreCheck { get; set; }
 
         /// <summary>
         /// プロセスごとに実行可能なスクリプトファイルの番号の範囲
