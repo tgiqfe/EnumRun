@@ -65,77 +65,20 @@ namespace EnumRun
         /// </summary>
         public LogLevel? MinLogLevel { get; set; }
 
-        /*
-        /// <summary>
-        /// ログ転送先サーバ(Logstash)のサーバ
-        /// 記述例⇒http://192.168.10.100:8080/
-        /// </summary>
-        public string LogstashServer { get; set; }
-        */
-        public ParamLogstash Logstash { get; set; }
-
-        /*
-        /// <summary>
-        /// ログ転送先のSyslogサーバのアドレス
-        /// 例)
-        /// udp://192.168.1.100:514
-        /// tcp://192.168.1.100:514
-        /// </summary>
-        public string SyslogServer { get; set; }
-
-        /// <summary>
-        /// アプリケーション内で送信するSyslogファシリティ
-        /// </summary>
-        public string SyslogFacility { get; set; }
-
-        /// <summary>
-        /// Syslog転送時のフォーマット
-        /// RFC3164、RFC5424の2種類から選択可能。無指定の場合はRFC3164
-        /// </summary>
-        public string SyslogFormat { get; set; }
-
-        /// <summary>
-        /// TCP接続時、暗号化通信を有効にするかどうか
-        /// </summary>
-        public bool? SyslogSslEncrypt { get; set; }
-
-        /// <summary>
-        /// 暗号化通信時の接続施行タイムアウト時間(ミリ秒)
-        /// </summary>
-        public int? SyslogSslTimeout { get; set; }
-
-        /// <summary>
-        /// 暗号化通信時に使用する、クライアント証明書ファイルへのパス
-        /// (.pfxファイル)
-        /// </summary>
-        public string SyslogSslCertFile { get; set; }
-
-        /// <summary>
-        /// クライアント証明書ファイルのパスワード(平文)
-        /// </summary>
-        public string SyslogSslCertPassword { get; set; }
-
-        /// <summary>
-        /// 証明書ストア内で使用する証明書のフレンドリ名
-        /// パスワード記載したくない場合はこちらを使用することを推奨
-        /// 証明書ストアは、[現在のユーザー][ローカルコンピュータ]の両方の、[個人]ストア配下を参照し、
-        /// フレンドリ名が一致する証明書を使用
-        /// </summary>
-        public string SyslogSslCertFriendryName { get; set; }
-
-        /// <summary>
-        /// TCP接続で暗号化通信時、証明書チェックを無効化するかどうか
-        /// 無効化していた場合、クライアント証明書は使用できないので注意
-        /// </summary>
-        public bool? SyslogSslIgnoreCheck { get; set; }
-        */
-
-        public ParamSyslog Syslog { get; set; }
-
         /// <summary>
         /// プロセスごとに実行可能なスクリプトファイルの番号の範囲
         /// </summary>
         public ParamRanges Ranges { get; set; }
+
+        /// <summary>
+        /// Lostash設定情報
+        /// </summary>
+        public ParamLogstash Logstash { get; set; }
+
+        /// <summary>
+        /// Syslog設定情報
+        /// </summary>
+        public ParamSyslog Syslog { get; set; }
 
         #endregion
 

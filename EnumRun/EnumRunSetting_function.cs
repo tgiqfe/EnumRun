@@ -23,24 +23,17 @@ namespace EnumRun
             this.DefaultOutput = false;
             this.RetentionPeriod = 0;
             this.MinLogLevel = LogLevel.Info;
-            /*
-            this.LogstashServer = null;
-            */
+            this.Ranges = new ParamRanges()
+            {
+                { "StartupScript", "0-9" },
+                { "ShutdownScript", "11-29" },
+                { "LogonScript", "81-89" },
+                { "LogoffScript", "91-99" },
+            };
             this.Logstash = new ParamLogstash()
             {
                 Server = null
             };
-            /*
-            this.SyslogServer = null;
-            this.SyslogFacility = "user";
-            this.SyslogFormat = "RFC3164";
-            this.SyslogSslEncrypt = false;
-            this.SyslogSslTimeout = 3000;
-            this.SyslogSslCertFile = null;
-            this.SyslogSslCertPassword = null;
-            this.SyslogSslCertFriendryName = "syslog";
-            this.SyslogSslIgnoreCheck = false;
-            */
             this.Syslog = new ParamSyslog()
             {
                 Server = null,
@@ -52,13 +45,6 @@ namespace EnumRun
                 SslCertPassword = null,
                 SslCertFriendryName = null,
                 SslIgnoreCheck = false
-            };
-            this.Ranges = new ParamRanges()
-            {
-                { "StartupScript", "0-9" },
-                { "ShutdownScript", "11-29" },
-                { "LogonScript", "81-89" },
-                { "LogoffScript", "91-99" },
             };
         }
 
@@ -167,7 +153,22 @@ namespace EnumRun
                             case "minloglevel":
                                 setting.MinLogLevel = Enum.TryParse(val, ignoreCase: true, out LogLevel level) ? level : LogLevel.Info;
                                 break;
-
+                            case "ranges":
+                            case "range":
+                                setting.Ranges = new ParamRanges();
+                                string readLine4 = "";
+                                Regex pat_indent3 = new Regex(@"^(\s{2})+");
+                                while ((readLine4 = sr.ReadLine()) != null)
+                                {
+                                    if (!pat_indent3.IsMatch(readLine4))
+                                    {
+                                        break;
+                                    }
+                                    string key2 = readLine4.Substring(0, readLine4.IndexOf(":")).Trim();
+                                    string val2 = readLine4.Substring(readLine4.IndexOf(":") + 1).Trim();
+                                    setting.Ranges[key2] = val2;
+                                }
+                                break;
                             /*
                         case "logstashserver":
                             setting.LogstashServer = val;
@@ -205,22 +206,7 @@ namespace EnumRun
                             setting.SyslogSslIgnoreCheck = !BooleanCandidate.IsFalse(val);
                             break;
                             */
-                            case "ranges":
-                            case "range":
-                                setting.Ranges = new ParamRanges();
-                                string readLine4 = "";
-                                Regex pat_indent3 = new Regex(@"^(\s{2})+");
-                                while ((readLine4 = sr.ReadLine()) != null)
-                                {
-                                    if (!pat_indent3.IsMatch(readLine4))
-                                    {
-                                        break;
-                                    }
-                                    string key2 = readLine4.Substring(0, readLine4.IndexOf(":")).Trim();
-                                    string val2 = readLine4.Substring(readLine4.IndexOf(":") + 1).Trim();
-                                    setting.Ranges[key2] = val2;
-                                }
-                                break;
+
                         }
                     }
                 }
@@ -288,22 +274,13 @@ namespace EnumRun
                 sw.WriteLine($"DefaultOutput: {this.DefaultOutput}");
                 sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
                 sw.WriteLine($"MinLogLevel: {this.MinLogLevel}");
-                
+                sw.WriteLine("Ranges:");
+                foreach (var pair in this.Ranges)
+                {
+                    sw.WriteLine($"  {pair.Key}: {pair.Value}");
+                }
                 sw.WriteLine("Logstash:");
                 sw.WriteLine($"  Server: {this.Logstash.Server}");
-
-                /*
-                sw.WriteLine($"LogstashServer: {this.LogstashServer}");
-                sw.WriteLine($"SyslogServer: {this.SyslogServer}");
-                sw.WriteLine($"SyslogFacility: {this.SyslogFacility}");
-                sw.WriteLine($"SyslogFormat: {this.SyslogFormat}");
-                sw.WriteLine($"SyslogSslEncrypt: {this.SyslogSslEncrypt}");
-                sw.WriteLine($"SyslogSslTimeout: {this.SyslogSslTimeout}");
-                sw.WriteLine($"SyslogSslCertFile: {this.SyslogSslCertFile}");
-                sw.WriteLine($"SyslogSslCertPassword: {this.SyslogSslCertPassword}");
-                sw.WriteLine($"SyslogSslCertFriendryName: {this.SyslogSslCertFriendryName}");
-                sw.WriteLine($"SyslogSslIgnoreCheck: {this.SyslogSslIgnoreCheck}");
-                */
                 sw.WriteLine("Syslog:");
                 sw.WriteLine($"  Server: {this.Syslog.Server}");
                 sw.WriteLine($"  Facility: {this.Syslog.Facility}");
@@ -314,12 +291,6 @@ namespace EnumRun
                 sw.WriteLine($"  SslCertPassword: {this.Syslog.SslCertPassword}");
                 sw.WriteLine($"  SslCertFriendryName: {this.Syslog.SslCertFriendryName}");
                 sw.WriteLine($"  SslIgnoreCheck: {this.Syslog.SslIgnoreCheck}");
-
-                sw.WriteLine("Ranges:");
-                foreach (var pair in this.Ranges)
-                {
-                    sw.WriteLine($"  {pair.Key}: {pair.Value}");
-                }
             }
         }
 
