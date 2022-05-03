@@ -120,93 +120,110 @@ namespace EnumRun
             using (FileReader fr = new FileReader(info))
             {
                 fr.Read(info);
-                using (StringReader sr = new StringReader(fr.Text))
+                using (var sr = new StringReader(fr.Text))
                 {
                     string readLine = "";
-                    while ((readLine = sr.ReadLine()) != null)
-                    {
-                        string key = readLine.Substring(0, readLine.IndexOf(":")).Trim();
-                        string val = readLine.Substring(readLine.IndexOf(":") + 1).Trim();
-                        switch (key.ToLower())
-                        {
-                            case "filespath":
-                            case "filepath":
-                                setting.FilesPath = val;
-                                break;
-                            case "logspath":
-                            case "logpath":
-                                setting.LogsPath = val;
-                                break;
-                            case "outputspath":
-                            case "outputpath":
-                                setting.OutputPath = val;
-                                break;
-                            case "resttime":
-                                setting.RestTime = int.TryParse(val, out int num1) ? num1 : 0;
-                                break;
-                            case "defaultoutput":
-                                setting.DefaultOutput = !BooleanCandidate.IsFalse(val);
-                                break;
-                            case "retentionperiod":
-                                setting.RetentionPeriod = int.TryParse(val, out int num2) ? num2 : 0;
-                                break;
-                            case "minloglevel":
-                                setting.MinLogLevel = Enum.TryParse(val, ignoreCase: true, out LogLevel level) ? level : LogLevel.Info;
-                                break;
-                            case "ranges":
-                            case "range":
-                                setting.Ranges = new ParamRanges();
-                                string readLine4 = "";
-                                Regex pat_indent3 = new Regex(@"^(\s{2})+");
-                                while ((readLine4 = sr.ReadLine()) != null)
-                                {
-                                    if (!pat_indent3.IsMatch(readLine4))
-                                    {
-                                        break;
-                                    }
-                                    string key2 = readLine4.Substring(0, readLine4.IndexOf(":")).Trim();
-                                    string val2 = readLine4.Substring(readLine4.IndexOf(":") + 1).Trim();
-                                    setting.Ranges[key2] = val2;
-                                }
-                                break;
-                            /*
-                        case "logstashserver":
-                            setting.LogstashServer = val;
-                            break;
-                            */
-                            case "logstash":
-                                setting.Logstash = new ParamLogstash();
-                                break;
-                            /*
-                        case "syslogserver":
-                            setting.SyslogServer = val;
-                            break;
-                        case "syslogfacility":
-                            setting.SyslogFacility = val;
-                            break;
-                        case "syslogformat":
-                            setting.SyslogFormat = val;
-                            break;
-                        case "syslogsslencrypt":
-                            setting.SyslogSslEncrypt = !BooleanCandidate.IsFalse(val);
-                            break;
-                        case "syslogssltimeout":
-                            setting.SyslogSslTimeout = int.TryParse(val, out int num3) ? num3 : 0;
-                            break;
-                        case "syslogsslcertfile":
-                            setting.SyslogSslCertFile = val;
-                            break;
-                        case "syslogsslcertpassword":
-                            setting.SyslogSslCertPassword = val;
-                            break;
-                        case "syslogsslcertfriendryname":
-                            setting.SyslogSslCertFriendryName = val;
-                            break;
-                        case "syslogsslignorecheck":
-                            setting.SyslogSslIgnoreCheck = !BooleanCandidate.IsFalse(val);
-                            break;
-                            */
+                    var lineList = new List<string>();
+                    while ((readLine = sr.ReadLine()) != null) { lineList.Add(readLine); }
 
+                    PropertyInfo[] props = setting.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                    Regex pat_indent = new Regex(@"^(\s{2})+");
+                    for (int i = 0; i < lineList.Count; i++)
+                    {
+                        string key = lineList[i].Substring(0, lineList[i].IndexOf(":")).Trim();
+                        string val = lineList[i].Substring(lineList[i].IndexOf(":") + 1).Trim();
+                        PropertyInfo prop = props.FirstOrDefault(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
+                        if (prop != null)
+                        {
+                            Type type = prop.PropertyType;
+                            if (type == typeof(string))
+                            {
+                                prop.SetValue(setting, val);
+                            }
+                            else if (type == typeof(int?))
+                            {
+                                prop.SetValue(setting, int.TryParse(val, out int tempInt) ? tempInt : null);
+                            }
+                            else if (type == typeof(bool?))
+                            {
+                                prop.SetValue(setting, !BooleanCandidate.IsNullableFalse(val));
+                            }
+                            else if (type == typeof(ParamRanges))
+                            {
+                                setting.Ranges = new ParamRanges();
+                                for (int j = i + 1; j < lineList.Count; j++)
+                                {
+                                    if (pat_indent.IsMatch(lineList[j]))
+                                    {
+                                        string key_sub = lineList[j].Substring(0, lineList[j].IndexOf(":")).Trim();
+                                        string val_sub = lineList[j].Substring(lineList[j].IndexOf(":") + 1).Trim();
+                                        setting.Ranges[key_sub] = val_sub;
+                                    }
+                                    else { i = j - 1; break; }
+                                }
+                            }
+                            else if (type == typeof(ParamLogstash))
+                            {
+                                setting.Logstash = new ParamLogstash();
+                                PropertyInfo[] props_sub = setting.Logstash.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                                for (int j = i + 1; j < lineList.Count; j++)
+                                {
+                                    if (pat_indent.IsMatch(lineList[j]))
+                                    {
+                                        string key_sub = lineList[j].Substring(0, lineList[j].IndexOf(":")).Trim();
+                                        string val_sub = lineList[j].Substring(lineList[j].IndexOf(":") + 1).Trim();
+                                        PropertyInfo prop_sub = props_sub.FirstOrDefault(x => x.Name.Equals(key_sub, StringComparison.OrdinalIgnoreCase));
+                                        if(prop_sub != null)
+                                        {
+                                            Type type_sub = prop_sub.PropertyType;
+                                            if (type_sub == typeof(string))
+                                            {
+                                                prop_sub.SetValue(setting.Logstash, val_sub);
+                                            }
+                                            else if (type_sub == typeof(int?))
+                                            {
+                                                prop_sub.SetValue(setting.Logstash, int.TryParse(val_sub, out int tempInt) ? tempInt : null);
+                                            }
+                                            else if (type_sub == typeof(bool?))
+                                            {
+                                                prop_sub.SetValue(setting.Logstash, !BooleanCandidate.IsNullableFalse(val_sub));
+                                            }
+                                        }
+                                    }
+                                    else { i = j - 1; break; }
+                                }
+                            }
+                            else if (type == typeof(ParamSyslog))
+                            {
+                                setting.Syslog = new ParamSyslog();
+                                PropertyInfo[] props_sub = setting.Syslog.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                                for (int j = i + 1; j < lineList.Count; j++)
+                                {
+                                    if (pat_indent.IsMatch(lineList[j]))
+                                    {
+                                        string key_sub = lineList[j].Substring(0, lineList[j].IndexOf(":")).Trim();
+                                        string val_sub = lineList[j].Substring(lineList[j].IndexOf(":") + 1).Trim();
+                                        PropertyInfo prop_sub = props_sub.FirstOrDefault(x => x.Name.Equals(key_sub, StringComparison.OrdinalIgnoreCase));
+                                        if (prop_sub != null)
+                                        {
+                                            Type type_sub = prop_sub.PropertyType;
+                                            if (type_sub == typeof(string))
+                                            {
+                                                prop_sub.SetValue(setting.Syslog, val_sub);
+                                            }
+                                            else if (type_sub == typeof(int?))
+                                            {
+                                                prop_sub.SetValue(setting.Syslog, int.TryParse(val_sub, out int tempInt) ? tempInt : null);
+                                            }
+                                            else if (type_sub == typeof(bool?))
+                                            {
+                                                prop_sub.SetValue(setting.Syslog, !BooleanCandidate.IsNullableFalse(val_sub));
+                                            }
+                                        }
+                                    }
+                                    else { i = j - 1; break; }
+                                }
+                            }
                         }
                     }
                 }
