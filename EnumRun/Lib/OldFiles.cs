@@ -45,8 +45,8 @@ namespace EnumRun.Lib
             catch { }
 
             var cleanLog = new CleanLog(setting.RetentionPeriod ?? 0);
-            DeleteOldFile(setting.OutputPath, cleanLog);
-            DeleteOldFile(setting.LogsPath, cleanLog);
+            DeleteOldFile(setting.GetOutputPath(), cleanLog);
+            DeleteOldFile(setting.GetLogsPath(), cleanLog);
 
             using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
             {

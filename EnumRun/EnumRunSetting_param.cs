@@ -12,38 +12,43 @@ namespace EnumRun
 {
     internal partial class EnumRunSetting
     {
-        private string _FilesPath = null;
-        private string _logsPath = null;
-        private string _outputPath = null;
-
         #region Public parameter
 
         /// <summary>
         /// スクリプトファイルの保存先フォルダーのパス
         /// </summary>
+        /*
         public string FilesPath
         {
             get { return _FilesPath ?? Path.Combine(Item.WorkDirectory, "Files"); }
             set { _FilesPath = value; }
         }
+        */
+        public string FilesPath { get; set; }
 
         /// <summary>
         /// ログ出力先フォルダーのパス
         /// </summary>
+        /*
         public string LogsPath
         {
             get { return _logsPath ?? Path.Combine(Item.WorkDirectory, "Logs"); }
             set { this._logsPath = value; }
         }
+        */
+        public string LogsPath { get; set; }
 
         /// <summary>
         /// スクリプト実行時の標準出力の出力先パス
         /// </summary>
+        /*
         public string OutputPath
         {
             get { return _outputPath ?? Path.Combine(Item.WorkDirectory, "Output"); }
             set { this._outputPath = value; }
         }
+        */
+        public string OutputPath { get; set; }
 
         /// <summary>
         /// 同じプロセスで次回実行可能になるまでの待ち時間(ループバックGPO対策) (秒)

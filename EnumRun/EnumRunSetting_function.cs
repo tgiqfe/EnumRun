@@ -300,5 +300,40 @@ namespace EnumRun
             return string.Join(", ",
                 props.Select(x => x.Name + " => " + x.GetValue(this)?.ToString()));
         }
+
+        #region Expand env
+
+        public string GetFilesPath()
+        {
+            return string.IsNullOrEmpty(this.FilesPath ) ?
+                Path.Combine(Item.WorkDirectory, "Files") :
+                ExpandEnvironment(this.FilesPath);
+        }
+
+        public string GetLogsPath()
+        {
+            return string.IsNullOrEmpty(this.LogsPath) ?
+                Path.Combine(Item.WorkDirectory, "Logs") :
+                ExpandEnvironment(this.LogsPath);
+        }
+
+        public string GetOutputPath()
+        {
+            return string.IsNullOrEmpty(this.OutputPath) ?
+                Path.Combine(Item.WorkDirectory, "Output") :
+                ExpandEnvironment(this.OutputPath);
+        }
+
+        private string ExpandEnvironment(string text)
+        {
+            for (int i = 0; i < 5 && text.Contains("%"); i++)
+            {
+
+                text = Environment.ExpandEnvironmentVariables(text);
+            }
+            return text;
+        }
+
+        #endregion
     }
 }

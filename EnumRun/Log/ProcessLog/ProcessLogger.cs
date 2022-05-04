@@ -28,7 +28,7 @@ namespace EnumRun.Log.ProcessLog
         public ProcessLogger(EnumRunSetting setting)
         {
             _logPath = Path.Combine(
-                setting.LogsPath,
+                setting.GetLogsPath(),
                 $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log");
             TargetDirectory.CreateParent(_logPath);
 

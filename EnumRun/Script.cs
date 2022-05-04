@@ -73,7 +73,7 @@ namespace EnumRun
             if ((this._setting.DefaultOutput ?? false) || this.Option.Contains(OptionType.Output))
             {
                 string outputPath = Path.Combine(
-                    this._setting.OutputPath,
+                    this._setting.GetOutputPath(),
                     string.Format("{0}_{1}_{2}.txt",
                         Path.GetFileNameWithoutExtension(this.FilePath),
                         Environment.ProcessId,

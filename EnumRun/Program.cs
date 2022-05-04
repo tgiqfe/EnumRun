@@ -5,7 +5,7 @@ using EnumRun.Log;
 using EnumRun.Log.ProcessLog;
 
 
-bool initial = true;
+bool initial = false;
 if (initial)
 {
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
@@ -37,7 +37,7 @@ using (var logger = new ProcessLogger(setting))
     {
         logger.Write(LogLevel.Debug, result.ToLog());
 
-        var processes = Directory.GetFiles(setting.FilesPath).
+        var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
             ToArray().
             Where(x => x.Enabled).
