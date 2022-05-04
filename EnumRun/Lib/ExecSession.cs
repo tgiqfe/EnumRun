@@ -123,7 +123,8 @@ namespace EnumRun.Lib
                         FirstOrDefault()?["LastBootUpTime"] as string),
                 LogonTime = logonInfo?.Time,
                 LogonId = logonInfo?.Id,
-                FilesPath = setting.FilesPath,
+                //FilesPath = setting.FilesPath,
+                FilesPath = setting.GetFilesPath(),
                 ExecTime = DateTime.Now
             };
 
