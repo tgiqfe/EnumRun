@@ -3,7 +3,7 @@ using EnumRun;
 using EnumRun.Lib;
 using EnumRun.Log;
 using EnumRun.Log.ProcessLog;
-
+using EnumRun.Log.MachineLog;
 
 bool initial = false;
 if (initial)
@@ -21,6 +21,14 @@ if (initial)
 }
 
 
+var body = new MachineLogBody(init: true);
+string json = body.GetJson();
+Console.WriteLine(json);
+
+
+
+Console.ReadLine();
+Environment.Exit(0);
 
 
 LanguageCollection collection = LanguageCollection.Deserialize();
