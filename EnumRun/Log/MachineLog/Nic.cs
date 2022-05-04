@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Net.NetworkInformation;
 using System.Management;
 
-namespace EnumRun.Log
+namespace EnumRun.Log.MachineLog
 {
     internal class Nic
     {

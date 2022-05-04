@@ -3,6 +3,7 @@ using EnumRun.Log.ProcessLog;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using EnumRun.Log;
 
 namespace EnumRun
 {
@@ -38,13 +39,13 @@ namespace EnumRun
                 this._setting = setting;
                 this._language = collection.GetLanguage(this.FilePath);
 
-                _logger.Write(LogLevel.Info, FileName, "Enabled");
+                _logger.Write(LogLevel.Info, FileName, "{0} => Enabled", FileName);
                 _logger.Write(LogLevel.Debug, FileName, "Language => {0}", _language.ToString());
                 _logger.Write(LogLevel.Debug, FileName, "Option => [{0}]", Option.OptionType.ToString());
             }
             else
             {
-                _logger.Write(LogLevel.Info, FileName, "Disabled");
+                _logger.Write(LogLevel.Info, FileName, "{0} => Disabled", FileName);
             }
         }
 

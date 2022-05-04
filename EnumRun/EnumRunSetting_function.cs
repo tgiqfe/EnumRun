@@ -5,73 +5,12 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using EnumRun.Log;
 
 namespace EnumRun
 {
-    internal class EnumRunSetting
+    internal partial class EnumRunSetting
     {
-        private string _FilesPath = null;
-        private string _logsPath = null;
-        private string _outputPath = null;
-
-        /// <summary>
-        /// スクリプトファイルの保存先フォルダーのパス
-        /// </summary>
-        public string FilesPath
-        {
-            get { return _FilesPath ?? Path.Combine(Item.WorkDirectory, "Files"); }
-            set { _FilesPath = value; }
-        }
-
-        /// <summary>
-        /// ログ出力先フォルダーのパス
-        /// </summary>
-        public string LogsPath
-        {
-            get { return _logsPath ?? Path.Combine(Item.WorkDirectory, "Logs"); }
-            set { this._logsPath = value; }
-        }
-
-        /// <summary>
-        /// スクリプト実行時の標準出力の出力先パス
-        /// </summary>
-        public string OutputPath
-        {
-            get { return _outputPath ?? Path.Combine(Item.WorkDirectory, "Output"); }
-            set { this._outputPath = value; }
-        }
-
-        /// <summary>
-        /// 同じプロセスで次回実行可能になるまでの待ち時間(ループバックGPO対策) (秒)
-        /// </summary>
-        public int? RestTime { get; set; }
-
-        /// <summary>
-        /// デフォルトでスクリプト実行時の標準出力を出力させるかどうか
-        /// </summary>
-        public bool? DefaultOutput { get; set; }
-
-        /// <summary>
-        /// ログや標準出力の出力データの最大保持期間(日)
-        /// </summary>
-        public int? RetentionPeriod { get; set; }
-
-        /// <summary>
-        /// ログ出力の最低レベル
-        /// </summary>
-        public LogLevel? MinLogLevel { get; set; }
-
-        /// <summary>
-        /// ログ転送先サーバ(Logstash)のサーバ
-        /// 記述例⇒http://192.168.10.100:8080/
-        /// </summary>
-        public string LogstashServer { get; set; }
-
-        /// <summary>
-        /// プロセスごとに実行可能なスクリプトファイルの番号の範囲
-        /// </summary>
-        public ProcessRanges Ranges { get; set; }
-
         /// <summary>
         /// 初期値をセット
         /// </summary>
@@ -83,14 +22,29 @@ namespace EnumRun
             this.RestTime = 60;
             this.DefaultOutput = false;
             this.RetentionPeriod = 0;
-            this.MinLogLevel = LogLevel.Info;
-            this.LogstashServer = null;
-            this.Ranges = new ProcessRanges()
+            this.MinLogLevel = "info";
+            this.Ranges = new ParamRanges()
             {
                 { "StartupScript", "0-9" },
                 { "ShutdownScript", "11-29" },
                 { "LogonScript", "81-89" },
                 { "LogoffScript", "91-99" },
+            };
+            this.Logstash = new ParamLogstash()
+            {
+                Server = null
+            };
+            this.Syslog = new ParamSyslog()
+            {
+                Server = null,
+                Facility = "user",
+                Format = "RFC3164",
+                SslEncrypt = false,
+                SslTimeout = 3000,
+                SslCertFile = null,
+                SslCertPassword = null,
+                SslCertFriendryName = null,
+                SslIgnoreCheck = false
             };
         }
 
@@ -166,64 +120,83 @@ namespace EnumRun
             using (FileReader fr = new FileReader(info))
             {
                 fr.Read(info);
-                using (StringReader sr = new StringReader(fr.Text))
+                using (var sr = new StringReader(fr.Text))
                 {
                     string readLine = "";
-                    while ((readLine = sr.ReadLine()) != null)
-                    {
-                        string key = readLine.Substring(0, readLine.IndexOf(":")).Trim();
-                        string val = readLine.Substring(readLine.IndexOf(":") + 1).Trim();
-                        switch (key.ToLower())
-                        {
-                            case "filespath":
-                            case "filepath":
-                                setting.FilesPath = val;
-                                break;
-                            case "logspath":
-                            case "logpath":
-                                setting.LogsPath = val;
-                                break;
-                            case "outputspath":
-                            case "outputpath":
-                                setting.OutputPath = val;
-                                break;
-                            case "resttime":
-                                setting.RestTime = int.TryParse(val, out int num1) ? num1 : 0;
-                                break;
-                            case "defaultoutput":
-                                setting.DefaultOutput = !BooleanCandidate.IsFalse(val);
-                                break;
-                            case "retentionperiod":
-                                setting.RetentionPeriod = int.TryParse(val, out int num2) ? num2 : 0;
-                                break;
-                            case "minloglevel":
-                                setting.MinLogLevel = Enum.TryParse(val, ignoreCase: true, out LogLevel level) ? level : LogLevel.Info;
-                                break;
-                            case "logstashserver":
-                                setting.LogstashServer = val;
-                                break;
-                            case "ranges":
-                            case "range":
-                                setting.Ranges = new ProcessRanges();
-                                string readLine2 = "";
-                                Regex pat_indent = new Regex(@"^(\s{2})+");
-                                while ((readLine2 = sr.ReadLine()) != null)
-                                {
-                                    if (!pat_indent.IsMatch(readLine2))
-                                    {
-                                        break;
-                                    }
-                                    string key2 = readLine2.Substring(0, readLine2.IndexOf(":"));
-                                    string val2 = readLine2.Substring(readLine2.IndexOf(":") + 1);
-                                    setting.Ranges[key2] = val2;
-                                }
-                                break;
-                        }
-                    }
+                    var lineList = new List<string>();
+                    while ((readLine = sr.ReadLine()) != null) { lineList.Add(readLine); }
+
+                    int index = 0;
+                    setting = GetProperty(new EnumRunSetting(), lineList, ref index);
                 }
             }
 
             return setting;
+        }
+
+        private static T GetProperty<T>(T obj, List<string> list, ref int index, bool isRoot = true) where T : class
+        {
+            Regex pat_indent = new Regex(@"^(\s{2})+");
+            PropertyInfo[] props = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            for (int i = index; i < list.Count; i++, index++)
+            {
+                if (isRoot || pat_indent.IsMatch(list[i]))
+                {
+                    string key = list[i].Substring(0, list[i].IndexOf(":")).Trim();
+                    string val = list[i].Substring(list[i].IndexOf(":") + 1).Trim();
+                    PropertyInfo prop = props.FirstOrDefault(x => x.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
+                    if (prop != null)
+                    {
+                        Type type = prop.PropertyType;
+                        if (type == typeof(string))
+                        {
+                            prop.SetValue(obj, val);
+                        }
+                        else if (type == typeof(int?))
+                        {
+                            prop.SetValue(obj, int.TryParse(val, out int tempInt) ? tempInt : null);
+                        }
+                        else if (type == typeof(bool?))
+                        {
+                            prop.SetValue(obj, !BooleanCandidate.IsNullableFalse(val));
+                        }
+                        else if (type == typeof(ParamRanges))
+                        {
+                            var ranges = new ParamRanges();
+                            for (i++; i < list.Count; i++)
+                            {
+                                if (pat_indent.IsMatch(list[i]))
+                                {
+                                    key = list[i].Substring(0, list[i].IndexOf(":")).Trim();
+                                    val = list[i].Substring(list[i].IndexOf(":") + 1).Trim();
+                                    ranges[key] = val;
+                                }
+                                else
+                                {
+                                    i--;
+                                    index = i;
+                                    break;
+                                }
+                            }
+                            (obj as EnumRunSetting).Ranges = ranges;
+                        }
+                        else if (type == typeof(ParamLogstash))
+                        {
+                            index++;
+                            (obj as EnumRunSetting).Logstash = GetProperty(new ParamLogstash(), list, ref index, false);
+                            i = --index;
+                        }
+                        else if (type == typeof(ParamSyslog))
+                        {
+                            index++;
+                            (obj as EnumRunSetting).Syslog = GetProperty(new ParamSyslog(), list, ref index, false);
+                            i = --index;
+                        }
+                    }
+                }
+                else { break; }
+            }
+            return obj;
         }
 
         #endregion
@@ -285,12 +258,23 @@ namespace EnumRun
                 sw.WriteLine($"DefaultOutput: {this.DefaultOutput}");
                 sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
                 sw.WriteLine($"MinLogLevel: {this.MinLogLevel}");
-                sw.WriteLine($"LogstashServer: {this.LogstashServer}");
                 sw.WriteLine("Ranges:");
                 foreach (var pair in this.Ranges)
                 {
                     sw.WriteLine($"  {pair.Key}: {pair.Value}");
                 }
+                sw.WriteLine("Logstash:");
+                sw.WriteLine($"  Server: {this.Logstash.Server}");
+                sw.WriteLine("Syslog:");
+                sw.WriteLine($"  Server: {this.Syslog.Server}");
+                sw.WriteLine($"  Facility: {this.Syslog.Facility}");
+                sw.WriteLine($"  Format: {this.Syslog.Format}");
+                sw.WriteLine($"  SslEncrypt: {this.Syslog.SslEncrypt}");
+                sw.WriteLine($"  SslTimeout: {this.Syslog.SslTimeout}");
+                sw.WriteLine($"  SslCertFile: {this.Syslog.SslCertFile}");
+                sw.WriteLine($"  SslCertPassword: {this.Syslog.SslCertPassword}");
+                sw.WriteLine($"  SslCertFriendryName: {this.Syslog.SslCertFriendryName}");
+                sw.WriteLine($"  SslIgnoreCheck: {this.Syslog.SslIgnoreCheck}");
             }
         }
 
