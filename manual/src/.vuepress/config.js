@@ -1,5 +1,5 @@
 module.exports = {
-    base: '/',
+    base: '/EnumRun/',
     title: 'EnumRun',
     port: '8080',
     locales: {
