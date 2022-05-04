@@ -1,37 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
-using System.IO;
-
-namespace EnumRun
+﻿namespace EnumRun
 {
     internal class Item
     {
         /// <summary>
         /// 実行ファイルへのパス
+        /// 単一実行ファイルにした場合、Assembly.Locationが使用できないので、Processからファイルパスを取得
         /// </summary>
-        public static readonly string AssemblyPath = Assembly.GetExecutingAssembly().Location;
+        //public static readonly string AssemblyPath = Assembly.GetExecutingAssembly().Location;
+        public static readonly string ExecFilePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
 
         /// <summary>
-        /// 実行ファイルの名前
+        /// 実行ファイルの名前(プロセス名)
         /// </summary>
-        public static readonly string AssemblyFile = Path.GetFileName(AssemblyPath);
+        public static readonly string ProcessName = Path.GetFileNameWithoutExtension(ExecFilePath);
 
         /// <summary>
         /// 実行ファイルの場所
         /// </summary>
-        public static readonly string AssemblyDirectory = Path.GetDirectoryName(AssemblyPath);
+        public static readonly string ExecDirectoryPath = Path.GetDirectoryName(ExecFilePath);
 
         /// <summary>
         /// ワークフォルダー
         /// システムアカウントの場合は実行ファイルの場所。それ以外はTempフォルダー配下
         /// </summary>
-        public static readonly string WorkDirectory = 
-            EnumRun.Lib.UserAccount.IsSystemAccount() ?
-                AssemblyDirectory : 
+        public static readonly string WorkDirectory =
+            EnumRun.Lib.UserAccount.IsSystemAccount ?
+                ExecDirectoryPath :
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 
         #region File
@@ -42,9 +36,14 @@ namespace EnumRun
         public const string SESSION_FILE = "session.json";
 
         /// <summary>
-        /// 設定ファイル
+        /// 設定ファイル(JSON)
         /// </summary>
         public const string CONFIG_JSON = "Setting.json";
+
+        /// <summary>
+        /// 設定ファイル(TXT)
+        /// </summary>
+        public const string CONFIG_TXT = "Setting.txt";
 
         /// <summary>
         /// スクリプト言語設定ファイル

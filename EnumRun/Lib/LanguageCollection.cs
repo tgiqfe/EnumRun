@@ -1,17 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Diagnostics;
-using System.IO;
 
 namespace EnumRun.Lib
 {
     internal class LanguageCollection : List<Language>
     {
+        /// <summary>
+        /// デシリアライズ用静的メソッド
+        /// </summary>
+        /// <returns></returns>
+        public static LanguageCollection Deserialize()
+        {
+            string[] _targetCandidate = new string[]
+            {
+                Path.Combine(Item.WorkDirectory, Item.LANG_JSON),
+                Path.Combine(Item.ExecDirectoryPath, Item.LANG_JSON),
+            };
+            string configPath = _targetCandidate.
+                FirstOrDefault(x => File.Exists(x));
+
+            var collection = new LanguageCollection();
+            collection.Load(configPath);
+
+            return collection;
+        }
+
         #region Load/Save
 
         public void Load(string path)
