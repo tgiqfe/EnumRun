@@ -7,9 +7,13 @@ using System.Management;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using EnumRun.Lib;
 
 namespace EnumRun.Log.MachineLog
 {
+    /// <summary>
+    /// 実行中のPC自体の情報を格納
+    /// </summary>
     internal class MachineLogBody : LogBodyBase
     {
         public const string TAG = "MachineLog";
@@ -21,9 +25,10 @@ namespace EnumRun.Log.MachineLog
         public override string ProcessName { get; set; }
         public override string HostName { get; set; }
         public override string UserName { get; set; }
+        public string DomainName { get; set; }
         public string OS { get; set; }
         public string OSVersion { get; set; }
-        public NicCollection NetworkInterface { get; set; }
+        public NetworkConf Network { get; set; }
 
         #endregion
 
@@ -38,12 +43,16 @@ namespace EnumRun.Log.MachineLog
             this.UserName = Environment.UserName;
             this.Serial = $"{Item.Serial}_{_index++}";
 
+            this.Date = DateTime.Now.ToString("yyyy/MM:dd HH:mm:ss");
             ManagementObject mo = new ManagementClass("Win32_OperatingSystem").
                 GetInstances().
                 OfType<ManagementObject>().
                 First();
+
+            this.DomainName = Machine.IsDomain ? Machine.DomainName : Machine.WorkgroupName;
             this.OS = mo["Caption"] as string;
             this.OSVersion = mo["Version"] as string;
+            this.Network = new NetworkConf(init: true);
         }
 
         public override string GetJson()
@@ -53,6 +62,21 @@ namespace EnumRun.Log.MachineLog
             return JsonSerializer.Serialize(this, _options);
         }
 
+        public Dictionary<string, string> GetSyslogMessage()
+        {
+            var ret = new Dictionary<string, string>();
+            ret["MachineLog"] =
+                string.Format("ProcessName => {0}, HostName => {1}, DomainName => {2}, UserName => {3}, OS => {4}, OSVersion => {5}",
+                    this.ProcessName, this.HostName, this.DomainName, this.UserName, this.OS, this.OSVersion);
+            ret["Network_Name"] = Network.Name;
+            ret["Network_Adapter"] = Network.Adapter;
+            ret["Network_MACAddres"] = Network.MACAddress;
+            ret["Network_IPAddress"] = Network.IPAddress;
+            ret["Network_DefaultGateway"] = Network.DefaultGateway;
+            ret["Network_DnsServer"] = Network.DnsServer;
+            ret["Network_DHCPEnabled"] = Network.DHCPEnabled;
 
+            return ret;
+        }
     }
 }
