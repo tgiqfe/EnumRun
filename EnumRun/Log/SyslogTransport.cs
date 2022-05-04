@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using EnumRun.Log.Syslog;
+using EnumRun.Lib.Syslog;
 using System.Text.RegularExpressions;
 using System.Net.Sockets;
 using EnumRun.Log;

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EnumRun.Log.Syslog
+namespace EnumRun.Lib.Syslog
 {
     internal class FormatMapper
     {

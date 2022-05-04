@@ -10,7 +10,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Threading;
 
-namespace EnumRun.Log.Syslog
+namespace EnumRun.Lib.Syslog
 {
     internal class SyslogTcpSenderTLS : SyslogSender
     {

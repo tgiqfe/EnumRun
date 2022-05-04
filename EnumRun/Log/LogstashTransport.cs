@@ -71,30 +71,5 @@ namespace EnumRun.Log
                 return response.StatusCode == HttpStatusCode.OK;
             }
         }
-
-
-        /*
-        /// <summary>
-        /// LogstashサーバへTCP接続可否チェック
-        /// </summary>
-        /// <returns></returns>
-        private async Task TestAsync()
-        {
-            using (var client = new TcpClient())
-            {
-                int timeout = 3000;
-                try
-                {
-                    Task task = (client.ConnectAsync(_server, _port));
-                    if (await Task.WhenAny(task, Task.Delay(timeout)) != task)
-                    {
-                        throw new SocketException(10060);
-                    }
-                }
-                catch { }
-                this.Enabled = client.Connected;
-            }
-        }
-        */
     }
 }

@@ -1,4 +1,4 @@
-﻿using EnumRun.Log.Syslog;
+﻿using EnumRun.Lib.Syslog;
 using EnumRun.Log;
 
 namespace EnumRun.Log

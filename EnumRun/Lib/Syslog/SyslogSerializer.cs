@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Globalization;
 
-namespace EnumRun.Log.Syslog
+namespace EnumRun.Lib.Syslog
 {
     internal class SyslogSerializer
     {

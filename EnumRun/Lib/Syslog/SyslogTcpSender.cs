@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.IO;
 
-namespace EnumRun.Log.Syslog
+namespace EnumRun.Lib.Syslog
 {
     internal class SyslogTcpSender : SyslogSender
     {

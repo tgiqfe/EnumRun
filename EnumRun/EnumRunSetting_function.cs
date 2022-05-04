@@ -258,23 +258,32 @@ namespace EnumRun
                 sw.WriteLine($"DefaultOutput: {this.DefaultOutput}");
                 sw.WriteLine($"RetentionPeriod: {this.RetentionPeriod}");
                 sw.WriteLine($"MinLogLevel: {this.MinLogLevel}");
-                sw.WriteLine("Ranges:");
-                foreach (var pair in this.Ranges)
+                if (this.Ranges != null)
                 {
-                    sw.WriteLine($"  {pair.Key}: {pair.Value}");
+                    sw.WriteLine("Ranges:");
+                    foreach (var pair in this.Ranges)
+                    {
+                        sw.WriteLine($"  {pair.Key}: {pair.Value}");
+                    }
                 }
-                sw.WriteLine("Logstash:");
-                sw.WriteLine($"  Server: {this.Logstash.Server}");
-                sw.WriteLine("Syslog:");
-                sw.WriteLine($"  Server: {this.Syslog.Server}");
-                sw.WriteLine($"  Facility: {this.Syslog.Facility}");
-                sw.WriteLine($"  Format: {this.Syslog.Format}");
-                sw.WriteLine($"  SslEncrypt: {this.Syslog.SslEncrypt}");
-                sw.WriteLine($"  SslTimeout: {this.Syslog.SslTimeout}");
-                sw.WriteLine($"  SslCertFile: {this.Syslog.SslCertFile}");
-                sw.WriteLine($"  SslCertPassword: {this.Syslog.SslCertPassword}");
-                sw.WriteLine($"  SslCertFriendryName: {this.Syslog.SslCertFriendryName}");
-                sw.WriteLine($"  SslIgnoreCheck: {this.Syslog.SslIgnoreCheck}");
+                if (this.Logstash != null)
+                {
+                    sw.WriteLine("Logstash:");
+                    sw.WriteLine($"  Server: {this.Logstash.Server}");
+                }
+                if (this.Syslog != null)
+                {
+                    sw.WriteLine("Syslog:");
+                    sw.WriteLine($"  Server: {this.Syslog.Server}");
+                    sw.WriteLine($"  Facility: {this.Syslog.Facility}");
+                    sw.WriteLine($"  Format: {this.Syslog.Format}");
+                    sw.WriteLine($"  SslEncrypt: {this.Syslog.SslEncrypt}");
+                    sw.WriteLine($"  SslTimeout: {this.Syslog.SslTimeout}");
+                    sw.WriteLine($"  SslCertFile: {this.Syslog.SslCertFile}");
+                    sw.WriteLine($"  SslCertPassword: {this.Syslog.SslCertPassword}");
+                    sw.WriteLine($"  SslCertFriendryName: {this.Syslog.SslCertFriendryName}");
+                    sw.WriteLine($"  SslIgnoreCheck: {this.Syslog.SslIgnoreCheck}");
+                }
             }
         }
 

@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using EnumRun.Log;
-using EnumRun.Log.Syslog;
+using EnumRun.Lib.Syslog;
 
 namespace EnumRun
 {

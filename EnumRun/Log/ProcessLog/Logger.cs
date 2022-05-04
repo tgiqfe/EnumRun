@@ -2,7 +2,7 @@
 using System.Text;
 using LiteDB;
 using EnumRun.Log;
-using EnumRun.Log.Syslog;
+using EnumRun.Lib.Syslog;
 using System.Diagnostics;
 
 namespace EnumRun.Log.ProcessLog
