@@ -137,7 +137,7 @@ namespace EnumRun.Log.ProcessLog
         {
             Write("終了");
 
-            //  一応1000ミリ秒待機
+            //  一応最大1000ミリ秒待機
             try
             {
                 _rwLock.AcquireWriterLock(10000);
