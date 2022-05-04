@@ -1,0 +1,12 @@
+{
+  "name": "EnumRun",
+  "version": "0.7.0.1",
+  "main": "index.js",
+  "liecnse": "MIT",
+  "scripts": {
+    "dev": "vuepress dev src",
+    "build": "vuepress build src",
+    "eject": "vuepress eject",
+    "version": "vuepress -V"
+  }
+}
