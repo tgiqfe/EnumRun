@@ -1,7 +1,13 @@
-﻿namespace EnumRun
+﻿using System;
+using System.Text;
+using System.Diagnostics;
+
+namespace EnumRun
 {
     internal class Item
     {
+        #region Path
+
         /// <summary>
         /// 実行ファイルへのパス
         /// 単一実行ファイルにした場合、Assembly.Locationが使用できないので、Processからファイルパスを取得
@@ -28,6 +34,7 @@
                 ExecDirectoryPath :
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 
+        #endregion
         #region File
 
         /// <summary>
@@ -36,7 +43,7 @@
         public const string SESSION_FILE = "session.json";
 
         /// <summary>
-        /// 設定ファイル(JSON)
+        /// 設定ファイル
         /// </summary>
         public const string CONFIG_JSON = "Setting.json";
 
@@ -51,5 +58,23 @@
         public const string LANG_JSON = "Language.json";
 
         #endregion
+
+        private static string _serial = null;
+
+        public static string Serial
+        {
+            get
+            {
+                if (_serial == null)
+                {
+                    var md5 = System.Security.Cryptography.MD5.Create();
+                    var bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(
+                        DateTime.Now.ToString() + Environment.MachineName + Process.GetCurrentProcess().Id.ToString()));
+                    _serial = BitConverter.ToString(bytes).Replace("-", "");
+                    md5.Clear();
+                }
+                return _serial;
+            }
+        }
     }
 }

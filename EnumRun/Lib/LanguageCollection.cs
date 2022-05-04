@@ -13,14 +13,7 @@ namespace EnumRun.Lib
         /// <returns></returns>
         public static LanguageCollection Deserialize()
         {
-            string[] _targetCandidate = new string[]
-            {
-                Path.Combine(Item.WorkDirectory, Item.LANG_JSON),
-                Path.Combine(Item.ExecDirectoryPath, Item.LANG_JSON),
-            };
-            string configPath = _targetCandidate.
-                FirstOrDefault(x => File.Exists(x));
-
+            string configPath = TargetDirectory.GetFile(Item.LANG_JSON);
             var collection = new LanguageCollection();
             collection.Load(configPath);
 
@@ -52,7 +45,7 @@ namespace EnumRun.Lib
 
         public void Save(string path)
         {
-            ParentDirectory.Create(path);
+            TargetDirectory.CreateParent(path);
 
             try
             {

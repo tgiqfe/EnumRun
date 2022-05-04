@@ -18,6 +18,16 @@
             return _falseCandidate.Any(x => x.Equals(lowerVal));
         }
 
+        public static bool? IsNullableFalse(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+            {
+                return null;
+            }
+            string lowerVal = val.ToLower();
+            return _falseCandidate.Any(x => x.Equals(lowerVal));
+        }
+
         public static bool IsTrue(string val)
         {
             string lowerVal = val.ToLower();

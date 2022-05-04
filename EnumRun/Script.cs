@@ -1,8 +1,9 @@
 ﻿using EnumRun.Lib;
-using EnumRun.Log;
+using EnumRun.Log.ProcessLog;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using EnumRun.Log;
 
 namespace EnumRun
 {
@@ -10,7 +11,6 @@ namespace EnumRun
     {
         public string FilePath { get; set; }
         public string FileName { get; set; }
-        private Logger _logger { get; set; }
         public int FileNumber { get; set; }
 
         public bool Enabled { get; set; }
@@ -21,7 +21,6 @@ namespace EnumRun
         private static readonly Regex _pat_fileNum = new Regex(@"^\d+(?=_)");
 
         public Script() { }
-        public Script(string filePath, EnumRunSetting setting, LanguageCollection collection, Logger logger)
         {
             this.FilePath = filePath;
             this.FileName = Path.GetFileName(filePath);
@@ -38,24 +37,24 @@ namespace EnumRun
                 this._setting = setting;
                 this._language = collection.GetLanguage(this.FilePath);
 
-                _logger.Write(LogLevel.Info, FileName, "Enabled");
                 _logger.Write(LogLevel.Debug, FileName, "Language => {0}", _language.ToString());
                 _logger.Write(LogLevel.Debug, FileName, "Option => [{0}]", Option.OptionType.ToString());
             }
             else
             {
-                _logger.Write(LogLevel.Info, FileName, "Disabled");
             }
         }
 
+        /// <summary>
+        /// スクリプト実行
+        /// </summary>
+        /// <returns></returns>
         public Task Process()
         {
-            if (CheckStopByOption()) { return null; }
 
             //  実行前待機
             if (this.Option.Contains(OptionType.BeforeWait) && Option.BeforeTime > 0)
             {
-                //  [Log]実行前待機すること。秒
                 Thread.Sleep(Option.BeforeTime * 1000);
             }
 
@@ -64,18 +63,15 @@ namespace EnumRun
             //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
             //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
             //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
-            Task task = this._setting.DefaultOutput ?? false || this.Option.Contains(OptionType.Output) ?
-                ProcessThreadAndOutput() :
-                ProcessThread();
             if (Option.Contains(OptionType.WaitForExit))
             {
+                _logger.Write(LogLevel.Info, FileName, "Wait until exit.");
                 task.Wait();
             }
 
             //  実行後待機
             if (this.Option.Contains(OptionType.AfterWait) && Option.AfterTime > 0)
             {
-                //  [Log]実行後待機すること。秒
                 Thread.Sleep(Option.AfterTime * 1000);
             }
 
@@ -92,7 +88,6 @@ namespace EnumRun
             //  実行対象外
             if (this.Option.Contains(OptionType.NoRun))
             {
-                //  [Log]実行対象外ということ
                 return true;
             }
 
@@ -100,8 +95,6 @@ namespace EnumRun
             //  ドメイン参加PCのみ
             if (this.Option.Contains(OptionType.DomainPCOnly) && !Machine.IsDomain)
             {
-                //  [Log]ドメイン参加していないということ
-                //  [Log]ドメイン名。Machine.DomainName
                 return true;
             }
 
@@ -109,8 +102,6 @@ namespace EnumRun
             //  ワークグループPCのみ
             if (this.Option.Contains(OptionType.WorkgroupPCOnly) && Machine.IsDomain)
             {
-                //  [log]ワークグループPCではないということ
-                //  [Log]ワークグループ名。Machine.WorkgroupName
                 return true;
             }
 
@@ -118,8 +109,6 @@ namespace EnumRun
             //  システムアカウントのみ
             if (this.Option.Contains(OptionType.SystemAccountOnly) && !UserAccount.IsSystemAccount)
             {
-                //  [Log]システムアカウントではないこと
-                //  [Log]SIDを出力
                 return true;
             }
 
@@ -127,8 +116,6 @@ namespace EnumRun
             //  ドメインユーザーのみ
             if (this.Option.Contains(OptionType.DomainUserOnly) && !UserAccount.IsDomainUser)
             {
-                //  [Log]ドメインユーザーではないこと(ローカルユーザーである)
-                //  [Log]ユーザー名
                 return true;
             }
 
@@ -136,8 +123,6 @@ namespace EnumRun
             //  ローカルユーザーのみ
             if (this.Option.Contains(OptionType.LocalUserOnly) && UserAccount.IsDomainUser)
             {
-                //  [Log]ローカルユーザーではないこと(ドメインユーザーである)
-                //  [Log]ユーザー名
                 return true;
             }
 
@@ -145,7 +130,6 @@ namespace EnumRun
             //  デフォルトゲートウェイへの通信確認
             if (this.Option.Contains(OptionType.DGReachableOnly) && !Machine.IsReachableDefaultGateway())
             {
-                //  [Log]デフォルトゲートウェイへ導通不可であること
                 return true;
             }
 
@@ -154,7 +138,6 @@ namespace EnumRun
             //  管理者として実行させるオプション[a]とは異なるので注意。
             if (this.Option.Contains(OptionType.TrustedOnly) && !UserAccount.IsRunAdministrator())
             {
-                //  [Log]管理者実行していないこと
                 return true;
             }
 
@@ -167,7 +150,6 @@ namespace EnumRun
         /// <returns></returns>
         private async Task ProcessThread()
         {
-            await Task.Run(async () =>
             {
                 using (Process proc = this._language.GetProcess(this.FilePath, ""))
                 {
@@ -187,15 +169,7 @@ namespace EnumRun
         /// プロセス実行 (実行結果をファイルに出力)
         /// </summary>
         /// <returns></returns>
-        private async Task ProcessThreadAndOutput()
         {
-            string outputPath = Path.Combine(
-                this._setting.OutputPath,
-                string.Format("{0}_{1}_{2}.txt",
-                    this.FileName,
-                    Environment.ProcessId,
-                    DateTime.Now.ToString("yyyyMMddHHmmss")));
-            ParentDirectory.Create(outputPath);
 
             await Task.Run(() =>
             {

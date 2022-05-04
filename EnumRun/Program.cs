@@ -2,27 +2,36 @@
 using EnumRun;
 using EnumRun.Lib;
 using EnumRun.Log;
+using EnumRun.Log.ProcessLog;
+
+
+bool initial = false;
+if (initial)
+{
+    EnumRunSetting setting_def = EnumRunSetting.Deserialize();
+    setting_def.Serialize(Item.CONFIG_JSON);
+    setting_def.Serialize(Item.CONFIG_TXT);
+
+    LanguageCollection collection_def = LanguageCollection.Deserialize();
+    collection_def.Save(Item.LANG_JSON);
+
+    Console.WriteLine("設定ファイルを再セット");
+    Console.ReadLine();
+    Environment.Exit(0);
+}
 
 
 
-/*
-EnumRunSetting setting_def = new EnumRunSetting();
-setting_def.SetDefault();
-setting_def.Serialize("Setting.json");
-setting_def.Serialize("Setting.txt");
-
-LanguageCollection collection_def = LanguageCollection.Deserialize();
-collection_def.Save("Language.json");
-*/
 
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
-using (var logger = new Logger(setting))
+using (var logger = new ProcessLogger(setting))
 {
     logger.Write(setting.ToLog());
 
     var result = ExecSession.Check(setting);
+    OldFiles.Clean(setting);
 
     if (result.Runnable)
     {
@@ -33,7 +42,8 @@ using (var logger = new Logger(setting))
             ToArray().
             Where(x => x.Enabled).
             Select(x => x.Process());
-        //Task.WhenAll(processes);
+
+        Task.WhenAll(processes);
     }
     else
     {

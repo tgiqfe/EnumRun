@@ -1,4 +1,6 @@
-﻿using System.Management;
+﻿using System;
+using System.Text;
+using System.Management;
 using System.Net.NetworkInformation;
 
 namespace EnumRun.Lib
@@ -7,7 +9,9 @@ namespace EnumRun.Lib
     {
         private static bool? _isDomain = null;
 
-        private static string _domainOrWorkgroupName { get; set; }
+        private static string _domainName { get; set; }
+        private static string _workgroupName { get; set; }
+        private static string _defaultGateway { get; set; }
 
         /// <summary>
         /// ドメイン参加済みかどうか
@@ -21,10 +25,7 @@ namespace EnumRun.Lib
 
                     var mo = new ManagementClass("Win32_ComputerSystem").
                         GetInstances().
-                        OfType<ManagementClass>().
                         FirstOrDefault();
-                    _isDomain = (bool)mo["PartOfDomain"];
-                    _domainOrWorkgroupName = mo["Domain"] as string;
                 }
                 return (bool)_isDomain;
             }
@@ -35,7 +36,6 @@ namespace EnumRun.Lib
         /// </summary>
         public static string DomainName
         {
-            get { return Machine.IsDomain ? _domainOrWorkgroupName : null; }
         }
 
         /// <summary>
@@ -43,7 +43,6 @@ namespace EnumRun.Lib
         /// </summary>
         public static string WorkgroupName
         {
-            get { return Machine.IsDomain ? null : _domainOrWorkgroupName; }
         }
 
         /// <summary>
@@ -65,6 +64,7 @@ namespace EnumRun.Lib
                         PingReply reply = ping.Send(gw.Address);
                         if (reply.Status == IPStatus.Success)
                         {
+                            _defaultGateway = gw.Address.ToString();
                             return true;
                         }
                         Thread.Sleep(interval);
@@ -73,5 +73,29 @@ namespace EnumRun.Lib
             }
             return false;
         }
+
+        public static string DefaultGateway
+        {
+            get
+            {
+                if (_defaultGateway == null)
+                {
+                    //  もし、IsReachableDefaultGatewayより前に呼び出した場合や、
+                    //  DGへ導通不可だった場合は、登録されているDGを全て返す
+                    //  (多分DGは1つしか設定しないはずだけど・・・)
+                    var list = new List<string>();
+                    foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+                    {
+                        foreach (GatewayIPAddressInformation gw in nic.GetIPProperties().GatewayAddresses)
+                        {
+                            list.Add(gw.Address.ToString());
+                        }
+                    }
+                    _defaultGateway = string.Join(", ", list);
+                }
+                return _defaultGateway ?? "(設定無し)";
+            }
+        }
+
     }
 }

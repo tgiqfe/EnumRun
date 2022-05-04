@@ -1,5 +1,6 @@
 ﻿using System.Management;
 using System.Security.Principal;
+using Microsoft.Win32;
 
 namespace EnumRun.Lib
 {
@@ -67,6 +68,26 @@ namespace EnumRun.Lib
             WindowsPrincipal principal = new WindowsPrincipal(id);
             bool isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
             return isAdmin;
+        }
+
+        /// <summary>
+        /// ユーザーアカウント制御が「通知しない」に設定されているかどうか
+        /// レジストリ値から判断。
+        /// </summary>
+        /// <returns></returns>
+        public static bool IsDisableUAC()
+        {
+            using (RegistryKey regKey = Registry.LocalMachine.OpenSubKey(
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"))
+            {
+                int? consentPromptBehaviorAdmin = regKey.GetValue("ConsentPromptBehaviorAdmin", null) as int?;
+                int? promptOnSecureDesktop = regKey.GetValue("PromptOnSecureDesktop", null) as int?;
+                if (consentPromptBehaviorAdmin == 0 && promptOnSecureDesktop == 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

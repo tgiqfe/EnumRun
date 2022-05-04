@@ -1,0 +1,38 @@
+# Logs
+logs
+*.log
+npm-debug.log.*
+
+# Meta files
+TODOs.md
+
+# OS generated files
+.DS_Store
+.Trash-*
+ehthumbs.db
+Thumbs.db
+*.Zone.Identifier
+
+# Node Files
+/node_modules/
+npm-debug.log
+/npm-debug.log.*
+package-lock.json
+
+# Dist
+docs/.vuepress/dist
+docs/.vuepress/public/redoc.html
+/vuepress
+tmp
+.temp
+
+# IDE, dev
+.idea
+*.orig
+*.code-workspace
+docs/.vuepress/temp
+src/.vuepress/temp
+
+# Typescript build dist
+packages/@vuepress/shared-utils/lib/
+packages/@vuepress/shared-utils/types/

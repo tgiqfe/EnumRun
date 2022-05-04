@@ -24,34 +24,23 @@ namespace EnumRun.Lib
             public static Dictionary<string, Session> Deserialize()
             {
                 Dictionary<string, Session> sessions = null;
-                string filePath = new string[]
+                string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
+
+                try
                 {
-                    Path.Combine(Item.WorkDirectory, Item.SESSION_FILE),
-                    Path.Combine(Item.ExecDirectoryPath, Item.SESSION_FILE),
-                }.FirstOrDefault(x => File.Exists(x));
-                if (filePath != null)
-                {
-                    try
+                    using (var sr = new StreamReader(filePath, Encoding.UTF8))
                     {
-                        using (var sr = new StreamReader(filePath, Encoding.UTF8))
-                        {
-                            sessions =
-                                JsonSerializer.Deserialize<Dictionary<string, Session>>(sr.ReadToEnd());
-                        }
+                        sessions =
+                            JsonSerializer.Deserialize<Dictionary<string, Session>>(sr.ReadToEnd());
                     }
-                    catch { }
+                }
+                catch { }
                 }
                 return sessions ?? new Dictionary<string, Session>();
             }
 
             public static void Serialize(Dictionary<string, Session> sessions)
             {
-                string filePath = new string[]
-                {
-                    Path.Combine(Item.WorkDirectory, Item.SESSION_FILE),
-                    Path.Combine(Item.ExecDirectoryPath, Item.SESSION_FILE),
-                }.FirstOrDefault(x => File.Exists(x));
-                filePath ??= Path.Combine(Item.WorkDirectory, Item.SESSION_FILE);
                 using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
                 {
                     string json = JsonSerializer.Serialize(
@@ -99,9 +88,6 @@ namespace EnumRun.Lib
                 {
                     var props =
                         this.GetType().GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-                    return "Runnable => False, " + string.Join(", ",
-                        props.Where(x => x.PropertyType == typeof(string)).
-                            Select(x => $"{x.Name} => {x.GetValue(this)}"));
                 }
             }
         }
