@@ -5,7 +5,7 @@ using EnumRun.Log;
 using EnumRun.Log.ProcessLog;
 
 
-bool initial = true;
+bool initial = false;
 if (initial)
 {
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
@@ -26,7 +26,7 @@ if (initial)
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
-using (var logger = new Logger(setting))
+using (var logger = new ProcessLogger(setting))
 {
     logger.Write(setting.ToLog());
 

@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace EnumRun.Log.ProcessLog
 {
-    internal class Logger : IDisposable
+    internal class ProcessLogger : IDisposable
     {
         private string _logPath = null;
         private LogLevel _minLogLevel = LogLevel.Info;
@@ -17,15 +17,15 @@ namespace EnumRun.Log.ProcessLog
         private LogstashTransport _logstash = null;
         private SyslogTransport _syslog = null;
         private LiteDatabase _liteDB = null;
-        private ILiteCollection<LogBody> _logstashCollection = null;
-        private ILiteCollection<LogBody> _syslogCollection = null;
+        private ILiteCollection<ProcessLogBody> _logstashCollection = null;
+        private ILiteCollection<ProcessLogBody> _syslogCollection = null;
 
         /// <summary>
         /// 引数無しコンストラクタ
         /// </summary>
-        public Logger() { }
+        public ProcessLogger() { }
 
-        public Logger(EnumRunSetting setting)
+        public ProcessLogger(EnumRunSetting setting)
         {
             _logPath = Path.Combine(
                 setting.LogsPath,
@@ -36,16 +36,16 @@ namespace EnumRun.Log.ProcessLog
             _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
             _rwLock = new ReaderWriterLock();
 
-            if (!string.IsNullOrEmpty(setting.Logstash.Server))
+            if (!string.IsNullOrEmpty(setting.Logstash?.Server))
             {
                 _logstash = new LogstashTransport(setting.Logstash.Server);
             }
-            if (!string.IsNullOrEmpty(setting.Syslog.Server))
+            if (!string.IsNullOrEmpty(setting.Syslog?.Server))
             {
                 _syslog = new SyslogTransport(setting);
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
-                _syslog.ProcId = LogBody.TAG;
+                _syslog.ProcId = ProcessLogBody.TAG;
             }
 
             Write("開始");
@@ -63,7 +63,7 @@ namespace EnumRun.Log.ProcessLog
         {
             if (level >= _minLogLevel)
             {
-                SendAsync(new LogBody(init: true)
+                SendAsync(new ProcessLogBody(init: true)
                 {
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                     Level = level,
@@ -106,7 +106,7 @@ namespace EnumRun.Log.ProcessLog
 
         #endregion
 
-        private async Task SendAsync(LogBody body)
+        private async Task SendAsync(ProcessLogBody body)
         {
             try
             {
@@ -136,7 +136,7 @@ namespace EnumRun.Log.ProcessLog
                     }
                     if (_logstashCollection == null)
                     {
-                        _logstashCollection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_logstash");
+                        _logstashCollection = _liteDB.GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
                         _logstashCollection.EnsureIndex(x => x.Serial, true);
                     }
                     _logstashCollection.Upsert(body);
@@ -159,7 +159,7 @@ namespace EnumRun.Log.ProcessLog
                     }
                     if (_syslogCollection == null)
                     {
-                        _syslogCollection = _liteDB.GetCollection<LogBody>(LogBody.TAG + "_syslog");
+                        _syslogCollection = _liteDB.GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
                         _syslogCollection.EnsureIndex(x => x.Serial, true);
                     }
                     _syslogCollection.Upsert(body);

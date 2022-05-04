@@ -10,8 +10,6 @@ namespace EnumRun.Log
 {
     internal class LogBodyBase
     {
-        #region Serial parameter
-
         /// <summary>
         /// LiteDBに格納時にユニークキーとして使用
         /// </summary>
@@ -19,12 +17,6 @@ namespace EnumRun.Log
         [LiteDB.BsonId]
         public string Serial { get; set; }
 
-        /// <summary>
-        /// Serialの通し番号
-        /// </summary>
-        private static int _index = 0;
-
-        #endregion
         #region Public parameter
 
         public virtual string Tag { get { return ""; } }
@@ -34,13 +26,6 @@ namespace EnumRun.Log
         public virtual string UserName { get; set; }
 
         #endregion
-
-        protected void Init()
-        {
-            this.ProcessName = Item.ProcessName;
-            this.HostName = Environment.MachineName;
-            this.UserName = Environment.UserName;
-        }
 
         protected JsonSerializerOptions GetJsonSerializerOption(
             bool escapeDoubleQuote,
@@ -72,5 +57,6 @@ namespace EnumRun.Log
             return options;
         }
 
+        public virtual string GetJson() { return ""; }
     }
 }
