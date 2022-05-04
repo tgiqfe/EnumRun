@@ -27,7 +27,7 @@ namespace EnumRun.Log.ProcessLog
         #endregion
         #region Public parameter
 
-        public string Tag { get { return LogBody.TAG; } }
+        public string Tag { get { return TAG; } }
         public string Date { get; set; }
         public LogLevel Level { get; set; }
         public string ProcessName { get; set; }

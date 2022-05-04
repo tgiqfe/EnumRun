@@ -45,7 +45,7 @@ namespace EnumRun.Log.ProcessLog
                 _syslog = new SyslogTransport(setting);
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
-                _syslog.ProcId = Process.GetCurrentProcess().Id.ToString();
+                _syslog.ProcId = LogBody.TAG;
             }
 
             Write("開始");
