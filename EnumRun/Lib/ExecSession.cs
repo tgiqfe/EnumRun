@@ -35,12 +35,12 @@ namespace EnumRun.Lib
                     }
                 }
                 catch { }
-                }
                 return sessions ?? new Dictionary<string, Session>();
             }
 
             public static void Serialize(Dictionary<string, Session> sessions)
             {
+                string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
                 using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
                 {
                     string json = JsonSerializer.Serialize(
@@ -88,6 +88,10 @@ namespace EnumRun.Lib
                 {
                     var props =
                         this.GetType().GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+                    return "Runnable => False [ " +
+                        string.Join(" ", props.
+                            Where(x => x.PropertyType == typeof(string)).
+                            Select(x => $"{x.Name}={x.GetValue(this)}")) + " ]";
                 }
             }
         }

@@ -33,5 +33,15 @@
             string lowerVal = val.ToLower();
             return _trueCandidate.Any(x => x.Equals(lowerVal));
         }
+
+        public static bool? IsNullableTrue(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+            {
+                return null;
+            }
+            string lowerVal = val.ToLower();
+            return _trueCandidate.Any(x => x.Equals(lowerVal));
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace EnumRun
     {
         public string FilePath { get; set; }
         public string FileName { get; set; }
+        private ProcessLogger _logger { get; set; }
         public int FileNumber { get; set; }
 
         public bool Enabled { get; set; }
@@ -21,6 +22,7 @@ namespace EnumRun
         private static readonly Regex _pat_fileNum = new Regex(@"^\d+(?=_)");
 
         public Script() { }
+        public Script(string filePath, EnumRunSetting setting, LanguageCollection collection, ProcessLogger logger)
         {
             this.FilePath = filePath;
             this.FileName = Path.GetFileName(filePath);
@@ -37,11 +39,13 @@ namespace EnumRun
                 this._setting = setting;
                 this._language = collection.GetLanguage(this.FilePath);
 
+                _logger.Write(LogLevel.Info, FileName, "{0} => Enabled", FileName);
                 _logger.Write(LogLevel.Debug, FileName, "Language => {0}", _language.ToString());
                 _logger.Write(LogLevel.Debug, FileName, "Option => [{0}]", Option.OptionType.ToString());
             }
             else
             {
+                _logger.Write(LogLevel.Info, FileName, "{0} => Disabled", FileName);
             }
         }
 
@@ -51,10 +55,12 @@ namespace EnumRun
         /// <returns></returns>
         public Task Process()
         {
+            if (CheckStopByOption()) { return Task.Run(() => { }); }
 
             //  実行前待機
             if (this.Option.Contains(OptionType.BeforeWait) && Option.BeforeTime > 0)
             {
+                _logger.Write(LogLevel.Info, FileName, "Before wait, {0}sec", Option.BeforeTime);
                 Thread.Sleep(Option.BeforeTime * 1000);
             }
 
@@ -63,6 +69,22 @@ namespace EnumRun
             //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
             //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
             //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
+            Task task = null;
+            if ((this._setting.DefaultOutput ?? false) || this.Option.Contains(OptionType.Output))
+            {
+                string outputPath = Path.Combine(
+                    this._setting.OutputPath,
+                    string.Format("{0}_{1}_{2}.txt",
+                        Path.GetFileNameWithoutExtension(this.FilePath),
+                        Environment.ProcessId,
+                        DateTime.Now.ToString("yyyyMMddHHmmss")));
+                _logger.Write(LogLevel.Info, FileName, "Output => {0}", outputPath);
+                task = ProcessThreadAndOutput(outputPath);
+            }
+            else
+            {
+                task = ProcessThread();
+            }
             if (Option.Contains(OptionType.WaitForExit))
             {
                 _logger.Write(LogLevel.Info, FileName, "Wait until exit.");
@@ -72,6 +94,7 @@ namespace EnumRun
             //  実行後待機
             if (this.Option.Contains(OptionType.AfterWait) && Option.AfterTime > 0)
             {
+                _logger.Write(LogLevel.Info, FileName, "After wait, {0}sec", Option.AfterTime);
                 Thread.Sleep(Option.AfterTime * 1000);
             }
 
@@ -88,6 +111,17 @@ namespace EnumRun
             //  実行対象外
             if (this.Option.Contains(OptionType.NoRun))
             {
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [n]option.");
+                return true;
+            }
+
+            //  [a]オプション
+            //  ユーザーアカウント制御が「通知しない」場合のみ
+            //  Administratorsグループのチェックは行わない。一般ユーザーでも、とりあえずrunasで実行。
+            if (this.Option.Contains(OptionType.RunAsAdmin) && !UserAccount.IsDisableUAC())
+            {
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [a]option.");
+                _logger.Write(LogLevel.Debug, FileName, "Enable User Account Control setting.");
                 return true;
             }
 
@@ -95,6 +129,8 @@ namespace EnumRun
             //  ドメイン参加PCのみ
             if (this.Option.Contains(OptionType.DomainPCOnly) && !Machine.IsDomain)
             {
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [m]option and Workgroup PC.");
+                _logger.Write(LogLevel.Debug, FileName, "Workgroup name => {0}", Machine.WorkgroupName);
                 return true;
             }
 
@@ -102,6 +138,9 @@ namespace EnumRun
             //  ワークグループPCのみ
             if (this.Option.Contains(OptionType.WorkgroupPCOnly) && Machine.IsDomain)
             {
+                //  未テスト
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [k]option and domain PC.");
+                _logger.Write(LogLevel.Debug, FileName, "Domain nam => {0}", Machine.DomainName);
                 return true;
             }
 
@@ -109,6 +148,8 @@ namespace EnumRun
             //  システムアカウントのみ
             if (this.Option.Contains(OptionType.SystemAccountOnly) && !UserAccount.IsSystemAccount)
             {
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [s]option and not system account.");
+                _logger.Write(LogLevel.Debug, FileName, "UserName => {0}, SID => {1}", Environment.UserName, UserAccount.CurrentSID);
                 return true;
             }
 
@@ -116,6 +157,8 @@ namespace EnumRun
             //  ドメインユーザーのみ
             if (this.Option.Contains(OptionType.DomainUserOnly) && !UserAccount.IsDomainUser)
             {
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [d]option and local user.");
+                _logger.Write(LogLevel.Debug, FileName, "UserName => {0}\\{1}", Environment.UserDomainName, Environment.UserName);
                 return true;
             }
 
@@ -123,6 +166,9 @@ namespace EnumRun
             //  ローカルユーザーのみ
             if (this.Option.Contains(OptionType.LocalUserOnly) && UserAccount.IsDomainUser)
             {
+                //  未テスト
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [l]option and domain user.");
+                _logger.Write(LogLevel.Debug, FileName, "UserName => {0}\\{1}", Environment.UserDomainName, Environment.UserName);
                 return true;
             }
 
@@ -130,6 +176,9 @@ namespace EnumRun
             //  デフォルトゲートウェイへの通信確認
             if (this.Option.Contains(OptionType.DGReachableOnly) && !Machine.IsReachableDefaultGateway())
             {
+                //  未テスト
+                _logger.Write(LogLevel.Attention, FileName, "Stop script, [p]option and not reachable to DefaultGateway.");
+                _logger.Write(LogLevel.Debug, FileName, "DefaultGateway => {0}", Machine.DefaultGateway);
                 return true;
             }
 
@@ -138,6 +187,8 @@ namespace EnumRun
             //  管理者として実行させるオプション[a]とは異なるので注意。
             if (this.Option.Contains(OptionType.TrustedOnly) && !UserAccount.IsRunAdministrator())
             {
+                _logger.Write(LogLevel.Attention, FileName, "Script stop, [t]option and not Turusteduser");
+                _logger.Write(LogLevel.Debug, FileName, "UserName => {0}", Environment.UserName);
                 return true;
             }
 
@@ -150,6 +201,7 @@ namespace EnumRun
         /// <returns></returns>
         private async Task ProcessThread()
         {
+            await Task.Run(() =>
             {
                 using (Process proc = this._language.GetProcess(this.FilePath, ""))
                 {
@@ -169,7 +221,9 @@ namespace EnumRun
         /// プロセス実行 (実行結果をファイルに出力)
         /// </summary>
         /// <returns></returns>
+        private async Task ProcessThreadAndOutput(string outputPath)
         {
+            TargetDirectory.CreateParent(outputPath);
 
             await Task.Run(() =>
             {

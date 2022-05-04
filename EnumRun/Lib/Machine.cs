@@ -22,10 +22,13 @@ namespace EnumRun.Lib
             {
                 if (_isDomain == null)
                 {
-
                     var mo = new ManagementClass("Win32_ComputerSystem").
                         GetInstances().
+                        OfType<ManagementObject>().
                         FirstOrDefault();
+                    _isDomain = (bool)(mo["PartOfDomain"] ?? false);
+                    Machine._domainName = mo["Domain"] as string;
+                    Machine._workgroupName = mo["Workgroup"] as string;
                 }
                 return (bool)_isDomain;
             }
@@ -36,6 +39,7 @@ namespace EnumRun.Lib
         /// </summary>
         public static string DomainName
         {
+            get { return Machine.IsDomain ? _domainName : null; }
         }
 
         /// <summary>
@@ -43,6 +47,7 @@ namespace EnumRun.Lib
         /// </summary>
         public static string WorkgroupName
         {
+            get { return Machine.IsDomain ? null : _workgroupName; }
         }
 
         /// <summary>
