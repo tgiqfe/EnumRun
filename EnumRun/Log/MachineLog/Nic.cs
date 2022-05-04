@@ -64,5 +64,25 @@ namespace EnumRun.Log.MachineLog
             var mo_adapter = mo_adapters.FirstOrDefault(x => x["GUID"] as string == ni.Id);
             this.AdapterName = mo_adapter["Name"] as string;
         }
+
+        public static List<Nic> GetNicCollection()
+        {
+            var list = new List<Nic>();
+            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces().Where(x =>
+               x.OperationalStatus == OperationalStatus.Up &&
+               x.NetworkInterfaceType != NetworkInterfaceType.Tunnel &&
+               x.NetworkInterfaceType != NetworkInterfaceType.Loopback))
+            {
+                list.Add(new Nic(
+                    ni,
+                    new ManagementClass("Win32_NetworkAdapterConfiguration").
+                        GetInstances().
+                        OfType<ManagementObject>(),
+                    new ManagementClass("Win32_NetworkAdapter").
+                        GetInstances().
+                        OfType<ManagementObject>()));
+            }
+            return list;
+        }
     }
 }

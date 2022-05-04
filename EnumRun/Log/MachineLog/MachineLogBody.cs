@@ -23,7 +23,7 @@ namespace EnumRun.Log.MachineLog
         public override string UserName { get; set; }
         public string OS { get; set; }
         public string OSVersion { get; set; }
-        public NicCollection NetworkInterface { get; set; }
+        public List<Nic> NetworkCollection { get; set; }
 
         #endregion
 
@@ -44,6 +44,7 @@ namespace EnumRun.Log.MachineLog
                 First();
             this.OS = mo["Caption"] as string;
             this.OSVersion = mo["Version"] as string;
+            this.NetworkCollection = Nic.GetNicCollection();
         }
 
         public override string GetJson()
