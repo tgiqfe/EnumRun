@@ -19,6 +19,8 @@ namespace EnumRun.Log
         protected SyslogTransport _syslog = null;
         protected LiteDatabase _liteDB = null;
 
+        protected virtual bool _logAppend { get; }
+
         #region LiteDB methods
 
         protected LiteDatabase GetLiteDB()

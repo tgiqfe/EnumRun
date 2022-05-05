@@ -26,7 +26,7 @@ namespace EnumRun.Log.MachineLog
             string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
             TargetDirectory.CreateParent(logPath);
 
-            _writer = new StreamWriter(logPath, false, Encoding.UTF8);
+            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))

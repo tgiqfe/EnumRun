@@ -2,29 +2,32 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using EnumRun.Log.SessionLog;
 
 namespace EnumRun.Lib
 {
     internal class ExecSession
     {
         #region private classes
-
+     
+        /*
         /// <summary>
         /// ログオンセッション情報の保存用クラス
         /// </summary>
         public class Session
         {
-            public string ProcessName { get; set; }
             public DateTime? BootupTime { get; set; }
             public DateTime? LogonTime { get; set; }
             public string LogonId { get; set; }
             public DateTime? ExecTime { get; set; }
+            
+            public bool? MachineLogSend { get; set; }
+            public bool? OldFileCleaned { get; set; }
 
             public static Dictionary<string, Session> Deserialize()
             {
                 Dictionary<string, Session> sessions = null;
                 string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
-
                 try
                 {
                     using (var sr = new StreamReader(filePath, Encoding.UTF8))
@@ -63,6 +66,7 @@ namespace EnumRun.Lib
                 this.Id = id;
             }
         }
+        */
 
         /// <summary>
         /// 確認結果を格納するクラス
@@ -97,14 +101,21 @@ namespace EnumRun.Lib
 
         #endregion
 
+
+
+
         public static Result Check(EnumRunSetting setting)
         {
+
             //  前回セッション
-            Dictionary<string, Session> lastSessions = Session.Deserialize();
-            Session lastSession =
+            string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
+            //Dictionary<string, LogonSession> lastSessions = LogonSession.Deserialize();
+            Dictionary<string, LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
+            LogonSession lastSession =
                 lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null;
 
             //  今回セッション
+            /*
             var logonInfo = new ManagementClass("Win32_LogonSession").
                 GetInstances().
                 OfType<ManagementObject>().
@@ -114,7 +125,6 @@ namespace EnumRun.Lib
                 FirstOrDefault();
             Session currentSession = new Session()
             {
-                ProcessName = Item.ProcessName,
                 BootupTime = ManagementDateTimeConverter.ToDateTime(
                     new ManagementClass("Win32_OperatingSystem").
                         GetInstances().
@@ -124,6 +134,9 @@ namespace EnumRun.Lib
                 LogonId = logonInfo?.Id,
                 ExecTime = DateTime.Now
             };
+            */
+            SessionLogBody body = new SessionLogBody();
+            LogonSession currentSession = body.Session;
 
             Result ret = new Result();
             if (lastSession != null)
@@ -181,9 +194,37 @@ namespace EnumRun.Lib
             }
 
             lastSessions[Item.ProcessName] = currentSession;
-            Session.Serialize(lastSessions);
+            //LogonSession.Serialize(lastSessions);
+            SerializeLogonSession(lastSessions, filePath);
 
             return ret;
+        }
+
+        private static Dictionary<string, LogonSession> DeserializeLastLogonSession(string filePath)
+        {
+            Dictionary<string, LogonSession> sessions = null;
+            try
+            {
+                using (var sr = new StreamReader(filePath, Encoding.UTF8))
+                {
+                    sessions =
+                        JsonSerializer.Deserialize<Dictionary<string, LogonSession>>(sr.ReadToEnd());
+                }
+            }
+            catch { }
+            return sessions ?? new Dictionary<string, LogonSession>();
+        }
+
+        private static void SerializeLogonSession(Dictionary<string, LogonSession> sessions, string filePath)
+        {
+            TargetDirectory.CreateParent(filePath);
+            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
+            {
+                string json = JsonSerializer.Serialize(
+                    sessions,
+                    new JsonSerializerOptions() { WriteIndented = true });
+                sw.WriteLine(json);
+            }
         }
     }
 }

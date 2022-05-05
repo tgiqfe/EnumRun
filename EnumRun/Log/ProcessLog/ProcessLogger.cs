@@ -9,6 +9,8 @@ namespace EnumRun.Log.ProcessLog
 {
     internal class ProcessLogger : LoggerBase
     {
+        protected override bool _logAppend { get { return true; } }
+
         private LogLevel _minLogLevel = LogLevel.Info;
         private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ProcessLogBody> _syslogCollection = null;
@@ -26,7 +28,7 @@ namespace EnumRun.Log.ProcessLog
             TargetDirectory.CreateParent(logPath);
 
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
-            _writer = new StreamWriter(logPath, false, Encoding.UTF8);
+            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -146,11 +148,10 @@ namespace EnumRun.Log.ProcessLog
             }
         }
 
-        public void Close()
+        public override void Close()
         {
             Write("終了");
 
-            //  一応最大1000ミリ秒待機
             try
             {
                 _rwLock.AcquireWriterLock(10000);

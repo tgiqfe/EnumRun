@@ -11,6 +11,8 @@ namespace EnumRun.Log.SessionLog
 {
     internal class SessionLogger : LoggerBase
     {
+        protected override bool _logAppend { get { return true; } }
+
         private ILiteCollection<SessionLogBody> _logstashCollection = null;
         private ILiteCollection<SessionLogBody> _syslogCollection = null;
 
@@ -21,7 +23,7 @@ namespace EnumRun.Log.SessionLog
             string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
             TargetDirectory.CreateParent(logPath);
 
-            _writer = new StreamWriter(logPath, false, Encoding.UTF8);
+            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -40,6 +42,11 @@ namespace EnumRun.Log.SessionLog
         public void Write()
         {
             SendAsync(new SessionLogBody()).ConfigureAwait(false);
+        }
+
+        public void Write(SessionLogBody body)
+        {
+            SendAsync(body).ConfigureAwait(false);
         }
 
         private async Task SendAsync(SessionLogBody body)
