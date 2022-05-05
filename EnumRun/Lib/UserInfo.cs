@@ -4,7 +4,7 @@ using Microsoft.Win32;
 
 namespace EnumRun.Lib
 {
-    internal class UserAccount
+    internal class UserInfo
     {
         private static bool? _isSystemAccount = null;
 
@@ -52,8 +52,8 @@ namespace EnumRun.Lib
         {
             get
             {
-                return !UserAccount.IsSystemAccount &&
-                    Machine.IsDomain &&
+                return !UserInfo.IsSystemAccount &&
+                    MachineInfo.IsDomain &&
                     (Environment.UserDomainName != Environment.MachineName);
             }
         }

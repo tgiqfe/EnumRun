@@ -16,9 +16,9 @@ namespace EnumRun
         /// </summary>
         public void SetDefault()
         {
-            this.FilesPath = Path.Combine(Item.WorkDirectory, "Files");
-            this.LogsPath = Path.Combine(Item.WorkDirectory, "Logs");
-            this.OutputPath = Path.Combine(Item.WorkDirectory, "Output");
+            this.FilesPath = Path.Combine(Item.WorkDirectoryPath, "Files");
+            this.LogsPath = Path.Combine(Item.WorkDirectoryPath, "Logs");
+            this.OutputPath = Path.Combine(Item.WorkDirectoryPath, "Output");
             this.RestTime = 60;
             this.DefaultOutput = false;
             this.RetentionPeriod = 0;
@@ -306,21 +306,21 @@ namespace EnumRun
         public string GetFilesPath()
         {
             return string.IsNullOrEmpty(this.FilesPath ) ?
-                Path.Combine(Item.WorkDirectory, "Files") :
+                Path.Combine(Item.WorkDirectoryPath, "Files") :
                 ExpandEnvironment(this.FilesPath);
         }
 
         public string GetLogsPath()
         {
             return string.IsNullOrEmpty(this.LogsPath) ?
-                Path.Combine(Item.WorkDirectory, "Logs") :
+                Path.Combine(Item.WorkDirectoryPath, "Logs") :
                 ExpandEnvironment(this.LogsPath);
         }
 
         public string GetOutputPath()
         {
             return string.IsNullOrEmpty(this.OutputPath) ?
-                Path.Combine(Item.WorkDirectory, "Output") :
+                Path.Combine(Item.WorkDirectoryPath, "Output") :
                 ExpandEnvironment(this.OutputPath);
         }
 

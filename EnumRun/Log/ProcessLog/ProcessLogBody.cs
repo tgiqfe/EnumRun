@@ -38,7 +38,11 @@ namespace EnumRun.Log.ProcessLog
         public override string GetJson()
         {
             _options ??= GetJsonSerializerOption(
-                escapeDoubleQuote: true, false, false, false, convertEnumCamel: true);
+                escapeDoubleQuote: true,
+                false, 
+                false, 
+                false, 
+                convertEnumCamel: true);
             return JsonSerializer.Serialize(this, _options);
         }
     }

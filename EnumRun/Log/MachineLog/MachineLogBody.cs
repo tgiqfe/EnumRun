@@ -49,7 +49,7 @@ namespace EnumRun.Log.MachineLog
                 OfType<ManagementObject>().
                 First();
 
-            this.DomainName = Machine.IsDomain ? Machine.DomainName : Machine.WorkgroupName;
+            this.DomainName = MachineInfo.IsDomain ? MachineInfo.DomainName : MachineInfo.WorkgroupName;
             this.OS = mo["Caption"] as string;
             this.OSVersion = mo["Version"] as string;
             this.Network = new NetworkConf(init: true);
@@ -58,7 +58,11 @@ namespace EnumRun.Log.MachineLog
         public override string GetJson()
         {
             _options ??= GetJsonSerializerOption(
-                escapeDoubleQuote: true, false, false, writeIndented: true, convertEnumCamel: true);
+                escapeDoubleQuote: true,
+                false, 
+                false, 
+                writeIndented: true,
+                convertEnumCamel: true);
             return JsonSerializer.Serialize(this, _options);
         }
 

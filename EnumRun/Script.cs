@@ -78,7 +78,7 @@ namespace EnumRun
                         Path.GetFileNameWithoutExtension(this.FilePath),
                         Environment.ProcessId,
                         DateTime.Now.ToString("yyyyMMddHHmmss")));
-                _logger.Write(LogLevel.Info, FileName, "Output => {0}", outputPath);
+                _logger.Write(LogLevel.Info, FileName, "Output file => {0}", outputPath);
                 task = ProcessThreadAndOutput(outputPath);
             }
             else
@@ -118,7 +118,7 @@ namespace EnumRun
             //  [a]オプション
             //  ユーザーアカウント制御が「通知しない」場合のみ
             //  Administratorsグループのチェックは行わない。一般ユーザーでも、とりあえずrunasで実行。
-            if (this.Option.Contains(OptionType.RunAsAdmin) && !UserAccount.IsDisableUAC())
+            if (this.Option.Contains(OptionType.RunAsAdmin) && !UserInfo.IsDisableUAC())
             {
                 _logger.Write(LogLevel.Attention, FileName, "Stop script, [a]option.");
                 _logger.Write(LogLevel.Debug, FileName, "Enable User Account Control setting.");
@@ -127,35 +127,35 @@ namespace EnumRun
 
             //  [m]オプション
             //  ドメイン参加PCのみ
-            if (this.Option.Contains(OptionType.DomainPCOnly) && !Machine.IsDomain)
+            if (this.Option.Contains(OptionType.DomainPCOnly) && !MachineInfo.IsDomain)
             {
                 _logger.Write(LogLevel.Attention, FileName, "Stop script, [m]option and Workgroup PC.");
-                _logger.Write(LogLevel.Debug, FileName, "Workgroup name => {0}", Machine.WorkgroupName);
+                _logger.Write(LogLevel.Debug, FileName, "Workgroup name => {0}", MachineInfo.WorkgroupName);
                 return true;
             }
 
             //  [k]オプション
             //  ワークグループPCのみ
-            if (this.Option.Contains(OptionType.WorkgroupPCOnly) && Machine.IsDomain)
+            if (this.Option.Contains(OptionType.WorkgroupPCOnly) && MachineInfo.IsDomain)
             {
                 //  未テスト
                 _logger.Write(LogLevel.Attention, FileName, "Stop script, [k]option and domain PC.");
-                _logger.Write(LogLevel.Debug, FileName, "Domain nam => {0}", Machine.DomainName);
+                _logger.Write(LogLevel.Debug, FileName, "Domain nam => {0}", MachineInfo.DomainName);
                 return true;
             }
 
             //  [s]オプション
             //  システムアカウントのみ
-            if (this.Option.Contains(OptionType.SystemAccountOnly) && !UserAccount.IsSystemAccount)
+            if (this.Option.Contains(OptionType.SystemAccountOnly) && !UserInfo.IsSystemAccount)
             {
                 _logger.Write(LogLevel.Attention, FileName, "Stop script, [s]option and not system account.");
-                _logger.Write(LogLevel.Debug, FileName, "UserName => {0}, SID => {1}", Environment.UserName, UserAccount.CurrentSID);
+                _logger.Write(LogLevel.Debug, FileName, "UserName => {0}, SID => {1}", Environment.UserName, UserInfo.CurrentSID);
                 return true;
             }
 
             //  [d]オプション
             //  ドメインユーザーのみ
-            if (this.Option.Contains(OptionType.DomainUserOnly) && !UserAccount.IsDomainUser)
+            if (this.Option.Contains(OptionType.DomainUserOnly) && !UserInfo.IsDomainUser)
             {
                 _logger.Write(LogLevel.Attention, FileName, "Stop script, [d]option and local user.");
                 _logger.Write(LogLevel.Debug, FileName, "UserName => {0}\\{1}", Environment.UserDomainName, Environment.UserName);
@@ -164,7 +164,7 @@ namespace EnumRun
 
             //  [l]オプション
             //  ローカルユーザーのみ
-            if (this.Option.Contains(OptionType.LocalUserOnly) && UserAccount.IsDomainUser)
+            if (this.Option.Contains(OptionType.LocalUserOnly) && UserInfo.IsDomainUser)
             {
                 //  未テスト
                 _logger.Write(LogLevel.Attention, FileName, "Stop script, [l]option and domain user.");
@@ -174,18 +174,18 @@ namespace EnumRun
 
             //  [p]オプション
             //  デフォルトゲートウェイへの通信確認
-            if (this.Option.Contains(OptionType.DGReachableOnly) && !Machine.IsReachableDefaultGateway())
+            if (this.Option.Contains(OptionType.DGReachableOnly) && !MachineInfo.IsReachableDefaultGateway())
             {
                 //  未テスト
                 _logger.Write(LogLevel.Attention, FileName, "Stop script, [p]option and not reachable to DefaultGateway.");
-                _logger.Write(LogLevel.Debug, FileName, "DefaultGateway => {0}", Machine.DefaultGateway);
+                _logger.Write(LogLevel.Debug, FileName, "DefaultGateway => {0}", MachineInfo.DefaultGateway);
                 return true;
             }
 
             //  [t]オプション
             //  管理者実行しているかどうか。
             //  管理者として実行させるオプション[a]とは異なるので注意。
-            if (this.Option.Contains(OptionType.TrustedOnly) && !UserAccount.IsRunAdministrator())
+            if (this.Option.Contains(OptionType.TrustedOnly) && !UserInfo.IsRunAdministrator())
             {
                 _logger.Write(LogLevel.Attention, FileName, "Script stop, [t]option and not Turusteduser");
                 _logger.Write(LogLevel.Debug, FileName, "UserName => {0}", Environment.UserName);
@@ -201,6 +201,7 @@ namespace EnumRun
         /// <returns></returns>
         private async Task ProcessThread()
         {
+            _logger.Write(LogLevel.Debug, FileName, "Execute script.");
             await Task.Run(() =>
             {
                 using (Process proc = this._language.GetProcess(this.FilePath, ""))
@@ -225,6 +226,7 @@ namespace EnumRun
         {
             TargetDirectory.CreateParent(outputPath);
 
+            _logger.Write(LogLevel.Debug, FileName, "Execute script. (output)");
             await Task.Run(() =>
             {
                 using (Process proc = this._language.GetProcess(this.FilePath, ""))

@@ -45,5 +45,16 @@ namespace EnumRun.Log.ResultLog
 
 
         }
+
+        public override string GetJson()
+        {
+            _options ??= GetJsonSerializerOption(
+                escapeDoubleQuote: true,
+                false,
+                false,
+                false,
+                convertEnumCamel: true);
+            return JsonSerializer.Serialize(this, _options);
+        }
     }
 }
