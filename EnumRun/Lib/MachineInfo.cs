@@ -5,7 +5,7 @@ using System.Net.NetworkInformation;
 
 namespace EnumRun.Lib
 {
-    internal class Machine
+    internal class MachineInfo
     {
         private static bool? _isDomain = null;
 
@@ -27,8 +27,8 @@ namespace EnumRun.Lib
                         OfType<ManagementObject>().
                         FirstOrDefault();
                     _isDomain = (bool)(mo["PartOfDomain"] ?? false);
-                    Machine._domainName = mo["Domain"] as string;
-                    Machine._workgroupName = mo["Workgroup"] as string;
+                    MachineInfo._domainName = mo["Domain"] as string;
+                    MachineInfo._workgroupName = mo["Workgroup"] as string;
                 }
                 return (bool)_isDomain;
             }
@@ -39,7 +39,7 @@ namespace EnumRun.Lib
         /// </summary>
         public static string DomainName
         {
-            get { return Machine.IsDomain ? _domainName : null; }
+            get { return MachineInfo.IsDomain ? _domainName : null; }
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace EnumRun.Lib
         /// </summary>
         public static string WorkgroupName
         {
-            get { return Machine.IsDomain ? null : _workgroupName; }
+            get { return MachineInfo.IsDomain ? null : _workgroupName; }
         }
 
         /// <summary>

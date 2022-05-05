@@ -18,7 +18,6 @@ namespace EnumRun.Lib
             public DateTime? BootupTime { get; set; }
             public DateTime? LogonTime { get; set; }
             public string LogonId { get; set; }
-            public string FilesPath { get; set; }
             public DateTime? ExecTime { get; set; }
 
             public static Dictionary<string, Session> Deserialize()
@@ -123,8 +122,6 @@ namespace EnumRun.Lib
                         FirstOrDefault()?["LastBootUpTime"] as string),
                 LogonTime = logonInfo?.Time,
                 LogonId = logonInfo?.Id,
-                //FilesPath = setting.FilesPath,
-                FilesPath = setting.GetFilesPath(),
                 ExecTime = DateTime.Now
             };
 
@@ -168,17 +165,6 @@ namespace EnumRun.Lib
                     ret.LogonId = string.Format("{0}~{1}", lastSession.LogonId, currentSession.LogonId);
                 }
 
-                //  FilesPath
-                if (lastSession.FilesPath == currentSession.FilesPath)
-                {
-                    ret.Runnable = false;
-                    ret.FilesPath = currentSession.FilesPath;
-                }
-                else
-                {
-                    ret.FilesPath = string.Format("{0}~{1}", lastSession.FilesPath, currentSession.FilesPath);
-                }
-
                 //  実行時間
                 if (((DateTime)currentSession.ExecTime - (DateTime)lastSession.ExecTime).TotalSeconds <= setting.RestTime)
                 {
@@ -192,13 +178,6 @@ namespace EnumRun.Lib
                         lastSession.ExecTime?.ToString("yyyy/MM/dd HH:mm:ss"),
                         currentSession.ExecTime?.ToString("yyyy/MM/dd HH:mm:ss"));
                 }
-            }
-
-            //  FilesPathの有無チェック
-            if (!Directory.Exists(currentSession.FilesPath))
-            {
-                ret.Runnable = false;
-                ret.FilesPath += $" missing[{currentSession.FilesPath}]";
             }
 
             lastSessions[Item.ProcessName] = currentSession;
