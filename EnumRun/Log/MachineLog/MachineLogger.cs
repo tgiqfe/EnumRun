@@ -95,7 +95,7 @@ namespace EnumRun.Log.MachineLog
                 {
                     foreach (var pair in body.GetSyslogMessage())
                     {
-                        await _syslog.WriteAsync(LogLevel.Info, pair.Key, pair.Value);
+                        await _syslog.SendAsync(LogLevel.Info, pair.Key, pair.Value);
                     }
                 }
                 else

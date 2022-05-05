@@ -13,37 +13,12 @@ namespace EnumRun.Log
     {
         public bool Enabled { get; set; }
 
-        private string _logstashServer { get; set; }
         private HttpRequestMessage _request = null;
 
         public LogstashTransport() { }
         public LogstashTransport(string logstashServer)
         {
-            this._logstashServer = logstashServer;
-
-            //  Logstashサーバ情報を格納
             var info = new ServerInfo(logstashServer, 80, "http");
-            //this._server = info.Server;
-            //this._port = info.Port;
-            /*
-            string tempServer = logstashServer;
-            string tempPort = "";
-            if (tempServer.StartsWith("http://") || tempServer.StartsWith("https://"))
-            {
-                tempServer = tempServer.Substring(tempServer.IndexOf("//") + 2);
-            }
-            if (tempServer.Contains(":"))
-            {
-                tempPort = tempServer.Substring(tempServer.IndexOf(":") + 1);
-                if (tempPort.Contains("/"))
-                {
-                    tempPort = tempPort.Substring(0, tempPort.IndexOf("/"));
-                }
-                tempServer = tempServer.Substring(0, tempServer.IndexOf(":"));
-            }
-            this._server = tempServer;
-            this._port = int.Parse(tempPort);
-            */
 
             //  接続可否チェック
             if (new TcpConnect(info.Server, info.Port).TcpConnectSuccess)
@@ -51,7 +26,7 @@ namespace EnumRun.Log
                 this.Enabled = true;
 
                 //  Requestの基本情報部分を事前生成
-                this._request = new HttpRequestMessage(HttpMethod.Post, _logstashServer);
+                this._request = new HttpRequestMessage(HttpMethod.Post, logstashServer);
             }
         }
 

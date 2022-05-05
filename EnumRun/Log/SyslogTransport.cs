@@ -14,51 +14,6 @@ namespace EnumRun.Log
 {
     internal class SyslogTransport : IDisposable
     {
-        /*
-        #region Server info (ip,port,protocol)
-
-        private class ServerInfo
-        {
-            public string Server { get; set; }
-            public int Port { get; set; }
-            public SyslogProtocol Protocol { get; set; }
-
-            public ServerInfo() { }
-            public ServerInfo(string syslogServer)
-            {
-                string tempServer = syslogServer;
-                string tempPort = "514";
-
-                Match match;
-                if ((match = Regex.Match(tempServer, "^.+(?=://)")).Success)
-                {
-                    this.Protocol = match.Value switch
-                    {
-                        "tcp" => SyslogProtocol.TCP,
-                        "udp" => SyslogProtocol.UDP,
-                        _ => SyslogProtocol.UDP,
-                    };
-                    tempServer = tempServer.Substring(tempServer.IndexOf("://") + 3);
-                }
-                else
-                {
-                    this.Protocol = SyslogProtocol.UDP;
-                }
-
-                if ((match = Regex.Match(tempServer, @"(?<=:)\d+")).Success)
-                {
-                    tempPort = match.Value;
-                    tempServer = tempServer.Substring(0, tempServer.IndexOf(":"));
-                }
-                this.Port = int.Parse(tempPort);
-
-                this.Server = tempServer;
-            }
-        }
-
-        #endregion
-        */
-
         public bool Enabled { get; set; }
 
         public SyslogSender Sender { get; set; }
@@ -103,19 +58,19 @@ namespace EnumRun.Log
             }
         }
 
-        #region Write
+        #region Send
 
-        public void Write(string message)
+        public void Send(string message)
         {
-            Write(DateTime.Now, this.Facility, this.Severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
+            Send(DateTime.Now, this.Facility, this.Severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
         }
 
-        public void Write(Severity severity, string message)
+        public void Send(Severity severity, string message)
         {
-            Write(DateTime.Now, this.Facility, severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
+            Send(DateTime.Now, this.Facility, severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
         }
 
-        public void Write(DateTime dt, Facility facility, Severity severity, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
+        public void Send(DateTime dt, Facility facility, Severity severity, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
         {
             Sender.Send(
                 new SyslogMessage(
@@ -130,7 +85,7 @@ namespace EnumRun.Log
                     structuredDataParams));
         }
 
-        public void Write(DateTime dt, Facility facility, LogLevel level, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
+        public void Send(DateTime dt, Facility facility, LogLevel level, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
         {
             Sender.Send(
                 new SyslogMessage(
@@ -145,22 +100,22 @@ namespace EnumRun.Log
                     structuredDataParams));
         }
 
-        public void Write(LogLevel level, string msgId, string message)
+        public void Send(LogLevel level, string msgId, string message)
         {
-            Write(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
+            Send(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
         }
 
-        public async Task WriteAsync(string message)
+        public async Task SendAsync(string message)
         {
-            await WriteAsync(DateTime.Now, this.Facility, this.Severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
+            await SendAsync(DateTime.Now, this.Facility, this.Severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
         }
 
-        public async Task WriteAsync(Severity severity, string message)
+        public async Task SendAsync(Severity severity, string message)
         {
-            await WriteAsync(DateTime.Now, this.Facility, severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
+            await SendAsync(DateTime.Now, this.Facility, severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
         }
 
-        public async Task WriteAsync(DateTime dt, Facility facility, Severity severity, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
+        public async Task SendAsync(DateTime dt, Facility facility, Severity severity, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
         {
             await Sender.SendAsync(
                 new SyslogMessage(
@@ -175,7 +130,7 @@ namespace EnumRun.Log
                     structuredDataParams));
         }
 
-        public async Task WriteAsync(DateTime dt, Facility facility, LogLevel level, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
+        public async Task SendAsync(DateTime dt, Facility facility, LogLevel level, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
         {
             await Sender.SendAsync(
                 new SyslogMessage(
@@ -190,9 +145,9 @@ namespace EnumRun.Log
                     structuredDataParams));
         }
 
-        public async Task WriteAsync(LogLevel level, string msgId, string message)
+        public async Task SendAsync(LogLevel level, string msgId, string message)
         {
-            await WriteAsync(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
+            await SendAsync(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
         }
 
         #endregion

@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 
 namespace EnumRun.Lib
 {
+    /// <summary>
+    /// URIからサーバアドレス(IP or FQDN)、ポート、プロトコルを格納
+    /// </summary>
     internal class ServerInfo
     {
         public string Server { get; set; }
@@ -14,9 +17,9 @@ namespace EnumRun.Lib
         public string Protocol { get; set; }
 
         public ServerInfo() { }
-        public ServerInfo(string url)
+        public ServerInfo(string uri)
         {
-            string tempServer = url;
+            string tempServer = uri;
             string tempPort = "0";
             string tempProtocol = "";
 

@@ -146,7 +146,7 @@ namespace EnumRun.Log.ProcessLog
                 //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
                 if (_syslog?.Enabled ?? false)
                 {
-                    await _syslog.WriteAsync(body.Level, body.ScriptFile, body.Message);
+                    await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
                 }
                 else
                 {
