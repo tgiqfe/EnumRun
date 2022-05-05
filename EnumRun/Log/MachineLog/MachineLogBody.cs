@@ -35,8 +35,7 @@ namespace EnumRun.Log.MachineLog
         private static int _index = 0;
         private static JsonSerializerOptions _options = null;
 
-        public MachineLogBody() { }
-        public MachineLogBody(bool init)
+        public MachineLogBody()
         {
             this.ProcessName = Item.ProcessName;
             this.HostName = Environment.MachineName;

@@ -9,15 +9,8 @@ using EnumRun.Lib.Syslog;
 
 namespace EnumRun.Log.MachineLog
 {
-    internal class MachineLogger : IDisposable
+    internal class MachineLogger : LoggerBase
     {
-        private string _logPath = null;
-        private StreamWriter _writer = null;
-        private ReaderWriterLock _rwLock = null;
-
-        private LogstashTransport _logstash = null;
-        private SyslogTransport _syslog = null;
-        private LiteDatabase _liteDB = null;
         private ILiteCollection<MachineLogBody> _logstashCollection = null;
         private ILiteCollection<MachineLogBody> _syslogCollection = null;
 
@@ -28,12 +21,12 @@ namespace EnumRun.Log.MachineLog
 
         public MachineLogger(EnumRunSetting setting)
         {
-            _logPath = Path.Combine(
-                setting.GetLogsPath(),
-                $"MachineLog_{DateTime.Now.ToString("yyyyMMdd")}.log");
-            TargetDirectory.CreateParent(_logPath);
+            string logFileName =
+                $"MachineLog_{DateTime.Now.ToString("yyyyMMdd")}.log";
+            string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
+            TargetDirectory.CreateParent(logPath);
 
-            _writer = new StreamWriter(_logPath, false, new UTF8Encoding(false));
+            _writer = new StreamWriter(logPath, false, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -51,7 +44,7 @@ namespace EnumRun.Log.MachineLog
 
         public void Write()
         {
-            SendAsync(new MachineLogBody(init: true)).ConfigureAwait(false);
+            SendAsync(new MachineLogBody()).ConfigureAwait(false);
         }
 
         private async Task SendAsync(MachineLogBody body)
@@ -73,18 +66,8 @@ namespace EnumRun.Log.MachineLog
                 }
                 if (!res)
                 {
-                    if (_liteDB == null)
-                    {
-                        string localDBPath = Path.Combine(
-                            Path.GetDirectoryName(_logPath),
-                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                    }
-                    if (_logstashCollection == null)
-                    {
-                        _logstashCollection = _liteDB.GetCollection<MachineLogBody>(MachineLogBody.TAG + "_logstash");
-                        _logstashCollection.EnsureIndex(x => x.Serial, true);
-                    }
+                    _liteDB ??= GetLiteDB();
+                    _logstashCollection ??= GetCollection<MachineLogBody>(MachineLogBody.TAG + "_logstash");
                     _logstashCollection.Upsert(body);
                 }
 
@@ -98,18 +81,8 @@ namespace EnumRun.Log.MachineLog
                 }
                 else
                 {
-                    if (_liteDB == null)
-                    {
-                        string localDBPath = Path.Combine(
-                            Path.GetDirectoryName(_logPath),
-                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                    }
-                    if (_syslogCollection == null)
-                    {
-                        _syslogCollection = _liteDB.GetCollection<MachineLogBody>(MachineLogBody.TAG + "_syslog");
-                        _syslogCollection.EnsureIndex(x => x.Serial, true);
-                    }
+                    _liteDB ??= GetLiteDB();
+                    _syslogCollection ??= GetCollection<MachineLogBody>(MachineLogBody.TAG + "_syslog");
                     _syslogCollection.Upsert(body);
                 }
             }
@@ -119,45 +92,5 @@ namespace EnumRun.Log.MachineLog
                 _rwLock.ReleaseWriterLock();
             }
         }
-
-        public void Close()
-        {
-
-            //  一応最大1000ミリ秒待機
-            try
-            {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
-            }
-            catch { }
-
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
-        }
-
-        #region Dispose
-
-        private bool disposedValue;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Close();
-                }
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }

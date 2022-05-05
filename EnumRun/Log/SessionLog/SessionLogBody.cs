@@ -54,10 +54,7 @@ namespace EnumRun.Log.SessionLog
         private static int _index = 0;
         private static JsonSerializerOptions _options = null;
 
-        public SessionLogBody() { }
-        public SessionLogBody(bool init) { Init(); }
-
-        public void Init()
+        public SessionLogBody()
         {
             this.ProcessName = Item.ProcessName;
             this.HostName = Environment.MachineName;
@@ -92,9 +89,9 @@ namespace EnumRun.Log.SessionLog
         public override string GetJson()
         {
             _options ??= GetJsonSerializerOption(
-                false, 
-                false, 
-                false, 
+                false,
+                false,
+                false,
                 writeIndented: true,
                 false);
             return JsonSerializer.Serialize(this, _options);
@@ -112,7 +109,7 @@ namespace EnumRun.Log.SessionLog
             ret["LogonSession"] =
                 string.Format("BootupTime => {0}, LogonTime => {1}, LogonId => {2}, ExecTime => {3}",
                     this.Session.BootupTime, this.Session.LogonTime, this.Session.LogonId, this.Session.ExecTime);
-            
+
             return ret;
         }
     }

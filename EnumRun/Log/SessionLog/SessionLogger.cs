@@ -21,7 +21,7 @@ namespace EnumRun.Log.SessionLog
             string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
             TargetDirectory.CreateParent(logPath);
 
-            _writer = new StreamWriter(logPath, false, new UTF8Encoding(false));
+            _writer = new StreamWriter(logPath, false, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -39,7 +39,7 @@ namespace EnumRun.Log.SessionLog
 
         public void Write()
         {
-            SendAsync(new SessionLogBody(init: true)).ConfigureAwait(false);
+            SendAsync(new SessionLogBody()).ConfigureAwait(false);
         }
 
         private async Task SendAsync(SessionLogBody body)
@@ -62,7 +62,7 @@ namespace EnumRun.Log.SessionLog
                 if (!res)
                 {
                     _liteDB ??= GetLiteDB();
-                    _logstashCollection = GetCollection<SessionLogBody>(SessionLogBody.TAG + "_logstash");
+                    _logstashCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_logstash");
                     _logstashCollection.Upsert(body);
                 }
 
@@ -77,7 +77,7 @@ namespace EnumRun.Log.SessionLog
                 else
                 {
                     _liteDB ??= GetLiteDB();
-                    _syslogCollection = GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
+                    _syslogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
                     _syslogCollection.Upsert(body);
                 }
             }
