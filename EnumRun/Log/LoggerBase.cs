@@ -10,9 +10,6 @@ using System.IO;
 
 namespace EnumRun.Log
 {
-    //  ↓参考用
-    //internal class LoggerBase<T, U> where T : LogBodyBase where U : LogBodyBase, IDisposable
-
     internal class LoggerBase : IDisposable
     {
         protected string _logDir = null;
@@ -20,8 +17,9 @@ namespace EnumRun.Log
         protected ReaderWriterLock _rwLock = null;
         protected LogstashTransport _logstash = null;
         protected SyslogTransport _syslog = null;
-        private LiteDatabase _liteDB = null;
+        protected LiteDatabase _liteDB = null;
 
+        #region LiteDB methods
 
         protected LiteDatabase GetLiteDB()
         {
@@ -30,6 +28,15 @@ namespace EnumRun.Log
                 "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
             return new LiteDatabase($"Filename={dbPath};Connection=shared");
         }
+
+        protected ILiteCollection<T> GetCollection<T>(string tableName) where T : LogBodyBase
+        {
+            var collection = _liteDB.GetCollection<T>(tableName);
+            collection.EnsureIndex(x => x.Serial, true);
+            return collection;
+        }
+
+        #endregion
 
         public virtual void Close()
         {
