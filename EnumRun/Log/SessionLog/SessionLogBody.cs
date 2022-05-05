@@ -19,17 +19,6 @@ namespace EnumRun.Log.SessionLog
         #region Private class
 
         /// <summary>
-        /// ログオンセッション情報の保存用クラス
-        /// </summary>
-        public class LogonSession
-        {
-            public DateTime? BootupTime { get; set; }
-            public DateTime? LogonTime { get; set; }
-            public string LogonId { get; set; }
-            public DateTime? ExecTime { get; set; }
-        }
-
-        /// <summary>
         /// ログオン情報確認用クラス
         /// </summary>
         private class LogonInfo
@@ -54,8 +43,9 @@ namespace EnumRun.Log.SessionLog
 
         public override string UserName { get; set; }
         public string UserDomain { get; set; }
-        public bool? IsSystemAccount { get; set; }
-        public string AppName { get; set; }
+        public bool? SystemAccount { get; set; }
+
+        public string AppPath { get; set; }
         public string AppVersion { get; set; }
         public LogonSession Session { get; set; }
 
@@ -75,8 +65,8 @@ namespace EnumRun.Log.SessionLog
             this.Serial = $"{Item.Serial}_{_index++}";
 
             this.UserDomain = Environment.UserDomainName;
-            this.IsSystemAccount = UserInfo.IsSystemAccount;
-            this.AppName = Item.ProcessName;
+            this.SystemAccount = UserInfo.IsSystemAccount;
+            this.AppPath = Item.ExecFilePath;
             this.AppVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
             LogonInfo logonInfo = new ManagementClass("Win32_LogonSession").
@@ -108,6 +98,22 @@ namespace EnumRun.Log.SessionLog
                 writeIndented: true,
                 false);
             return JsonSerializer.Serialize(this, _options);
+        }
+
+        public Dictionary<string, string> GetSyslogMessage()
+        {
+            var ret = new Dictionary<string, string>();
+            ret["UserInfo"] =
+                string.Format("ProcessName => {0}, HostName => {1}, UserName => {2}, UserDomain => {3}, SystemAccount => {4}",
+                    this.ProcessName, this.HostName, this.UserName, this.UserDomain, this.SystemAccount);
+            ret["AppInfo"] =
+                string.Format("AppPath => {0}, AppVersion => {1}",
+                    this.AppPath, this.AppVersion);
+            ret["LogonSession"] =
+                string.Format("BootupTime => {0}, LogonTime => {1}, LogonId => {2}, ExecTime => {3}",
+                    this.Session.BootupTime, this.Session.LogonTime, this.Session.LogonId, this.Session.ExecTime);
+            
+            return ret;
         }
     }
 }

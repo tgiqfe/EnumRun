@@ -21,16 +21,6 @@ if (initial)
 }
 
 
-var body = new MachineLogBody(init: true);
-string json = body.GetJson();
-Console.WriteLine(json);
-
-
-
-Console.ReadLine();
-Environment.Exit(0);
-
-
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 

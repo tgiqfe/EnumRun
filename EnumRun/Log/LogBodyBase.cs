@@ -58,5 +58,7 @@ namespace EnumRun.Log
         }
 
         public virtual string GetJson() { return ""; }
+
+        
     }
 }

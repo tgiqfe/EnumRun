@@ -8,6 +8,8 @@ using System.Text.Json.Serialization;
 
 namespace EnumRun.Log.ResultLog
 {
+    //  (案)Resultは不要
+
     internal class ResultLogBody : LogBodyBase
     {
         public const string TAG = "ResultLog";
@@ -25,8 +27,6 @@ namespace EnumRun.Log.ResultLog
         public bool? IsSendMachineLog { get; set; }     //  MachineLogを送信したかどうか
         public List<string> RunnedScripts { get; set; } //  実行したスクリプトファイル
         public List<string> NotRunnedScripts { get; set; }  //  実行しなかったスクリプトファイル
-
-        public int? ReturnCode { get; set; }            //  終了コード。
 
         #endregion
 

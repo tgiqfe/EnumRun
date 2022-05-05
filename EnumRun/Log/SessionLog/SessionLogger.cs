@@ -7,9 +7,9 @@ using LiteDB;
 using EnumRun.Lib;
 using EnumRun.Lib.Syslog;
 
-namespace EnumRun.Log.MachineLog
+namespace EnumRun.Log.SessionLog
 {
-    internal class MachineLogger : IDisposable
+    internal class SessionLogger : IDisposable
     {
         private string _logPath = null;
         private StreamWriter _writer = null;
@@ -18,15 +18,12 @@ namespace EnumRun.Log.MachineLog
         private LogstashTransport _logstash = null;
         private SyslogTransport _syslog = null;
         private LiteDatabase _liteDB = null;
-        private ILiteCollection<MachineLogBody> _logstashCollection = null;
-        private ILiteCollection<MachineLogBody> _syslogCollection = null;
+        private ILiteCollection<SessionLogBody> _logstashCollection = null;
+        private ILiteCollection<SessionLogBody> _syslogCollection = null;
 
-        /// <summary>
-        /// 引数無しコンストラクタ
-        /// </summary>
-        public MachineLogger() { }
+        public SessionLogger() { }
 
-        public MachineLogger(EnumRunSetting setting)
+        public SessionLogger(EnumRunSetting setting)
         {
             _logPath = Path.Combine(
                 setting.GetLogsPath(),
@@ -45,16 +42,16 @@ namespace EnumRun.Log.MachineLog
                 _syslog = new SyslogTransport(setting);
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
-                _syslog.ProcId = MachineLogBody.TAG;
+                _syslog.ProcId = SessionLogBody.TAG;
             }
         }
 
         public void Write()
         {
-            SendAsync(new MachineLogBody(init: true)).ConfigureAwait(false);
+            SendAsync(new SessionLogBody(init: true)).ConfigureAwait(false);
         }
 
-        private async Task SendAsync(MachineLogBody body)
+        private async Task SendAsync(SessionLogBody body)
         {
             try
             {
@@ -82,7 +79,7 @@ namespace EnumRun.Log.MachineLog
                     }
                     if (_logstashCollection == null)
                     {
-                        _logstashCollection = _liteDB.GetCollection<MachineLogBody>(MachineLogBody.TAG + "_logstash");
+                        _logstashCollection = _liteDB.GetCollection<SessionLogBody>(SessionLogBody.TAG + "_logstash");
                         _logstashCollection.EnsureIndex(x => x.Serial, true);
                     }
                     _logstashCollection.Upsert(body);
@@ -107,7 +104,7 @@ namespace EnumRun.Log.MachineLog
                     }
                     if (_syslogCollection == null)
                     {
-                        _syslogCollection = _liteDB.GetCollection<MachineLogBody>(MachineLogBody.TAG + "_syslog");
+                        _syslogCollection = _liteDB.GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
                         _syslogCollection.EnsureIndex(x => x.Serial, true);
                     }
                     _syslogCollection.Upsert(body);
