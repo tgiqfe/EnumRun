@@ -26,7 +26,7 @@ namespace EnumRun.Lib
         /// </summary>
         private static readonly string[] _workCandidate = new string[]
         {
-            Item.WorkDirectory,
+            Item.WorkDirectoryPath,
             Item.ExecDirectoryPath,
         };
 

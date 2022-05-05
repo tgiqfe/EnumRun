@@ -29,8 +29,8 @@ namespace EnumRun
         /// ワークフォルダー
         /// システムアカウントの場合は実行ファイルの場所。それ以外はTempフォルダー配下
         /// </summary>
-        public static readonly string WorkDirectory =
-            EnumRun.Lib.UserAccount.IsSystemAccount ?
+        public static readonly string WorkDirectoryPath =
+            EnumRun.Lib.UserInfo.IsSystemAccount ?
                 ExecDirectoryPath :
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 
