@@ -21,16 +21,6 @@ if (initial)
 }
 
 
-var body = new MachineLogBody(init: true);
-string json = body.GetJson();
-Console.WriteLine(json);
-
-
-
-Console.ReadLine();
-Environment.Exit(0);
-
-
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
@@ -38,7 +28,7 @@ using (var logger = new ProcessLogger(setting))
 {
     logger.Write(setting.ToLog());
 
-    var result = ExecSession.Check(setting);
+    var result = ExecSession.PrepareProcess(setting, logger);
     OldFiles.Clean(setting);
 
     if (result.Runnable)

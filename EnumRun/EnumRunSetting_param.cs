@@ -17,37 +17,16 @@ namespace EnumRun
         /// <summary>
         /// スクリプトファイルの保存先フォルダーのパス
         /// </summary>
-        /*
-        public string FilesPath
-        {
-            get { return _FilesPath ?? Path.Combine(Item.WorkDirectory, "Files"); }
-            set { _FilesPath = value; }
-        }
-        */
         public string FilesPath { get; set; }
 
         /// <summary>
         /// ログ出力先フォルダーのパス
         /// </summary>
-        /*
-        public string LogsPath
-        {
-            get { return _logsPath ?? Path.Combine(Item.WorkDirectory, "Logs"); }
-            set { this._logsPath = value; }
-        }
-        */
         public string LogsPath { get; set; }
 
         /// <summary>
         /// スクリプト実行時の標準出力の出力先パス
         /// </summary>
-        /*
-        public string OutputPath
-        {
-            get { return _outputPath ?? Path.Combine(Item.WorkDirectory, "Output"); }
-            set { this._outputPath = value; }
-        }
-        */
         public string OutputPath { get; set; }
 
         /// <summary>
@@ -86,8 +65,5 @@ namespace EnumRun
         public ParamSyslog Syslog { get; set; }
 
         #endregion
-
-
-
     }
 }

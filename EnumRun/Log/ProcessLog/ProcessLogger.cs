@@ -7,16 +7,11 @@ using System.Diagnostics;
 
 namespace EnumRun.Log.ProcessLog
 {
-    internal class ProcessLogger : IDisposable
+    internal class ProcessLogger : LoggerBase
     {
-        private string _logPath = null;
-        private LogLevel _minLogLevel = LogLevel.Info;
-        private StreamWriter _writer = null;
-        private ReaderWriterLock _rwLock = null;
+        protected override bool _logAppend { get { return true; } }
 
-        private LogstashTransport _logstash = null;
-        private SyslogTransport _syslog = null;
-        private LiteDatabase _liteDB = null;
+        private LogLevel _minLogLevel = LogLevel.Info;
         private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ProcessLogBody> _syslogCollection = null;
 
@@ -27,13 +22,13 @@ namespace EnumRun.Log.ProcessLog
 
         public ProcessLogger(EnumRunSetting setting)
         {
-            _logPath = Path.Combine(
-                setting.GetLogsPath(),
-                $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log");
-            TargetDirectory.CreateParent(_logPath);
+            string logFileName =
+                $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log";
+            string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
+            TargetDirectory.CreateParent(logPath);
 
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
-            _writer = new StreamWriter(_logPath, true, new UTF8Encoding(false));
+            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -127,18 +122,9 @@ namespace EnumRun.Log.ProcessLog
                 }
                 if (!res)
                 {
-                    if (_liteDB == null)
-                    {
-                        string localDBPath = Path.Combine(
-                            Path.GetDirectoryName(_logPath),
-                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                    }
-                    if (_logstashCollection == null)
-                    {
-                        _logstashCollection = _liteDB.GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
-                        _logstashCollection.EnsureIndex(x => x.Serial, true);
-                    }
+                    _liteDB ??= GetLiteDB();
+                    _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
+
                     _logstashCollection.Upsert(body);
                 }
 
@@ -150,18 +136,8 @@ namespace EnumRun.Log.ProcessLog
                 }
                 else
                 {
-                    if (_liteDB == null)
-                    {
-                        string localDBPath = Path.Combine(
-                            Path.GetDirectoryName(_logPath),
-                            "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-                        _liteDB = new LiteDatabase($"Filename={localDBPath};Connection=shared");
-                    }
-                    if (_syslogCollection == null)
-                    {
-                        _syslogCollection = _liteDB.GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
-                        _syslogCollection.EnsureIndex(x => x.Serial, true);
-                    }
+                    _liteDB ??= GetLiteDB();
+                    _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
                     _syslogCollection.Upsert(body);
                 }
             }
@@ -172,11 +148,10 @@ namespace EnumRun.Log.ProcessLog
             }
         }
 
-        public void Close()
+        public override void Close()
         {
             Write("終了");
 
-            //  一応最大1000ミリ秒待機
             try
             {
                 _rwLock.AcquireWriterLock(10000);
