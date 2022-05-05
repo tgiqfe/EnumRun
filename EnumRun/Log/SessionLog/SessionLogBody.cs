@@ -75,14 +75,14 @@ namespace EnumRun.Log.SessionLog
                 FirstOrDefault();
             this.Session = new LogonSession()
             {
+                ExecTime = DateTime.Now,
                 BootupTime = ManagementDateTimeConverter.ToDateTime(
                     new ManagementClass("Win32_OperatingSystem").
                         GetInstances().
                         OfType<ManagementObject>().
                         FirstOrDefault()?["LastBootUpTime"] as string),
                 LogonTime = logonInfo?.Time,
-                LogonId = logonInfo?.Id,
-                ExecTime = DateTime.Now
+                LogonId = logonInfo?.Id
             };
         }
 

@@ -3,70 +3,13 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using EnumRun.Log.SessionLog;
+using EnumRun.Log;
 
 namespace EnumRun.Lib
 {
     internal class ExecSession
     {
         #region private classes
-     
-        /*
-        /// <summary>
-        /// ログオンセッション情報の保存用クラス
-        /// </summary>
-        public class Session
-        {
-            public DateTime? BootupTime { get; set; }
-            public DateTime? LogonTime { get; set; }
-            public string LogonId { get; set; }
-            public DateTime? ExecTime { get; set; }
-            
-            public bool? MachineLogSend { get; set; }
-            public bool? OldFileCleaned { get; set; }
-
-            public static Dictionary<string, Session> Deserialize()
-            {
-                Dictionary<string, Session> sessions = null;
-                string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
-                try
-                {
-                    using (var sr = new StreamReader(filePath, Encoding.UTF8))
-                    {
-                        sessions =
-                            JsonSerializer.Deserialize<Dictionary<string, Session>>(sr.ReadToEnd());
-                    }
-                }
-                catch { }
-                return sessions ?? new Dictionary<string, Session>();
-            }
-
-            public static void Serialize(Dictionary<string, Session> sessions)
-            {
-                string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
-                using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
-                {
-                    string json = JsonSerializer.Serialize(
-                        sessions,
-                        new JsonSerializerOptions() { WriteIndented = true });
-                    sw.WriteLine(json);
-                }
-            }
-        }
-
-        /// <summary>
-        /// ログオン情報確認用クラス
-        /// </summary>
-        private class LogonInfo
-        {
-            public DateTime? Time { get; set; }
-            public string Id { get; set; }
-            public LogonInfo(string time, string id)
-            {
-                this.Time = ManagementDateTimeConverter.ToDateTime(time as string);
-                this.Id = id;
-            }
-        }
-        */
 
         /// <summary>
         /// 確認結果を格納するクラス
@@ -78,7 +21,6 @@ namespace EnumRun.Lib
             public string BootupTime { get; set; }
             public string LogonTime { get; set; }
             public string LogonId { get; set; }
-            public string FilesPath { get; set; }
             public string ExecTime { get; set; }
 
             public string ToLog()
@@ -99,42 +41,108 @@ namespace EnumRun.Lib
             }
         }
 
+
         #endregion
 
+        public bool Enabled { get; set; }
 
+        public ExecSession() { }
 
-
-        public static Result Check(EnumRunSetting setting)
+        public ExecSession(EnumRunSetting setting, EnumRun.Log.ProcessLog.ProcessLogger logger)
         {
-
             //  前回セッション
             string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
-            //Dictionary<string, LogonSession> lastSessions = LogonSession.Deserialize();
+            Dictionary<string, LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
+
+            //  今回セッション
+            SessionLogBody body = new SessionLogBody();
+
+            //  前回セッションと比較して、実行可否チェック
+            StringBuilder sb = new StringBuilder();
+            this.Enabled = CheckRunnable(
+                lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null,
+                body.Session,
+                sb,
+                setting.RestTime ?? 0);
+            logger.Write(Enabled ? LogLevel.Info : LogLevel.Warn, null, "Runnable => {0} [{1}]",
+                Enabled ? "Enable" : "Disable",
+                sb.ToString());
+
+            bool todayFirst = !(lastSessions.Values.
+                Where(x => DateTime.Today == x.ExecTime?.Date).
+                Any(x => x.TodayFirst ?? false));
+            if (todayFirst)
+            {
+                body.Session.TodayFirst = true;
+
+                //  MachineLogを送信
+                using (var mLogger = new EnumRun.Log.MachineLog.MachineLogger(setting))
+                {
+                    mLogger.Write();
+                }
+
+                //  OldFileをクリア
+                OldFiles.Clean(setting);
+            }
+
+            //  SessionLogを送信
+            using (var sLogger = new SessionLogger(setting))
+            {
+                sLogger.Write(body);
+            }
+
+            lastSessions[Item.ProcessName] = body.Session;
+            SerializeLogonSession(lastSessions, filePath);
+        }
+
+        public void PreProcess() { }
+
+        public void PostProcess() { }
+
+        private bool CheckRunnable(LogonSession lastSession, LogonSession currentSession, StringBuilder sb, int restTime)
+        {
+            if (lastSession != null)
+            {
+                bool rest = ((DateTime)currentSession.ExecTime - (DateTime)lastSession.ExecTime).TotalSeconds <= restTime;
+                bool bootup = lastSession.BootupTime == currentSession.BootupTime;
+                bool logon = lastSession.LogonTime == currentSession.LogonTime;
+                bool id = lastSession.LogonId == currentSession.LogonId;
+
+                if (rest)
+                {
+                    sb.Append("RestTime=Over");
+                    sb.Append("]");
+                    return true;
+                }
+                else
+                {
+                    sb.Append("RestTime=NotOver");
+                }
+
+                sb.Append(string.Format("BootupTime={0}, LogonTime={1}, LogonId={2}",
+                    bootup ? "SameAsLast" : "Changed",
+                    logon ? "SameAsLast" : "Changed",
+                    id ? "SameAsLast" : "Changed"));
+                return !bootup && !logon && !id;
+            }
+
+            return true;
+        }
+
+
+
+
+
+
+        public static Result PrepareProcess(EnumRunSetting setting, EnumRun.Log.ProcessLog.ProcessLogger logger)
+        {
+            //  前回セッション
+            string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
             Dictionary<string, LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
             LogonSession lastSession =
                 lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null;
 
             //  今回セッション
-            /*
-            var logonInfo = new ManagementClass("Win32_LogonSession").
-                GetInstances().
-                OfType<ManagementObject>().
-                Select(x => new LogonInfo(x["StartTime"] as string, x["LogonId"] as string)).
-                ToList().
-                OrderByDescending(x => x.Time).
-                FirstOrDefault();
-            Session currentSession = new Session()
-            {
-                BootupTime = ManagementDateTimeConverter.ToDateTime(
-                    new ManagementClass("Win32_OperatingSystem").
-                        GetInstances().
-                        OfType<ManagementObject>().
-                        FirstOrDefault()?["LastBootUpTime"] as string),
-                LogonTime = logonInfo?.Time,
-                LogonId = logonInfo?.Id,
-                ExecTime = DateTime.Now
-            };
-            */
             SessionLogBody body = new SessionLogBody();
             LogonSession currentSession = body.Session;
 
@@ -194,12 +202,16 @@ namespace EnumRun.Lib
             }
 
             lastSessions[Item.ProcessName] = currentSession;
-            //LogonSession.Serialize(lastSessions);
             SerializeLogonSession(lastSessions, filePath);
 
             return ret;
         }
 
+        /// <summary>
+        /// セッション管理ファイルを読み込んでデシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private static Dictionary<string, LogonSession> DeserializeLastLogonSession(string filePath)
         {
             Dictionary<string, LogonSession> sessions = null;
@@ -215,6 +227,11 @@ namespace EnumRun.Lib
             return sessions ?? new Dictionary<string, LogonSession>();
         }
 
+        /// <summary>
+        /// セッション管理ファイルへシリアライズして保存
+        /// </summary>
+        /// <param name="sessions"></param>
+        /// <param name="filePath"></param>
         private static void SerializeLogonSession(Dictionary<string, LogonSession> sessions, string filePath)
         {
             TargetDirectory.CreateParent(filePath);

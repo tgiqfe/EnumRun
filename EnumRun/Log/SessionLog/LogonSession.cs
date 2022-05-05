@@ -14,12 +14,11 @@ namespace EnumRun.Log.SessionLog
     /// </summary>
     internal class LogonSession
     {
+        public DateTime? ExecTime { get; set; }
         public DateTime? BootupTime { get; set; }
         public DateTime? LogonTime { get; set; }
         public string LogonId { get; set; }
-        public DateTime? ExecTime { get; set; }
-        public bool? MachineLogSend { get; set; }
-        public bool? OldFileCleaned { get; set; }
+        public bool? TodayFirst { get; set; }
 
         public static Dictionary<string, LogonSession> Deserialize()
         {

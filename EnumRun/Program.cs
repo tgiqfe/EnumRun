@@ -28,7 +28,7 @@ using (var logger = new ProcessLogger(setting))
 {
     logger.Write(setting.ToLog());
 
-    var result = ExecSession.Check(setting);
+    var result = ExecSession.PrepareProcess(setting, logger);
     OldFiles.Clean(setting);
 
     if (result.Runnable)
