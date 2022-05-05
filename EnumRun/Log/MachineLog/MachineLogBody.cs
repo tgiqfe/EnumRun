@@ -35,8 +35,7 @@ namespace EnumRun.Log.MachineLog
         private static int _index = 0;
         private static JsonSerializerOptions _options = null;
 
-        public MachineLogBody() { }
-        public MachineLogBody(bool init)
+        public MachineLogBody()
         {
             this.ProcessName = Item.ProcessName;
             this.HostName = Environment.MachineName;
@@ -59,8 +58,8 @@ namespace EnumRun.Log.MachineLog
         {
             _options ??= GetJsonSerializerOption(
                 escapeDoubleQuote: true,
-                false, 
-                false, 
+                false,
+                false,
                 writeIndented: true,
                 convertEnumCamel: true);
             return JsonSerializer.Serialize(this, _options);
@@ -69,9 +68,9 @@ namespace EnumRun.Log.MachineLog
         public Dictionary<string, string> GetSyslogMessage()
         {
             var ret = new Dictionary<string, string>();
-            ret["MachineLog"] =
-                string.Format("ProcessName => {0}, HostName => {1}, DomainName => {2}, UserName => {3}, OS => {4}, OSVersion => {5}",
-                    this.ProcessName, this.HostName, this.DomainName, this.UserName, this.OS, this.OSVersion);
+            ret["MachineInfo"] =
+                string.Format("ProcessName => {0}, HostName => {1}, UserName => {2}, DomainName => {3}, OS => {4}, OSVersion => {5}",
+                    this.ProcessName, this.HostName, this.UserName, this.DomainName, this.OS, this.OSVersion);
             ret["Network_Name"] = Network.Name;
             ret["Network_Adapter"] = Network.Adapter;
             ret["Network_MACAddres"] = Network.MACAddress;
