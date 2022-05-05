@@ -123,7 +123,6 @@ namespace EnumRun.Lib.Syslog
             }
         }
 
-
         public override void Close()
         {
             Disconnect();
