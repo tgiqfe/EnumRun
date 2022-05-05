@@ -14,8 +14,6 @@ namespace EnumRun.Log
         public bool Enabled { get; set; }
 
         private string _logstashServer { get; set; }
-        private string _server = null;
-        private int _port = 8080;
         private HttpRequestMessage _request = null;
 
         public LogstashTransport() { }
@@ -24,6 +22,10 @@ namespace EnumRun.Log
             this._logstashServer = logstashServer;
 
             //  Logstashサーバ情報を格納
+            var info = new ServerInfo(logstashServer, 80, "http");
+            //this._server = info.Server;
+            //this._port = info.Port;
+            /*
             string tempServer = logstashServer;
             string tempPort = "";
             if (tempServer.StartsWith("http://") || tempServer.StartsWith("https://"))
@@ -41,9 +43,10 @@ namespace EnumRun.Log
             }
             this._server = tempServer;
             this._port = int.Parse(tempPort);
+            */
 
             //  接続可否チェック
-            if (new TcpConnect(_server, _port).TcpConnectSuccess)
+            if (new TcpConnect(info.Server, info.Port).TcpConnectSuccess)
             {
                 this.Enabled = true;
 

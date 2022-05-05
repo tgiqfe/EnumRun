@@ -14,6 +14,7 @@ namespace EnumRun.Log
 {
     internal class SyslogTransport : IDisposable
     {
+        /*
         #region Server info (ip,port,protocol)
 
         private class ServerInfo
@@ -56,6 +57,7 @@ namespace EnumRun.Log
         }
 
         #endregion
+        */
 
         public bool Enabled { get; set; }
 
@@ -70,10 +72,10 @@ namespace EnumRun.Log
         public SyslogTransport() { }
         public SyslogTransport(EnumRunSetting setting)
         {
-            var info = new ServerInfo(setting.Syslog.Server);
+            var info = new ServerInfo(setting.Syslog.Server, defaultPort: 514, defaultProtocol: "udp");
             Format format = FormatMapper.ToFormat(setting.Syslog.Format);
 
-            if (info.Protocol == SyslogProtocol.UDP)
+            if (info.Protocol == "udp")
             {
                 this.Enabled = true;
                 this.Sender = new SyslogUdpSender(info.Server, info.Port, format);

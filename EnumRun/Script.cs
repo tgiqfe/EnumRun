@@ -78,7 +78,7 @@ namespace EnumRun
                         Path.GetFileNameWithoutExtension(this.FilePath),
                         Environment.ProcessId,
                         DateTime.Now.ToString("yyyyMMddHHmmss")));
-                _logger.Write(LogLevel.Info, FileName, "Output => {0}", outputPath);
+                _logger.Write(LogLevel.Info, FileName, "Output file => {0}", outputPath);
                 task = ProcessThreadAndOutput(outputPath);
             }
             else
@@ -201,6 +201,7 @@ namespace EnumRun
         /// <returns></returns>
         private async Task ProcessThread()
         {
+            _logger.Write(LogLevel.Debug, FileName, "Execute script.");
             await Task.Run(() =>
             {
                 using (Process proc = this._language.GetProcess(this.FilePath, ""))
@@ -225,6 +226,7 @@ namespace EnumRun
         {
             TargetDirectory.CreateParent(outputPath);
 
+            _logger.Write(LogLevel.Debug, FileName, "Execute script. (output)");
             await Task.Run(() =>
             {
                 using (Process proc = this._language.GetProcess(this.FilePath, ""))
