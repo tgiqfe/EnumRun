@@ -88,7 +88,8 @@ namespace EnumRun.Lib
                 }
 
                 //  OldFileをクリア
-                OldFiles.Clean(_setting);
+                DeleteOldFile(_setting.GetLogsPath());
+                DeleteOldFile(_setting.GetOutputPath());
             }
 
             //  SessionLogを出力
@@ -109,6 +110,43 @@ namespace EnumRun.Lib
         {
             //  必要に応じて実行結果ログを出力させるなどの処理を予定。
         }
+
+        /// <summary>
+        /// 保持期間以上前のファイルを削除
+        /// </summary>
+        /// <param name="targetDirectory"></param>
+        public void DeleteOldFile(string targetDirectory)
+        {
+            int retention = _setting.RetentionPeriod ?? 0;
+
+            if (retention > 0)
+            {
+                DateTime border = DateTime.Now.AddDays(retention * -1);
+                var files = (Directory.Exists(targetDirectory) ?
+                    Directory.GetFiles(targetDirectory) :
+                    new string[] { }).
+                        Where(x => new FileInfo(x).LastWriteTime < border).ToArray();
+                if (files.Length > 0)
+                {
+                    _logger.Write(LogLevel.Info, "Old file check => {0}, Delete target count => {1}",
+                        targetDirectory, files.Length);
+                }
+                try
+                {
+                    foreach (var target in files)
+                    {
+                        File.Delete(target);
+                        _logger.Write(LogLevel.Debug, "Delete => {0}", target);
+                    }
+                }
+                catch
+                {
+                    _logger.Write(LogLevel.Warn, "Delete failed.");
+                }
+            }
+        }
+
+        #region Serialize/Deserialize
 
         /// <summary>
         /// セッション管理ファイルを読み込んでデシリアライズ
@@ -146,5 +184,7 @@ namespace EnumRun.Lib
                 sw.WriteLine(json);
             }
         }
+
+        #endregion
     }
 }

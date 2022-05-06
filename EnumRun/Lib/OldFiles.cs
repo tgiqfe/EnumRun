@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using EnumRun.Log;
 
 namespace EnumRun.Lib
 {
@@ -77,5 +78,40 @@ namespace EnumRun.Lib
                 catch { }
             }
         }
+
+
+
+
+
+        public static void DeleteOldFile(string targetDirectory, int retention, EnumRun.Log.ProcessLog.ProcessLogger logger)
+        {
+            if (retention > 0)
+            {
+                DateTime border = DateTime.Now.AddDays(-retention * -1);
+                var files = (Directory.Exists(targetDirectory) ?
+                    Directory.GetFiles(targetDirectory) :
+                    new string[] { }).
+                        Where(x => new FileInfo(x).LastWriteTime < border).ToArray();
+                if (files.Length > 0)
+                {
+                    logger.Write(LogLevel.Info, "Old file check => {0}, Delete target count => {1}",
+                        targetDirectory, files.Length);
+                }
+                try
+                {
+                    foreach (var target in files)
+                    {
+                        File.Delete(target);
+                        logger.Write(LogLevel.Debug, "Delete => {0}", target);
+                    }
+                }
+                catch
+                {
+                    logger.Write(LogLevel.Warn, "Delete failed.");
+                }
+            }
+        }
+
+
     }
 }
