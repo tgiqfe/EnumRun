@@ -240,9 +240,13 @@ namespace EnumRun
                     proc.BeginErrorReadLine();
                     proc.WaitForExit();
                 }
+
+                //  何も出力されなかった場合、削除
+                if (new FileInfo(outputPath).Length == 0)
+                {
+                    File.Delete(outputPath);
+                }
             });
         }
-
-        //  (案)何も出力しないファイルの場合、Outputファイルを削除する等の処理を
     }
 }
