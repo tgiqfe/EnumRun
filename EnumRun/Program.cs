@@ -28,13 +28,11 @@ using (var logger = new ProcessLogger(setting))
 {
     logger.Write(setting.ToLog());
 
-    var result = ExecSession.PrepareProcess(setting, logger);
-    OldFiles.Clean(setting);
+    var session = new ExecSession(setting, logger);
+    session.PreProcess();
 
-    if (result.Runnable)
+    if(session.Enabled)
     {
-        logger.Write(LogLevel.Debug, result.ToLog());
-
         var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
             ToArray().
@@ -43,10 +41,8 @@ using (var logger = new ProcessLogger(setting))
 
         Task.WhenAll(processes);
     }
-    else
-    {
-        logger.Write(LogLevel.Warn, result.ToLog());
-    }
+
+    session.PostProcess();
 }
 
 Console.ReadLine();
