@@ -18,7 +18,6 @@ namespace EnumRun.Log.SessionLog
         public DateTime? BootupTime { get; set; }
         public DateTime? LogonTime { get; set; }
         public string LogonId { get; set; }
-        public bool? TodayFirst { get; set; }
 
         public static Dictionary<string, LogonSession> Deserialize()
         {

@@ -47,7 +47,9 @@ namespace EnumRun.Lib
             }
             else
             {
-                bool rest = ((DateTime)currentSession.ExecTime - (DateTime)lastSession.ExecTime).TotalSeconds <= (_setting.RestTime ?? 0);
+                bool rest = lastSession.ExecTime == null ?
+                    true :
+                    ((DateTime)currentSession.ExecTime - (DateTime)lastSession.ExecTime).TotalSeconds > (_setting.RestTime ?? 0);
                 bool bootup = lastSession.BootupTime == currentSession.BootupTime;
                 bool logon = lastSession.LogonTime == currentSession.LogonTime;
                 bool id = lastSession.LogonId == currentSession.LogonId;
@@ -69,17 +71,15 @@ namespace EnumRun.Lib
             }
             _logger.Write(Enabled ? LogLevel.Info : LogLevel.Warn, null,
                 "Runnable => {0}, [{1}]",
-                Enabled ? "Enable" : "Disable",
-                sb.ToString());
+                    Enabled ? "Enable" : "Disable",
+                    sb.ToString());
 
             //  本日初回実行
-            bool todayFirst = !(lastSessions.Values.
-                Where(x => DateTime.Today == x.ExecTime?.Date).
-                Any(x => x.TodayFirst ?? false));
-            if (todayFirst)
+            bool isTodayProcessed = lastSessions.Values.
+                Any(x => DateTime.Today == x.ExecTime?.Date);
+            if (!isTodayProcessed)
             {
                 _logger.Write(LogLevel.Info, "Today first.");
-                body.Session.TodayFirst = true;
 
                 //  MachineLogを出力
                 using (var mLogger = new EnumRun.Log.MachineLog.MachineLogger(_setting))
@@ -128,8 +128,9 @@ namespace EnumRun.Lib
                         Where(x => new FileInfo(x).LastWriteTime < border).ToArray();
                 if (files.Length > 0)
                 {
-                    _logger.Write(LogLevel.Info, "Old file check => {0}, Delete target count => {1}",
-                        targetDirectory, files.Length);
+                    _logger.Write(LogLevel.Info, null,
+                        "Old file => [ target={0}, count={1} ]",
+                            targetDirectory, files.Length);
                 }
                 try
                 {

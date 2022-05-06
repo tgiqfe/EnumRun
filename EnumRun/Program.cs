@@ -31,10 +31,6 @@ using (var logger = new ProcessLogger(setting))
     var session = new ExecSession(setting, logger);
     session.PreProcess();
 
-    //var result = ExecSession.PrepareProcess(setting, logger);
-    //OldFiles.Clean(setting);
-
-    //if (result.Runnable)
     if(session.Enabled)
     {
         //logger.Write(LogLevel.Debug, result.ToLog());
@@ -46,10 +42,6 @@ using (var logger = new ProcessLogger(setting))
             Select(x => x.Process());
 
         Task.WhenAll(processes);
-    }
-    else
-    {
-        //logger.Write(LogLevel.Warn, result.ToLog());
     }
 
     session.PostProcess();
