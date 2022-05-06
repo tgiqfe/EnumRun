@@ -33,8 +33,6 @@ using (var logger = new ProcessLogger(setting))
 
     if(session.Enabled)
     {
-        //logger.Write(LogLevel.Debug, result.ToLog());
-
         var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
             ToArray().
