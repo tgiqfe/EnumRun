@@ -163,29 +163,5 @@ namespace EnumRun.Log.ProcessLog
             if (_liteDB != null) { _liteDB.Dispose(); }
             if (_syslog != null) { _syslog.Dispose(); }
         }
-
-        #region Dispose
-
-        private bool disposedValue;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Close();
-                }
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
     }
 }

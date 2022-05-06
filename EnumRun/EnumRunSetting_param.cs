@@ -12,8 +12,6 @@ namespace EnumRun
 {
     internal partial class EnumRunSetting
     {
-        #region Public parameter
-
         /// <summary>
         /// スクリプトファイルの保存先フォルダーのパス
         /// </summary>
@@ -63,7 +61,5 @@ namespace EnumRun
         /// Syslog設定情報
         /// </summary>
         public ParamSyslog Syslog { get; set; }
-
-        #endregion
     }
 }
