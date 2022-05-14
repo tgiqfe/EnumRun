@@ -1,10 +1,9 @@
 ﻿using EnumRun.Lib;
-using EnumRun.Logs.ProcessLog;
+using EnumRun.Log.ProcessLog;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
-using EnumRun.Logs;
-using EnumRun.Lib.Infos;
+using EnumRun.Log;
 
 namespace EnumRun
 {
