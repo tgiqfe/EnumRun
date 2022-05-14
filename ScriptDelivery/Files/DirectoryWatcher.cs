@@ -18,6 +18,11 @@ namespace ScriptDelivery.Files
 
         public DirectoryWatcher(string targetPath, IStoredFileCollection collection)
         {
+            if (!Directory.Exists(targetPath))
+            {
+                Directory.CreateDirectory(targetPath);
+            }
+
             _watcher = new FileSystemWatcher();
             _watcher.Path = targetPath;
             _watcher.NotifyFilter = NotifyFilters.LastWrite |

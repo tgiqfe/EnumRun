@@ -15,6 +15,8 @@ namespace ScriptDelivery.Logs
         //private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ServerLogBody> _syslogCollection = null;
 
+        private bool writed = false;
+
         public ServerLogger(Setting setting)
         {
             string logFileName =
@@ -34,6 +36,9 @@ namespace ScriptDelivery.Logs
                 _syslog.AppName = Item.ProcessName;
                 _syslog.ProcId = ServerLogBody.TAG;
             }
+
+            //  定期的にログファイルを書き込むスレッドを開始
+            WriteInFile(logPath);
 
             Write("開始");
         }
@@ -96,6 +101,8 @@ namespace ScriptDelivery.Logs
                     _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
                     _syslogCollection.Upsert(body);
                 }
+
+                writed = true;
             }
             catch { }
             finally
@@ -103,6 +110,34 @@ namespace ScriptDelivery.Logs
                 _rwLock.ReleaseWriterLock();
             }
         }
+
+        /// <summary>
+        /// 定期的にログをファイルに書き込む
+        /// </summary>
+        /// <param name="logPath"></param>
+        private async void WriteInFile(string logPath)
+        {
+            while (true)
+            {
+                await Task.Delay(60 * 1000);
+                if (writed)
+                {
+                    try
+                    {
+                        _rwLock.AcquireWriterLock(10000);
+                        _writer.Dispose();
+                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
+                    }
+                    catch { }
+                    finally
+                    {
+                        writed = false;
+                        _rwLock.ReleaseWriterLock();
+                    }
+                }
+            }
+        }
+
 
         public override void Close()
         {
