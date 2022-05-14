@@ -1,9 +1,9 @@
 ﻿
 using EnumRun;
 using EnumRun.Lib;
-using EnumRun.Log;
-using EnumRun.Log.ProcessLog;
-using EnumRun.Log.MachineLog;
+using EnumRun.Logs;
+using EnumRun.Logs.ProcessLog;
+using EnumRun.Logs.MachineLog;
 
 bool initial = false;
 if (initial)

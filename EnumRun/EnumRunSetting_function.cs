@@ -1,11 +1,11 @@
 ﻿using EnumRun.Lib;
-using EnumRun.Log.ProcessLog;
+using EnumRun.Logs.ProcessLog;
 using Hnx8.ReadJEnc;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using EnumRun.Log;
+using EnumRun.Logs;
 
 namespace EnumRun
 {
@@ -45,6 +45,11 @@ namespace EnumRun
                 SslCertPassword = null,
                 SslCertFriendryName = null,
                 SslIgnoreCheck = false
+            };
+            this.ScriptDelivery = new ParamScriptDelivery()
+            {
+                Server = new string[] { "http://localhost:5000" },
+                Process = "StartupScript",
             };
         }
 
@@ -305,7 +310,7 @@ namespace EnumRun
 
         public string GetFilesPath()
         {
-            return string.IsNullOrEmpty(this.FilesPath ) ?
+            return string.IsNullOrEmpty(this.FilesPath) ?
                 Path.Combine(Item.WorkDirectoryPath, "Files") :
                 ExpandEnvironment(this.FilesPath);
         }
