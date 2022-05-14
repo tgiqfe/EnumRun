@@ -15,10 +15,7 @@ namespace EnumRun.Log.ProcessLog
         private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ProcessLogBody> _syslogCollection = null;
 
-        /// <summary>
-        /// 引数無しコンストラクタ
-        /// </summary>
-        public ProcessLogger() { }
+        //public ProcessLogger() { }
 
         public ProcessLogger(EnumRunSetting setting)
         {
@@ -27,9 +24,10 @@ namespace EnumRun.Log.ProcessLog
             string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
             TargetDirectory.CreateParent(logPath);
 
-            _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
+            _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
+            _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
             {
