@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using EnumRun.Logs;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun
 {

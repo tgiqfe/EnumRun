@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using EnumRun.Lib;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun.Logs
 {

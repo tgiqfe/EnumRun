@@ -10,7 +10,7 @@ using System.Management;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace EnumRun.Lib
+namespace EnumRun.Lib.Infos
 {
     internal class NetworkInfo
     {
@@ -25,7 +25,7 @@ namespace EnumRun.Lib
             private string[] _ipAddresses = null;
             public string[] GetIPAddresses()
             {
-                _ipAddresses ??= this.AddressSets.Select(x => x.IPAddress.ToString()).ToArray();
+                _ipAddresses ??= AddressSets.Select(x => x.IPAddress.ToString()).ToArray();
                 return _ipAddresses;
             }
         }
@@ -44,7 +44,7 @@ namespace EnumRun.Lib
 
         public NetworkInfo()
         {
-            this.NICs = new List<NIC>();
+            NICs = new List<NIC>();
 
             var adapters = new ManagementClass("Win32_NetworkAdapter").
                 GetInstances().

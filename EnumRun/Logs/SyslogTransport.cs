@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using EnumRun.Logs;
 using EnumRun.Logs.ProcessLog;
 using EnumRun.Lib;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun.Logs
 {

@@ -7,7 +7,7 @@ using System.Management;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using EnumRun.Lib;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun.Logs.MachineLog
 {

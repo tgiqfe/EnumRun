@@ -46,6 +46,11 @@ namespace EnumRun
                 SslCertFriendryName = null,
                 SslIgnoreCheck = false
             };
+            this.ScriptDelivery = new ParamScriptDelivery()
+            {
+                Server = new string[] { "http://localhost:5000" },
+                Process = "StartupScript",
+            };
         }
 
         #region Deserialize
@@ -305,7 +310,7 @@ namespace EnumRun
 
         public string GetFilesPath()
         {
-            return string.IsNullOrEmpty(this.FilesPath ) ?
+            return string.IsNullOrEmpty(this.FilesPath) ?
                 Path.Combine(Item.WorkDirectoryPath, "Files") :
                 ExpandEnvironment(this.FilesPath);
         }

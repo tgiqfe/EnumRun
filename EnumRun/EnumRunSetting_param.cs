@@ -61,5 +61,10 @@ namespace EnumRun
         /// Syslog設定情報
         /// </summary>
         public ParamSyslog Syslog { get; set; }
+
+        /// <summary>
+        /// ScriptDelivery設定情報
+        /// </summary>
+        public ParamScriptDelivery ScriptDelivery { get; set; }
     }
 }

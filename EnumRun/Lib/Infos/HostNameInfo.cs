@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-namespace EnumRun.Lib
+namespace EnumRun.Lib.Infos
 {
     internal class HostNameInfo
     {
@@ -23,15 +23,15 @@ namespace EnumRun.Lib
             Match match;
             if ((match = _regPre.Match(name)).Success)
             {
-                this.PreName = match.Value;
+                PreName = match.Value;
             }
             if ((match = _regNum.Match(name)).Success)
             {
-                this.Number = int.Parse(match.Value);
+                Number = int.Parse(match.Value);
             }
             if ((match = _regSuf.Match(name)).Success)
             {
-                this.SufName = match.Value;
+                SufName = match.Value;
             }
         }
 

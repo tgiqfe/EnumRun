@@ -2,7 +2,7 @@
 using System.Security.Principal;
 using Microsoft.Win32;
 
-namespace EnumRun.Lib
+namespace EnumRun.Lib.Infos
 {
     internal class UserInfo
     {
@@ -52,9 +52,9 @@ namespace EnumRun.Lib
         {
             get
             {
-                return !UserInfo.IsSystemAccount &&
+                return !IsSystemAccount &&
                     MachineInfo.IsDomain &&
-                    (Environment.UserDomainName != Environment.MachineName);
+                    Environment.UserDomainName != Environment.MachineName;
             }
         }
 

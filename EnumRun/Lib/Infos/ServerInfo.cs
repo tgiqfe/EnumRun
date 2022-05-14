@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-namespace EnumRun.Lib
+namespace EnumRun.Lib.Infos
 {
     /// <summary>
     /// URIからサーバアドレス(IP or FQDN)、ポート、プロトコルを格納
@@ -35,15 +35,15 @@ namespace EnumRun.Lib
                 tempServer = tempServer.Substring(0, tempServer.IndexOf(":"));
             }
 
-            this.Server = tempServer;
-            this.Port = int.Parse(tempPort);
-            this.Protocol = tempProtocol.ToLower();
+            Server = tempServer;
+            Port = int.Parse(tempPort);
+            Protocol = tempProtocol.ToLower();
         }
 
         public ServerInfo(string url, int defaultPort, string defaultProtocol) : this(url)
         {
-            if (Port == 0) { this.Port = defaultPort; }
-            if (string.IsNullOrEmpty(Protocol)) { this.Protocol = defaultProtocol.ToLower(); }
+            if (Port == 0) { Port = defaultPort; }
+            if (string.IsNullOrEmpty(Protocol)) { Protocol = defaultProtocol.ToLower(); }
         }
     }
 }

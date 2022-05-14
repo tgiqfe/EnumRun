@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using EnumRun.Lib;
 using System.Management;
 using System.IO;
 using System.Reflection;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun.Logs.SessionLog
 {

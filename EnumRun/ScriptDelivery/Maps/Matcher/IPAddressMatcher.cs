@@ -10,6 +10,7 @@ using System.Net;
 using ScriptDelivery.Maps.Requires;
 using ScriptDelivery;
 using EnumRun.Logs;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun.ScriptDelivery.Maps.Matcher
 {

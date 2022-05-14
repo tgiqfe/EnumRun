@@ -7,6 +7,7 @@ using EnumRun.Lib;
 using ScriptDelivery.Maps;
 using ScriptDelivery.Maps.Requires;
 using EnumRun.Logs;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun.ScriptDelivery.Maps.Matcher
 {
