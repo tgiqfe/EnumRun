@@ -14,14 +14,14 @@ module.exports = {
       ],
       sidebar: [
         {
-          title: '準備',
-          path: '/Prepare/',
+          title: '概要',
+          path: '/Guide/',
           collapsable: true,
           sidebarDepth: 2,
           children: [
-              '/Prepare/prepare_01.md',
-              '/Prepare/prepare_02.md',
-              '/Prepare/prepare_03.md'
+              '/Guide/guide_01.md',
+              '/Guide/guide_02.md',
+              '/Guide/guide_03.md'
           ]
         },
         {
@@ -30,7 +30,7 @@ module.exports = {
           collapsable: true,
           sidebarDepth: 2,
           children: [
-            '/Execute/execute_01.md'
+            '/Execute/execute_01.md',
             '/Execute/execute_02.md'
           ]
         },
@@ -45,7 +45,9 @@ module.exports = {
               '/Setting/setting_03.md',
               '/Setting/setting_04.md',
               '/Setting/setting_05.md',
-              '/Setting/setting_06.md'
+              '/Setting/setting_06.md',
+              '/Setting/setting_07.md',
+              '/Setting/setting_08.md'
           ]
         },
         {
