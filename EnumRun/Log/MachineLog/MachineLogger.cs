@@ -14,10 +14,7 @@ namespace EnumRun.Log.MachineLog
         private ILiteCollection<MachineLogBody> _logstashCollection = null;
         private ILiteCollection<MachineLogBody> _syslogCollection = null;
 
-        /// <summary>
-        /// 引数無しコンストラクタ
-        /// </summary>
-        public MachineLogger() { }
+        //public MachineLogger() { }
 
         public MachineLogger(EnumRunSetting setting)
         {
@@ -26,6 +23,7 @@ namespace EnumRun.Log.MachineLog
             string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
             TargetDirectory.CreateParent(logPath);
 
+            _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 

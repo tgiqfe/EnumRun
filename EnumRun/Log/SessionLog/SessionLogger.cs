@@ -23,6 +23,7 @@ namespace EnumRun.Log.SessionLog
             string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
             TargetDirectory.CreateParent(logPath);
 
+            _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _rwLock = new ReaderWriterLock();
 

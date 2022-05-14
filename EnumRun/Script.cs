@@ -69,22 +69,9 @@ namespace EnumRun
             //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
             //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
             //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
-            Task task = null;
-            if ((this._setting.DefaultOutput ?? false) || this.Option.Contains(OptionType.Output))
-            {
-                string outputPath = Path.Combine(
-                    this._setting.GetOutputPath(),
-                    string.Format("{0}_{1}_{2}.txt",
-                        Path.GetFileNameWithoutExtension(this.FilePath),
-                        Environment.ProcessId,
-                        DateTime.Now.ToString("yyyyMMddHHmmss")));
-                _logger.Write(LogLevel.Info, FileName, "Output file => {0}", outputPath);
-                task = ProcessThreadAndOutput(outputPath);
-            }
-            else
-            {
-                task = ProcessThread();
-            }
+            Task task = (this._setting.DefaultOutput ?? false) || this.Option.Contains(OptionType.Output) ?
+                ProcessThreadAndOutput() :
+                ProcessThread();
             if (Option.Contains(OptionType.WaitForExit))
             {
                 _logger.Write(LogLevel.Info, FileName, "Wait until exit.");
@@ -222,11 +209,19 @@ namespace EnumRun
         /// プロセス実行 (実行結果をファイルに出力)
         /// </summary>
         /// <returns></returns>
-        private async Task ProcessThreadAndOutput(string outputPath)
+        private async Task ProcessThreadAndOutput()
         {
+            string outputPath = Path.Combine(
+                this._setting.GetOutputPath(),
+                string.Format("{0}_{1}_{2}.txt",
+                    Path.GetFileNameWithoutExtension(this.FilePath),
+                    Environment.ProcessId,
+                    DateTime.Now.ToString("yyyyMMddHHmmss")));
             TargetDirectory.CreateParent(outputPath);
 
             _logger.Write(LogLevel.Debug, FileName, "Execute script. (output)");
+            _logger.Write(LogLevel.Info, FileName, "Output file => {0}", outputPath);
+
             await Task.Run(() =>
             {
                 using (Process proc = this._language.GetProcess(this.FilePath, ""))
@@ -244,6 +239,12 @@ namespace EnumRun
                     proc.BeginOutputReadLine();
                     proc.BeginErrorReadLine();
                     proc.WaitForExit();
+                }
+
+                //  何も出力されなかった場合、削除
+                if (new FileInfo(outputPath).Length == 0)
+                {
+                    File.Delete(outputPath);
                 }
             });
         }
