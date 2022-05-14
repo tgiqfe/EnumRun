@@ -42,10 +42,12 @@ namespace EnumRun
         /// </summary>
         public const string SESSION_FILE = "session.json";
 
+        /*
         /// <summary>
         /// 旧ファイルのクリーンの管理用ファイル
         /// </summary>
         public const string CLEAN_FILE = "clean.json";
+        */
 
         /// <summary>
         /// 設定ファイル(JSON)
@@ -63,6 +65,7 @@ namespace EnumRun
         public const string LANG_JSON = "Language.json";
 
         #endregion
+        #region Serial
 
         private static string _serial = null;
 
@@ -81,5 +84,7 @@ namespace EnumRun
                 return _serial;
             }
         }
+
+        #endregion
     }
 }
