@@ -64,12 +64,12 @@ namespace EnumRun
         #endregion
         #region Logstash
 
-        /// <summary>
-        /// ログ転送先サーバ(Logstash)のサーバ
-        /// 記述例⇒http://192.168.10.100:8080/
-        /// </summary>
         public class ParamLogstash
         {
+            /// <summary>
+            /// ログ転送先サーバ(Logstash)のサーバ
+            /// 記述例⇒http://192.168.10.100:8080/
+            /// </summary>
             public string Server { get; set; }
 
             public override string ToString()
@@ -81,12 +81,12 @@ namespace EnumRun
         #endregion
         #region Syslog
 
-        /// <summary>
-        /// ログ転送先サーバ(Syslog)のサーバ
-        /// 記述例⇒udp://192.168.10.100:514
-        /// </summary>
         public class ParamSyslog
         {
+            /// <summary>
+            /// ログ転送先サーバ(Syslog)のサーバ
+            /// 記述例⇒udp://192.168.10.100:514
+            /// </summary>
             public string Server { get; set; }
             public string Facility { get; set; }
             public string Format { get; set; }
@@ -111,15 +111,6 @@ namespace EnumRun
                     this.SslCertFriendryName,
                     this.SslIgnoreCheck);
             }
-        }
-
-        #endregion
-        #region ScriptDelivery
-
-        public class ParamScriptDelivery
-        {
-            public string[] Server { get; set; }
-            public string Process { get; set; }
         }
 
         #endregion

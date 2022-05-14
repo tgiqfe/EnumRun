@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Diagnostics;
-using EnumRun.Lib.Infos;
 
 namespace EnumRun
 {
@@ -31,7 +30,7 @@ namespace EnumRun
         /// システムアカウントの場合は実行ファイルの場所。それ以外はTempフォルダー配下
         /// </summary>
         public static readonly string WorkDirectoryPath =
-            UserInfo.IsSystemAccount ?
+            EnumRun.Lib.UserInfo.IsSystemAccount ?
                 ExecDirectoryPath :
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 
