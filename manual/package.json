@@ -8,5 +8,8 @@
     "build": "vuepress build src",
     "eject": "vuepress eject",
     "version": "vuepress -V"
+  },
+  "dependencies": {
+    "vuepress": "^1.9.7"
   }
 }
