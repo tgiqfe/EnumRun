@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>ScriptDelivery | EnumRun</title>
+    <title>ログ転送(Syslogサーバ側設定) | EnumRun</title>
     <meta name="generator" content="VuePress 1.9.7">
     
     <meta name="description" content="">
     
-    <link rel="preload" href="/EnumRun/assets/css/0.styles.a29c38c3.css" as="style"><link rel="preload" href="/EnumRun/assets/js/app.72a05608.js" as="script"><link rel="preload" href="/EnumRun/assets/js/2.05c5ba82.js" as="script"><link rel="preload" href="/EnumRun/assets/js/25.50777eb4.js" as="script"><link rel="prefetch" href="/EnumRun/assets/js/10.ee794486.js"><link rel="prefetch" href="/EnumRun/assets/js/11.169f3c52.js"><link rel="prefetch" href="/EnumRun/assets/js/12.fb58e193.js"><link rel="prefetch" href="/EnumRun/assets/js/13.a6c37a58.js"><link rel="prefetch" href="/EnumRun/assets/js/14.9772d04c.js"><link rel="prefetch" href="/EnumRun/assets/js/15.1ae4dc7c.js"><link rel="prefetch" href="/EnumRun/assets/js/16.9ee31a30.js"><link rel="prefetch" href="/EnumRun/assets/js/17.474c4491.js"><link rel="prefetch" href="/EnumRun/assets/js/18.d6cd4beb.js"><link rel="prefetch" href="/EnumRun/assets/js/19.3c4b1880.js"><link rel="prefetch" href="/EnumRun/assets/js/20.122163dc.js"><link rel="prefetch" href="/EnumRun/assets/js/21.c4c446dd.js"><link rel="prefetch" href="/EnumRun/assets/js/22.eafc845d.js"><link rel="prefetch" href="/EnumRun/assets/js/23.a00f543f.js"><link rel="prefetch" href="/EnumRun/assets/js/24.1e3bc4e8.js"><link rel="prefetch" href="/EnumRun/assets/js/26.95524f15.js"><link rel="prefetch" href="/EnumRun/assets/js/3.2b352dc8.js"><link rel="prefetch" href="/EnumRun/assets/js/4.3807f58d.js"><link rel="prefetch" href="/EnumRun/assets/js/5.f5d64b74.js"><link rel="prefetch" href="/EnumRun/assets/js/6.6e3493c6.js"><link rel="prefetch" href="/EnumRun/assets/js/7.1471559e.js"><link rel="prefetch" href="/EnumRun/assets/js/8.a2b1dffd.js"><link rel="prefetch" href="/EnumRun/assets/js/9.462a9c48.js">
-    <link rel="stylesheet" href="/EnumRun/assets/css/0.styles.a29c38c3.css">
+    <link rel="preload" href="/EnumRun/assets/css/0.styles.39dc9a85.css" as="style"><link rel="preload" href="/EnumRun/assets/js/app.051e0bdb.js" as="script"><link rel="preload" href="/EnumRun/assets/js/2.05c5ba82.js" as="script"><link rel="preload" href="/EnumRun/assets/js/25.0114da4e.js" as="script"><link rel="prefetch" href="/EnumRun/assets/js/10.239712c1.js"><link rel="prefetch" href="/EnumRun/assets/js/11.153110b2.js"><link rel="prefetch" href="/EnumRun/assets/js/12.e3496626.js"><link rel="prefetch" href="/EnumRun/assets/js/13.7bafb31c.js"><link rel="prefetch" href="/EnumRun/assets/js/14.400183ad.js"><link rel="prefetch" href="/EnumRun/assets/js/15.725c5a5e.js"><link rel="prefetch" href="/EnumRun/assets/js/16.0b506044.js"><link rel="prefetch" href="/EnumRun/assets/js/17.3d6f4d5f.js"><link rel="prefetch" href="/EnumRun/assets/js/18.57d63b11.js"><link rel="prefetch" href="/EnumRun/assets/js/19.ab47e4a3.js"><link rel="prefetch" href="/EnumRun/assets/js/20.5cbf067e.js"><link rel="prefetch" href="/EnumRun/assets/js/21.23066495.js"><link rel="prefetch" href="/EnumRun/assets/js/22.2868013b.js"><link rel="prefetch" href="/EnumRun/assets/js/23.a00f543f.js"><link rel="prefetch" href="/EnumRun/assets/js/24.9542e5cc.js"><link rel="prefetch" href="/EnumRun/assets/js/26.e17a5078.js"><link rel="prefetch" href="/EnumRun/assets/js/27.a5f8d8e8.js"><link rel="prefetch" href="/EnumRun/assets/js/3.d78607ee.js"><link rel="prefetch" href="/EnumRun/assets/js/4.afa6acae.js"><link rel="prefetch" href="/EnumRun/assets/js/5.370b5766.js"><link rel="prefetch" href="/EnumRun/assets/js/6.b0161481.js"><link rel="prefetch" href="/EnumRun/assets/js/7.1471559e.js"><link rel="prefetch" href="/EnumRun/assets/js/8.a2b1dffd.js"><link rel="prefetch" href="/EnumRun/assets/js/9.71ea0386.js">
+    <link rel="stylesheet" href="/EnumRun/assets/css/0.styles.39dc9a85.css">
   </head>
   <body>
     <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/EnumRun/" class="home-link router-link-active"><!----> <span class="site-name">EnumRun</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/EnumRun/" class="nav-link">
@@ -20,15 +20,119 @@
   Top
 </a></div><div class="nav-item"><a href="https://github.com/tgiqfe/EnumRun" target="_blank" rel="noopener noreferrer" class="nav-link external">
   GitHub
-  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Guide/" class="sidebar-heading clickable"><span>概要</span> <span class="arrow right"></span></a> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Execute/" class="sidebar-heading clickable"><span>実行</span> <span class="arrow right"></span></a> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Setting/" class="sidebar-heading clickable router-link-active open"><span>設定</span> <span class="arrow down"></span></a> <ul class="sidebar-links sidebar-group-items"><li><a href="/EnumRun/Setting/setting_01.html" class="sidebar-link">設定ファイル</a></li><li><a href="/EnumRun/Setting/setting_02.html" class="sidebar-link">言語ファイル</a></li><li><a href="/EnumRun/Setting/setting_03.html" class="sidebar-link">スクリプトオプション</a></li><li><a href="/EnumRun/Setting/setting_04.html" class="sidebar-link">ログ</a></li><li><a href="/EnumRun/Setting/setting_05.html" class="sidebar-link">ログ転送(Logstash)</a></li><li><a href="/EnumRun/Setting/setting_06.html" class="sidebar-link">ログ転送(Syslog)</a></li><li><a href="/EnumRun/Setting/setting_07.html" aria-current="page" class="active sidebar-link">ScriptDelivery</a></li><li><a href="/EnumRun/Setting/setting_08.html" class="sidebar-link">ScriptDelivery (サーバ)</a></li></ul></section></li><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Sample/" class="sidebar-heading clickable"><span>補足</span> <span class="arrow right"></span></a> <!----></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="scriptdelivery"><a href="#scriptdelivery" class="header-anchor">#</a> ScriptDelivery</h1></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Guide/" class="sidebar-heading clickable"><span>概要</span> <span class="arrow right"></span></a> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Execute/" class="sidebar-heading clickable"><span>実行</span> <span class="arrow right"></span></a> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Setting/" class="sidebar-heading clickable router-link-active open"><span>設定</span> <span class="arrow down"></span></a> <ul class="sidebar-links sidebar-group-items"><li><a href="/EnumRun/Setting/setting_01.html" class="sidebar-link">設定ファイル</a></li><li><a href="/EnumRun/Setting/setting_02.html" class="sidebar-link">言語ファイル</a></li><li><a href="/EnumRun/Setting/setting_03.html" class="sidebar-link">スクリプトオプション</a></li><li><a href="/EnumRun/Setting/setting_04.html" class="sidebar-link">ログ</a></li><li><a href="/EnumRun/Setting/setting_05.html" class="sidebar-link">ログ転送(Logstash)</a></li><li><a href="/EnumRun/Setting/setting_06.html" class="sidebar-link">ログ転送(Syslog)</a></li><li><a href="/EnumRun/Setting/setting_07.html" aria-current="page" class="active sidebar-link">ログ転送(Syslogサーバ側設定)</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#必要パッケージ" class="sidebar-link">必要パッケージ</a></li><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#各通信用設定" class="sidebar-link">各通信用設定</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#udp" class="sidebar-link">UDP</a></li><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#tcp-暗号化無し" class="sidebar-link">TCP(暗号化無し)</a></li><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#tcp-tls暗号化、クライアント認証無し" class="sidebar-link">TCP(TLS暗号化、クライアント認証無し)</a></li><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#tcp-tls暗号化、クライアント認証有り" class="sidebar-link">TCP(TLS暗号化、クライアント認証有り)</a></li></ul></li><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#出力用設定" class="sidebar-link">出力用設定</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#ファシリティごとに対象外設定" class="sidebar-link">ファシリティごとに対象外設定</a></li><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#対象ファシリティを特定のファイルに設定" class="sidebar-link">対象ファシリティを特定のファイルに設定</a></li><li class="sidebar-sub-header"><a href="/EnumRun/Setting/setting_07.html#設定ファイルの構文チェック" class="sidebar-link">設定ファイルの構文チェック</a></li></ul></li></ul></li><li><a href="/EnumRun/Setting/setting_08.html" class="sidebar-link">ScriptDelivery</a></li><li><a href="/EnumRun/Setting/setting_09.html" class="sidebar-link">ScriptDelivery (サーバ側設定)</a></li></ul></section></li><li><section class="sidebar-group collapsable depth-0"><a href="/EnumRun/Sample/" class="sidebar-heading clickable"><span>補足</span> <span class="arrow right"></span></a> <!----></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="ログ転送-syslogサーバ側設定"><a href="#ログ転送-syslogサーバ側設定" class="header-anchor">#</a> ログ転送(Syslogサーバ側設定)</h1> <p>Linux前提。<br>
+SyslogのWindows Serverは割愛。</p> <h2 id="必要パッケージ"><a href="#必要パッケージ" class="header-anchor">#</a> 必要パッケージ</h2> <ul><li>rsyslog</li> <li>gnutls-utils ※TLS暗号化する場合のみ</li> <li>rsyslog-gnutls ※TLS暗号化する場合のみ</li></ul> <p><code>rsyslog</code>は恐らくOSインストール時に同時インストールされる為、気にしなくてOK。</p> <h2 id="各通信用設定"><a href="#各通信用設定" class="header-anchor">#</a> 各通信用設定</h2> <h3 id="udp"><a href="#udp" class="header-anchor">#</a> UDP</h3> <p>コンフィグファイル<code>/etc/rsyslog.conf</code>を、以下のように変更。</p> <p>設定箇所 (変更前)</p> <div class="language-bash extra-class"><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+<span class="token comment">#module(load=&quot;imudp&quot;)</span>
+<span class="token comment">#input(type=&quot;imudp&quot; port=&quot;514&quot;)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+<span class="token comment">#module(load=&quot;imtcp&quot;)</span>
+<span class="token comment">#input(type=&quot;imtcp&quot; port=&quot;514&quot;)</span>
+</code></pre></div><p>設定箇所 (変更後)</p> <div class="language-bash extra-class"><div class="highlight-lines"><br><div class="highlighted"> </div><div class="highlighted"> </div><br><br><br><br><br></div><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+module<span class="token punctuation">(</span>load<span class="token operator">=</span><span class="token string">&quot;imudp&quot;</span><span class="token punctuation">)</span>
+input<span class="token punctuation">(</span>type<span class="token operator">=</span><span class="token string">&quot;imudp&quot;</span> <span class="token assign-left variable">port</span><span class="token operator">=</span><span class="token string">&quot;514&quot;</span><span class="token punctuation">)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+<span class="token comment">#module(load=&quot;imtcp&quot;)</span>
+<span class="token comment">#input(type=&quot;imtcp&quot; port=&quot;514&quot;)</span>
+</code></pre></div><h3 id="tcp-暗号化無し"><a href="#tcp-暗号化無し" class="header-anchor">#</a> TCP(暗号化無し)</h3> <p>コンフィグファイル<code>/etc/rsyslog.conf</code>を、以下のように変更。</p> <p>設定箇所 (変更前)</p> <div class="language-bash extra-class"><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+<span class="token comment">#module(load=&quot;imudp&quot;)</span>
+<span class="token comment">#input(type=&quot;imudp&quot; port=&quot;514&quot;)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+<span class="token comment">#module(load=&quot;imtcp&quot;)</span>
+<span class="token comment">#input(type=&quot;imtcp&quot; port=&quot;514&quot;)</span>
+</code></pre></div><p>設定箇所 (変更後)</p> <div class="language-bash extra-class"><div class="highlight-lines"><br><br><br><br><br><div class="highlighted"> </div><div class="highlighted"> </div><br></div><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+<span class="token comment">#module(load=&quot;imudp&quot;)</span>
+<span class="token comment">#input(type=&quot;imudp&quot; port=&quot;514&quot;)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+module<span class="token punctuation">(</span>load<span class="token operator">=</span><span class="token string">&quot;imtcp&quot;</span><span class="token punctuation">)</span>
+input<span class="token punctuation">(</span>type<span class="token operator">=</span><span class="token string">&quot;imtcp&quot;</span> <span class="token assign-left variable">port</span><span class="token operator">=</span><span class="token string">&quot;514&quot;</span><span class="token punctuation">)</span>
+</code></pre></div><h3 id="tcp-tls暗号化、クライアント認証無し"><a href="#tcp-tls暗号化、クライアント認証無し" class="header-anchor">#</a> TCP(TLS暗号化、クライアント認証無し)</h3> <p>事前に必要パッケージをインストール</p> <p>Ubuntu</p> <div class="language-bash extra-class"><pre class="language-bash"><code><span class="token function">apt-get</span> <span class="token function">install</span> gnutls-utils
+<span class="token function">apt-get</span> <span class="token function">install</span> rsyslog-gnutls
+</code></pre></div><p>CentOS</p> <div class="language-bash extra-class"><pre class="language-bash"><code>dnf <span class="token function">install</span> gnutls-utils
+dnf <span class="token function">install</span> rsyslog-gnutls
+</code></pre></div><p>コンフィグファイル<code>/etc/rsyslog.conf</code>を、以下のように変更。</p> <p>設定箇所 (変更前)</p> <div class="language-bash extra-class"><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+<span class="token comment">#module(load=&quot;imudp&quot;)</span>
+<span class="token comment">#input(type=&quot;imudp&quot; port=&quot;514&quot;)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+<span class="token comment">#module(load=&quot;imtcp&quot;)</span>
+<span class="token comment">#input(type=&quot;imtcp&quot; port=&quot;514&quot;)</span>
+</code></pre></div><p>設定箇所 (変更後)</p> <div class="language-bash extra-class"><div class="highlight-lines"><br><br><br><br><br><br><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><br></div><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+<span class="token comment">#module(load=&quot;imudp&quot;)</span>
+<span class="token comment">#input(type=&quot;imudp&quot; port=&quot;514&quot;)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+<span class="token comment">#module(load=&quot;imtcp&quot;)</span>
+module<span class="token punctuation">(</span>
+  <span class="token assign-left variable">load</span><span class="token operator">=</span><span class="token string">&quot;imtcp&quot;</span>
+  StreamDriver.Name<span class="token operator">=</span><span class="token string">&quot;gtls&quot;</span>
+  StreamDriver.Mode<span class="token operator">=</span><span class="token string">&quot;1&quot;</span>
+  StreamDriver.Authmode<span class="token operator">=</span><span class="token string">&quot;anon&quot;</span>
+<span class="token punctuation">)</span>
+input<span class="token punctuation">(</span>type<span class="token operator">=</span><span class="token string">&quot;imtcp&quot;</span> <span class="token assign-left variable">port</span><span class="token operator">=</span><span class="token string">&quot;514&quot;</span><span class="token punctuation">)</span>
+
+global<span class="token punctuation">(</span>
+  <span class="token assign-left variable">DefaultNetstreamDriver</span><span class="token operator">=</span><span class="token string">&quot;gtls&quot;</span>
+  <span class="token assign-left variable">DefaultNetstreamDriverCAFile</span><span class="token operator">=</span><span class="token string">&quot;/etc/rsyslog.d/tls/rootCA.crt&quot;</span>
+  <span class="token assign-left variable">DefaultNetstreamDriverCertFile</span><span class="token operator">=</span><span class="token string">&quot;/etc/rsyslog.d/tls/cert.crt&quot;</span>
+  <span class="token assign-left variable">DefaultNetstreamDriverKeyFile</span><span class="token operator">=</span><span class="token string">&quot;/etc/rsyslog.d/tls/cert.key&quot;</span>
+<span class="token punctuation">)</span>
+</code></pre></div><div class="custom-block tip"><p class="custom-block-title">TIP</p> <p><code>StreamDriver.Authmode</code>の値を<code>anon</code>に設定。</p></div> <h3 id="tcp-tls暗号化、クライアント認証有り"><a href="#tcp-tls暗号化、クライアント認証有り" class="header-anchor">#</a> TCP(TLS暗号化、クライアント認証有り)</h3> <p>事前に必要パッケージをインストール<br>
+⇒ <a href="#tcp%E6%9A%97%E5%8F%B7%E5%8C%96-tls%E6%9A%97%E5%8F%B7%E5%8C%96%E3%80%81%E3%82%AF%E3%83%A9%E3%82%A4%E3%82%A2%E3%83%B3%E3%83%88%E8%AA%8D%E8%A8%BC%E7%84%A1%E3%81%97">TCP暗号化(TLS暗号化、クライアント認証無し)</a>を参照</p> <p>コンフィグファイル<code>/etc/rsyslog.conf</code>を、以下のように変更。</p> <p>設定箇所 (変更前)</p> <div class="language-bash extra-class"><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+<span class="token comment">#module(load=&quot;imudp&quot;)</span>
+<span class="token comment">#input(type=&quot;imudp&quot; port=&quot;514&quot;)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+<span class="token comment">#module(load=&quot;imtcp&quot;)</span>
+<span class="token comment">#input(type=&quot;imtcp&quot; port=&quot;514&quot;)</span>
+</code></pre></div><p>設定箇所 (変更後)</p> <div class="language-bash extra-class"><div class="highlight-lines"><br><br><br><br><br><br><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><div class="highlighted"> </div><br></div><pre class="language-bash"><code><span class="token comment"># provides UDP syslog reception</span>
+<span class="token comment">#module(load=&quot;imudp&quot;)</span>
+<span class="token comment">#input(type=&quot;imudp&quot; port=&quot;514&quot;)</span>
+
+<span class="token comment"># provides TCP syslog reception</span>
+<span class="token comment">#module(load=&quot;imtcp&quot;)</span>
+module<span class="token punctuation">(</span>
+  <span class="token assign-left variable">load</span><span class="token operator">=</span><span class="token string">&quot;imtcp&quot;</span>
+  StreamDriver.Name<span class="token operator">=</span><span class="token string">&quot;gtls&quot;</span>
+  StreamDriver.Mode<span class="token operator">=</span><span class="token string">&quot;1&quot;</span>
+  StreamDriver.Authmode<span class="token operator">=</span><span class="token string">&quot;x509/name&quot;</span>
+  <span class="token assign-left variable">PermittedPeer</span><span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">&quot;クライアント証明書のCN名&quot;</span><span class="token punctuation">]</span>
+<span class="token punctuation">)</span>
+input<span class="token punctuation">(</span>type<span class="token operator">=</span><span class="token string">&quot;imtcp&quot;</span> <span class="token assign-left variable">port</span><span class="token operator">=</span><span class="token string">&quot;514&quot;</span><span class="token punctuation">)</span>
+
+global<span class="token punctuation">(</span>
+  <span class="token assign-left variable">DefaultNetstreamDriver</span><span class="token operator">=</span><span class="token string">&quot;gtls&quot;</span>
+  <span class="token assign-left variable">DefaultNetstreamDriverCAFile</span><span class="token operator">=</span><span class="token string">&quot;/etc/rsyslog.d/tls/ca.crt&quot;</span>
+  <span class="token assign-left variable">DefaultNetstreamDriverCertFile</span><span class="token operator">=</span><span class="token string">&quot;/etc/rsyslog.d/tls/cert.crt&quot;</span>
+  <span class="token assign-left variable">DefaultNetstreamDriverKeyFile</span><span class="token operator">=</span><span class="token string">&quot;/etc/rsyslog.d/tls/cert.key&quot;</span>
+<span class="token punctuation">)</span>
+</code></pre></div><div class="custom-block tip"><p class="custom-block-title">TIP</p> <p><code>StreamDriver.Authmode</code>の値を<code>x509/name</code>に設定。</p></div> <div class="custom-block tip"><p class="custom-block-title">TIP</p> <p><code>PermittedPeer</code>の値は、クライアント証明書のCN名 (FQDN必須) に合わせる必要有り。</p></div> <p>暗号化通信うる場合は、ルート証明書(必要に応じて中間証明書も含む)を、Syslogクライアントに予めインストールしておく必要有り。</p> <h2 id="出力用設定"><a href="#出力用設定" class="header-anchor">#</a> 出力用設定</h2> <h3 id="ファシリティごとに対象外設定"><a href="#ファシリティごとに対象外設定" class="header-anchor">#</a> ファシリティごとに対象外設定</h3> <p>初期状態は、<code>/etc/rsyslog.conf</code>もしくは、<code>/etc/rsyslog.d/配下の*.conf</code>のどこかに記述されている、</p> <div class="language- extra-class"><pre class="language-text"><code>*.*;auth,authpriv.none              -/var/log/syslog
+</code></pre></div><p>の設定により、アプリケーションが送ったSyslogデータは全て<code>/var/log/syslog</code>ファイルにまとめられて、闇鍋になってします。
+(ディストリビューションにより、出力先ファイルの名前が異なる可能性有り)</p> <p>事前に決めたファシリティを、闇鍋対象がにする為には、<br>
+(ファシリティ<code>local0</code>を対象外にする場合)</p> <div class="language- extra-class"><pre class="language-text"><code>*.*;auth,authpriv.none,local0.none              -/var/log/syslog
+</code></pre></div><p>のように設定。</p> <div class="custom-block tip"><p class="custom-block-title">TIP</p> <p>ファイル名の前の「- (ハイフン)」は、非同期書き込みするという設定。<br>
+「-」無しの場合は同期書き込み。<br>
+非同期書き込みのほうがパフォーマンスが良いとのこと。</p></div> <h3 id="対象ファシリティを特定のファイルに設定"><a href="#対象ファシリティを特定のファイルに設定" class="header-anchor">#</a> 対象ファシリティを特定のファイルに設定</h3> <p><code>/etc/rsyslog.conf</code>もしくは、<code>/etc/rsyslog.d/配下の*.conf</code>のファイルに、以下のように追記する。<br>
+(ファシリティ<code>local0</code>を対象外にする場合)</p> <div class="language- extra-class"><pre class="language-text"><code>local0.debug            -/var/log/example.log
+</code></pre></div><p>何かあった時にファイル名変更や削除で容易に設定無効化ができる為、<code>/etc/rsyslog.c</code>配下に、新規ファイルを作成して設定を記述することをお勧めします。</p> <h3 id="設定ファイルの構文チェック"><a href="#設定ファイルの構文チェック" class="header-anchor">#</a> 設定ファイルの構文チェック</h3> <p>以下のように実行。</p> <div class="language-bash extra-class"><pre class="language-bash"><code><span class="token comment"># /etc/rsyslog.conf をチェック</span>
+rsyslogd -N <span class="token number">1</span>
+
+<span class="token comment"># /etc/rsyslog.d 配下の10-sample.conf をチェック</span>
+rsyslogd -N <span class="token number">1</span> -f /etc/rsyslog.d/10-sample.conf
+</code></pre></div><p>構文に問題が無い場合は、以下のように出力される。</p> <div class="language- extra-class"><pre class="language-text"><code>rsyslogd: version 8.2001.0, config validation run (level 1), master config /etc/rsyslog.d/60-test.conf
+rsyslogd: End of config validation run. Bye.
+</code></pre></div><div class="custom-block tip"><p class="custom-block-title">TIP</p> <p>Syslogデータの出力先を設定した後、ログローテーションに設定を追加することも忘れずに。</p></div></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
       ←
       <a href="/EnumRun/Setting/setting_06.html" class="prev">
         ログ転送(Syslog)
       </a></span> <span class="next"><a href="/EnumRun/Setting/setting_08.html">
-        ScriptDelivery (サーバ)
+        ScriptDelivery
       </a>
       →
     </span></p></div> </main></div><div class="global-ui"></div></div>
-    <script src="/EnumRun/assets/js/app.72a05608.js" defer></script><script src="/EnumRun/assets/js/2.05c5ba82.js" defer></script><script src="/EnumRun/assets/js/25.50777eb4.js" defer></script>
+    <script src="/EnumRun/assets/js/app.051e0bdb.js" defer></script><script src="/EnumRun/assets/js/2.05c5ba82.js" defer></script><script src="/EnumRun/assets/js/25.0114da4e.js" defer></script>
   </body>
 </html>
