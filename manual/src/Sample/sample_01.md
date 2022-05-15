@@ -31,6 +31,21 @@
 ```
 
 </code-block>
+<code-block title="Yml">
+
+```yml
+setting:
+  restTime: 60
+  detentionPeriod: 10
+  minLogLevel: Info
+  ranges:
+    StartupScript: 0-9
+    ShutdownScript: 11-29
+    LogonScript: 81-89
+    LogoffScript: 91-99
+```
+
+</code-block>
 <code-block title="Text">
 
 ```yml

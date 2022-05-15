@@ -3,14 +3,14 @@ using EnumRun;
 using EnumRun.Lib;
 using EnumRun.Logs;
 using EnumRun.Logs.ProcessLog;
-using EnumRun.Logs.MachineLog;
 
-bool initial = false;
+bool initial = true;
 if (initial)
 {
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
     setting_def.Serialize(Item.CONFIG_JSON);
     setting_def.Serialize(Item.CONFIG_TXT);
+    setting_def.Serialize(Item.CONFIG_YML);
 
     LanguageCollection collection_def = LanguageCollection.Deserialize();
     collection_def.Save(Item.LANG_JSON);
@@ -32,7 +32,7 @@ using (var logger = new ProcessLogger(setting))
     var session = new ExecSession(setting, logger);
     session.PreProcess();
 
-    //  必要に応じてScriptDeliveryサーバからスクリプトをダウンロード
+    //  ScriptDeliveryサーバからスクリプトをダウンロード
     var sdc = new ScriptDeliveryClient(setting, logger);
     sdc.StartDownload();
 
