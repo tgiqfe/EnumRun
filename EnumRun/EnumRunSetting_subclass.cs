@@ -120,6 +120,13 @@ namespace EnumRun
         {
             public string[] Server { get; set; }
             public string Process { get; set; }
+
+            public override string ToString()
+            {
+                return string.Format("[ Server={{0}} Process={1}",
+                    string.Join(", ", this.Server),
+                    this.Process);
+            }
         }
 
         #endregion

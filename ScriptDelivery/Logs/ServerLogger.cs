@@ -91,15 +91,18 @@ namespace ScriptDelivery.Logs
                 await _writer.WriteLineAsync(json);
 
                 //  Syslog転送
-                if (_syslog?.Enabled ?? false)
+                if(_syslog != null)
                 {
-                    await _syslog.SendAsync(body.Level, body.Title, body.Message);
-                }
-                else
-                {
-                    _liteDB ??= GetLiteDB();
-                    _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
-                    _syslogCollection.Upsert(body);
+                    if (_syslog.Enabled)
+                    {
+                        await _syslog.SendAsync(body.Level, body.Title, body.Message);
+                    }
+                    else
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
+                        _syslogCollection.Upsert(body);
+                    }
                 }
 
                 writed = true;

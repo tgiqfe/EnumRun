@@ -40,7 +40,7 @@ namespace EnumRun
                 string[] array = setting.ScriptDelivery.Server.OrderBy(x => random.Next()).ToArray();
                 foreach (var sv in array)
                 {
-                    var info = new ServerInfo(sv);
+                    var info = new ServerInfo(sv, 5000, "http");
                     var connect = new TcpConnect(info.Server, info.Port);
                     if (connect.TcpConnectSuccess)
                     {
@@ -72,13 +72,22 @@ namespace EnumRun
         {
             if (this.Enabled)
             {
+                this.SmbDownloadList = new List<string>();
+                this.HttpDownloadList = new List<DownloadFile>();
+
                 using (var client = new HttpClient())
                 {
                     DownloadMappingFile(client).Wait();
                     MapMathcingCheck();
-                    DownloadSmbFile();
-                    DownloadHttpSearch(client).Wait();
-                    DownloadHttpStart(client).Wait();
+                    if (SmbDownloadList.Count > 0)
+                    {
+                        DownloadSmbFile();
+                    }
+                    if (HttpDownloadList.Count > 0)
+                    {
+                        DownloadHttpSearch(client).Wait();
+                        DownloadHttpStart(client).Wait();
+                    }
                 }
             }
         }
@@ -145,8 +154,6 @@ namespace EnumRun
             }).ToList();
 
             _logger.Write(LogLevel.Debug, null, "Finish, require check [Match => {0} count]", MappingList.Count);
-            this.SmbDownloadList = new List<string>();
-            this.HttpDownloadList = new List<DownloadFile>();
 
             foreach (var mapping in MappingList)
             {
@@ -182,7 +189,7 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "Search, download file from SMB server.");
 
-            if (SmbDownloadList?.Count > 0) { }
+            //  未実装
         }
 
         /// <summary>
@@ -193,23 +200,20 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
 
-            if (HttpDownloadList?.Count > 0)
+            using (var content = new StringContent(
+                 JsonSerializer.Serialize(HttpDownloadList, _options), Encoding.UTF8, "application/json"))
+            using (var response = await client.PostAsync(uri + "/download/list", content))
             {
-                using (var content = new StringContent(
-                     JsonSerializer.Serialize(HttpDownloadList, _options), Encoding.UTF8, "application/json"))
-                using (var response = await client.PostAsync(uri + "/download/list", content))
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    if (response.StatusCode == HttpStatusCode.OK)
-                    {
-                        string json = await response.Content.ReadAsStringAsync();
-                        HttpDownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
+                    string json = await response.Content.ReadAsStringAsync();
+                    HttpDownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
 
-                        _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
-                    }
-                    else
-                    {
-                        _logger.Write(LogLevel.Error, "Failed, download DownloadFile list object");
-                    }
+                    _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
+                }
+                else
+                {
+                    _logger.Write(LogLevel.Error, "Failed, download DownloadFile list object");
                 }
             }
         }
@@ -222,40 +226,37 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "Start, Http download.");
 
-            if (HttpDownloadList?.Count > 0)
+            foreach (var dlFile in HttpDownloadList)
             {
-                foreach (var dlFile in HttpDownloadList)
+                string dstPath = ExpandEnvironment(dlFile.DestinationPath);
+
+                //  ローカル側のファイルとの一致チェック
+                if (!(dlFile.Downloadable ?? false)) { continue; }
+                if (dlFile.CompareFile(dstPath) && !(dlFile.Overwrite ?? false))
                 {
-                    string dstPath = ExpandEnvironment(dlFile.DestinationPath);
+                    continue;
+                }
+                TargetDirectory.CreateParent(dstPath);
 
-                    //  ローカル側のファイルとの一致チェック
-                    if (!(dlFile.Downloadable ?? false)) { continue; }
-                    if (dlFile.CompareFile(dstPath) && !(dlFile.Overwrite ?? false))
-                    {
-                        continue;
-                    }
-
-                    //  ダウンロード要求を送信し、ダウンロード開始
-                    var query = new Dictionary<string, string>()
+                //  ダウンロード要求を送信し、ダウンロード開始
+                var query = new Dictionary<string, string>()
                     {
                         { "fileName", dlFile.Name }
                     };
-                    using (var response = await client.GetAsync(uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
+                using (var response = await client.GetAsync(uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
+                {
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        if (response.StatusCode == HttpStatusCode.OK)
+                        using (var stream = await response.Content.ReadAsStreamAsync())
+                        using (var fs = new FileStream(dstPath, FileMode.Create, FileAccess.Write, FileShare.None))
                         {
-                            using (var stream = await response.Content.ReadAsStreamAsync())
-                            using (var fs = new FileStream(dstPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                            {
-                                stream.CopyTo(fs);
-                            }
-
-                            _logger.Write(LogLevel.Info, "Success, file download. [{0}]", dstPath);
+                            stream.CopyTo(fs);
                         }
-                        else
-                        {
-                            _logger.Write(LogLevel.Info, "Failed, file download. [{0}]", dstPath);
-                        }
+                        _logger.Write(LogLevel.Info, null, "Success, file download. [{0}]", dstPath);
+                    }
+                    else
+                    {
+                        _logger.Write(LogLevel.Info, null, "Failed, file download. [{0}]", dstPath);
                     }
                 }
             }

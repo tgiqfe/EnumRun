@@ -184,6 +184,7 @@ namespace EnumRun
             PropertyInfo[] props = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             for (int i = index; i < list.Count; i++, index++)
             {
+                if (string.IsNullOrEmpty(list[i])) { continue; }
                 if (isRoot || pat_indent.IsMatch(list[i]))
                 {
                     string key = list[i].Substring(0, list[i].IndexOf(":")).Trim();
@@ -203,6 +204,10 @@ namespace EnumRun
                         else if (type == typeof(bool?))
                         {
                             prop.SetValue(obj, !BooleanCandidate.IsNullableFalse(val));
+                        }
+                        else if (type == typeof(string[]))
+                        {
+                            prop.SetValue(obj, val.Split(',').Select(x => x.Trim()).ToArray());
                         }
                         else if (type == typeof(ParamRanges))
                         {
@@ -234,6 +239,12 @@ namespace EnumRun
                         {
                             index++;
                             (obj as EnumRunSetting).Syslog = GetProperty(new ParamSyslog(), list, ref index, false);
+                            i = --index;
+                        }
+                        else if (type == typeof(ParamScriptDelivery))
+                        {
+                            index++;
+                            (obj as EnumRunSetting).ScriptDelivery = GetProperty(new ParamScriptDelivery(), list, ref index, false);
                             i = --index;
                         }
                     }
@@ -359,6 +370,12 @@ namespace EnumRun
                     sw.WriteLine($"  SslCertPassword: {this.Syslog.SslCertPassword}");
                     sw.WriteLine($"  SslCertFriendryName: {this.Syslog.SslCertFriendryName}");
                     sw.WriteLine($"  SslIgnoreCheck: {this.Syslog.SslIgnoreCheck}");
+                }
+                if (this.ScriptDelivery != null)
+                {
+                    sw.WriteLine("ScriptDelivery:");
+                    sw.WriteLine($"  Server: {string.Join(", ", this.ScriptDelivery.Server)}");
+                    sw.WriteLine($"  Process: {this.ScriptDelivery.Process}");
                 }
             }
         }

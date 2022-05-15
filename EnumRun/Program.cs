@@ -4,7 +4,7 @@ using EnumRun.Lib;
 using EnumRun.Logs;
 using EnumRun.Logs.ProcessLog;
 
-bool initial = true;
+bool initial = false;
 if (initial)
 {
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
@@ -36,7 +36,9 @@ using (var logger = new ProcessLogger(setting))
     var sdc = new ScriptDeliveryClient(setting, logger);
     sdc.StartDownload();
 
-    if (session.Enabled)
+    Console.WriteLine(setting.GetFilesPath());
+
+    if (session.Enabled && Directory.Exists(setting.GetFilesPath()))
     {
         var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
