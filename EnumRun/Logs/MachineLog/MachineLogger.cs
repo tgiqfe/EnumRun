@@ -14,8 +14,6 @@ namespace EnumRun.Logs.MachineLog
         private ILiteCollection<MachineLogBody> _logstashCollection = null;
         private ILiteCollection<MachineLogBody> _syslogCollection = null;
 
-        //public MachineLogger() { }
-
         public MachineLogger(EnumRunSetting setting)
         {
             string logFileName =
