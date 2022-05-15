@@ -15,6 +15,7 @@ namespace EnumRun.Lib.Infos
         public string Server { get; set; }
         public int Port { get; set; }
         public string Protocol { get; set; }
+        public string URI { get { return $"{this.Protocol}://{this.Server}:{this.Port}"; } }
 
         public ServerInfo() { }
         public ServerInfo(string uri)

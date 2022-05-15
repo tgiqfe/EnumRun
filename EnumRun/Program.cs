@@ -28,10 +28,15 @@ using (var logger = new ProcessLogger(setting))
 {
     logger.Write(setting.ToLog());
 
+    //  セッション開始時処理
     var session = new ExecSession(setting, logger);
     session.PreProcess();
 
-    if(session.Enabled)
+    //  必要に応じてScriptDeliveryサーバからスクリプトをダウンロード
+    var sdc = new ScriptDeliveryClient(setting, logger);
+    sdc.StartDownload();
+
+    if (session.Enabled)
     {
         var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
@@ -42,6 +47,7 @@ using (var logger = new ProcessLogger(setting))
         Task.WhenAll(processes);
     }
 
+    //  セッション終了時処理
     session.PostProcess();
 }
 

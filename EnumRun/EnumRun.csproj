@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\ScriptDelivery\Files\DownloadFile.cs" Link="ScriptDelivery\Files\DownloadFile.cs" />
     <Compile Include="..\ScriptDelivery\Maps\KeysAttribute.cs" Link="ScriptDelivery\Maps\KeysAttribute.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Mapping.cs" Link="ScriptDelivery\Maps\Mapping.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Requires\Require.cs" Link="ScriptDelivery\Maps\Requires\Require.cs" />
@@ -47,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="ScriptDelivery\Files\" />
     <Folder Include="ScriptDelivery\Maps\Requires\" />
     <Folder Include="ScriptDelivery\Maps\Works\" />
   </ItemGroup>
