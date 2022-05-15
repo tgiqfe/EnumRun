@@ -273,8 +273,8 @@ namespace ScriptDelivery.Maps
                                     rule.Param = new Dictionary<string, string>();
                                     foreach (string pair in val.TrimStart('{').TrimEnd('}').Split(","))
                                     {
-                                        string pairKey = pair.Substring(0, pair.IndexOf("="));
-                                        string pairVal = pair.Substring(pair.IndexOf("=") + 1);
+                                        string pairKey = pair.Substring(0, pair.IndexOf("=")).Trim();
+                                        string pairVal = pair.Substring(pair.IndexOf("=") + 1).Trim();
                                         rule.Param[pairKey] = pairVal;
                                     }
                                     break;
@@ -290,6 +290,7 @@ namespace ScriptDelivery.Maps
                         var download = new Download();
                         foreach (string field in fields)
                         {
+                            if (string.IsNullOrEmpty(field)) { continue; }
 
                             string key = field.Substring(0, field.IndexOf(":")).Trim().ToLower();
                             string val = field.Substring(field.IndexOf(":") + 1).Trim();

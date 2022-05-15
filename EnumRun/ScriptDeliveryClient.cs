@@ -40,7 +40,7 @@ namespace EnumRun
                 string[] array = setting.ScriptDelivery.Server.OrderBy(x => random.Next()).ToArray();
                 foreach (var sv in array)
                 {
-                    var info = new ServerInfo(sv);
+                    var info = new ServerInfo(sv, 5000, "http");
                     var connect = new TcpConnect(info.Server, info.Port);
                     if (connect.TcpConnectSuccess)
                     {
@@ -234,6 +234,8 @@ namespace EnumRun
                     {
                         continue;
                     }
+                    TargetDirectory.CreateParent(dstPath);
+                    
 
                     //  ダウンロード要求を送信し、ダウンロード開始
                     var query = new Dictionary<string, string>()

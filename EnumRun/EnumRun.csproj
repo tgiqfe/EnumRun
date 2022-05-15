@@ -48,7 +48,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ScriptDelivery\Files\" />
     <Folder Include="ScriptDelivery\Maps\Requires\" />
     <Folder Include="ScriptDelivery\Maps\Works\" />
   </ItemGroup>

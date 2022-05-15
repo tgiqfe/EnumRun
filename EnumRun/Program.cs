@@ -4,7 +4,7 @@ using EnumRun.Lib;
 using EnumRun.Logs;
 using EnumRun.Logs.ProcessLog;
 
-bool initial = true;
+bool initial = false;
 if (initial)
 {
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
