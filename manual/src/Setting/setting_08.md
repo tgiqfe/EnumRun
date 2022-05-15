@@ -1,4 +1,4 @@
-# ScriptDelivery (サーバ)
+# ScriptDelivery
 
 
 

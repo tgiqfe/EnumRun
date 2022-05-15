@@ -1,11 +1,10 @@
 ﻿using EnumRun.Lib;
-using EnumRun.Log.ProcessLog;
+using EnumRun.Logs.ProcessLog;
 using Hnx8.ReadJEnc;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using EnumRun.Log;
 
 namespace EnumRun
 {
@@ -46,6 +45,11 @@ namespace EnumRun
                 SslCertFriendryName = null,
                 SslIgnoreCheck = false
             };
+            this.ScriptDelivery = new ParamScriptDelivery()
+            {
+                Server = new string[] { "http://localhost:5000" },
+                Process = "StartupScript",
+            };
         }
 
         #region Deserialize
@@ -57,21 +61,28 @@ namespace EnumRun
         public static EnumRunSetting Deserialize()
         {
             string jsonFilePath = TargetDirectory.GetFile(Item.CONFIG_JSON);
-            string textFilePath = TargetDirectory.GetFile(Item.CONFIG_TXT);
-
             if (File.Exists(jsonFilePath))
             {
                 return DeserializeJson(jsonFilePath);
             }
-            else if (File.Exists(textFilePath))
+
+            string ymlFilePath = TargetDirectory.GetFile(Item.CONFIG_YML);
+            if (File.Exists(ymlFilePath))
+            {
+                return DeserializeYml(ymlFilePath);
+            }
+
+            string textFilePath = TargetDirectory.GetFile(Item.CONFIG_TXT);
+            if (File.Exists(textFilePath))
             {
                 return DeserializeText(textFilePath);
             }
+
             return DeserializeJson(jsonFilePath);
         }
 
         /// <summary>
-        /// Jsonファイルからシリアライズ
+        /// Jsonファイルを読み込んでデシリアライズ
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
@@ -108,7 +119,40 @@ namespace EnumRun
         }
 
         /// <summary>
-        /// Textファイルからデシリアライズ
+        /// Ymlファイルを読み込んでデシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static EnumRunSetting DeserializeYml(string filePath)
+        {
+            EnumRunSetting setting = null;
+            if (filePath != null)
+            {
+                try
+                {
+                    using (var sr = new StreamReader(filePath, Encoding.UTF8))
+                    {
+                        var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().
+                            WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance).
+                            IgnoreUnmatchedProperties().
+                            Build();
+                        var dictionary = deserializer.Deserialize<Dictionary<string, EnumRunSetting>>(sr.ReadToEnd());
+                        setting = dictionary["setting"];
+                    }
+                }
+                catch { }
+            }
+            if (setting == null)
+            {
+                setting = new EnumRunSetting();
+                setting.SetDefault();
+            }
+
+            return setting;
+        }
+
+        /// <summary>
+        /// Textファイルを読み込んでデシリアライズ
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
@@ -214,6 +258,10 @@ namespace EnumRun
                 case ".json":
                     SerializeJson(filePath);
                     break;
+                case ".yml":
+                case ".yaml":
+                    SerializeYml(filePath);
+                    break;
                 case ".txt":
                     SerializeText(filePath);
                     break;
@@ -238,6 +286,34 @@ namespace EnumRun
                         Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                     });
                 sw.WriteLine(json);
+            }
+        }
+
+        /// <summary>
+        /// Ymlファイルへシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        public void SerializeYml(string filePath)
+        {
+            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
+            {
+                /*  実装方法変更の可能性有り
+                var serializer = new YamlDotNet.Serialization.SerializerBuilder().
+                    WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance).
+                    ConfigureDefaultValuesHandling(YamlDotNet.Serialization.DefaultValuesHandling.OmitEmptyCollections | YamlDotNet.Serialization.DefaultValuesHandling.OmitNull).
+                    Build();
+                */
+                var serializer = new YamlDotNet.Serialization.SerializerBuilder().
+                    WithEmissionPhaseObjectGraphVisitor(x =>
+                        new YamlIEnumerableSkipEmptyObjectGraphVisitor(x.InnerVisitor)).
+                    WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance).
+                    Build();
+
+                var dictionary = new Dictionary<string, EnumRunSetting>()
+                {
+                    { "setting", this}
+                };
+                sw.WriteLine(serializer.Serialize(dictionary));
             }
         }
 
@@ -305,7 +381,7 @@ namespace EnumRun
 
         public string GetFilesPath()
         {
-            return string.IsNullOrEmpty(this.FilesPath ) ?
+            return string.IsNullOrEmpty(this.FilesPath) ?
                 Path.Combine(Item.WorkDirectoryPath, "Files") :
                 ExpandEnvironment(this.FilesPath);
         }

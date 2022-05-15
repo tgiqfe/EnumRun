@@ -47,7 +47,8 @@ module.exports = {
               '/Setting/setting_05.md',
               '/Setting/setting_06.md',
               '/Setting/setting_07.md',
-              '/Setting/setting_08.md'
+              '/Setting/setting_08.md',
+              '/Setting/setting_09.md'
           ]
         },
         {

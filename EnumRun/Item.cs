@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Diagnostics;
+using EnumRun.Lib.Infos;
 
 namespace EnumRun
 {
@@ -30,7 +31,7 @@ namespace EnumRun
         /// システムアカウントの場合は実行ファイルの場所。それ以外はTempフォルダー配下
         /// </summary>
         public static readonly string WorkDirectoryPath =
-            EnumRun.Lib.UserInfo.IsSystemAccount ?
+            UserInfo.IsSystemAccount ?
                 ExecDirectoryPath :
                 Path.Combine(Path.GetTempPath(), "EnumRun");
 
@@ -42,17 +43,15 @@ namespace EnumRun
         /// </summary>
         public const string SESSION_FILE = "session.json";
 
-        /*
-        /// <summary>
-        /// 旧ファイルのクリーンの管理用ファイル
-        /// </summary>
-        public const string CLEAN_FILE = "clean.json";
-        */
-
         /// <summary>
         /// 設定ファイル(JSON)
         /// </summary>
         public const string CONFIG_JSON = "Setting.json";
+
+        /// <summary>
+        /// 設定ファイル(Yml)
+        /// </summary>
+        public const string CONFIG_YML = "Setting.yml";
 
         /// <summary>
         /// 設定ファイル(TXT)
