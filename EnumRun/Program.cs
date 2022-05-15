@@ -1,16 +1,16 @@
 ﻿
 using EnumRun;
 using EnumRun.Lib;
-using EnumRun.Log;
-using EnumRun.Log.ProcessLog;
-using EnumRun.Log.MachineLog;
+using EnumRun.Logs;
+using EnumRun.Logs.ProcessLog;
 
-bool initial = false;
+bool initial = true;
 if (initial)
 {
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
     setting_def.Serialize(Item.CONFIG_JSON);
     setting_def.Serialize(Item.CONFIG_TXT);
+    setting_def.Serialize(Item.CONFIG_YML);
 
     LanguageCollection collection_def = LanguageCollection.Deserialize();
     collection_def.Save(Item.LANG_JSON);
@@ -28,10 +28,15 @@ using (var logger = new ProcessLogger(setting))
 {
     logger.Write(setting.ToLog());
 
+    //  セッション開始時処理
     var session = new ExecSession(setting, logger);
     session.PreProcess();
 
-    if(session.Enabled)
+    //  ScriptDeliveryサーバからスクリプトをダウンロード
+    var sdc = new ScriptDeliveryClient(setting, logger);
+    sdc.StartDownload();
+
+    if (session.Enabled)
     {
         var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
@@ -42,6 +47,7 @@ using (var logger = new ProcessLogger(setting))
         Task.WhenAll(processes);
     }
 
+    //  セッション終了時処理
     session.PostProcess();
 }
 

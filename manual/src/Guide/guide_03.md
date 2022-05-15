@@ -2,20 +2,32 @@
 
 ## 制御情報ファイルの種類
 
-設定ファイルは、以下の3種類があります。  
+EnumRunの制御情報を記述するファイルは、以下の2種類があります。  
+- 設定ファイル (Setting)
+- 言語ファイル (Language)
+
+### 設定ファイル
 
 | ファイル名 | 拡張子 | 役割 |
 | ---------- | ------ | ---- |
 | Setting.json | .json | EnumRunの制御情報を記載。JSONファイル。 |
-| Setting.txt | .txt | EnumRunの制御情報を記載。Textファイル。<br>Setting.jsonとSetting.txtが同じフォルダー内にある場合は、Setting.jsonを優先します。 |
-| Language.json | .json | スクリプトの実行言語の制御情報を記載。 |
+| Setting.yml | .yml or .yaml | EnumRunの制御情報を記載。Ymlファイル。 |
+| Setting.txt | .txt | EnumRunの制御情報を記載。Textファイル。 |
 
-``Setting.json``あるいは``Setting.txt``のどちらかのファイルは必須です。  
-``Language.json``について、基本的にデフォルト設定のままで問題ありません。新しい言語の実行環境をインストールしたときに追記する為に使用します。
+``Setting.json``、``Setting.yml``、``Setting.txt``のうち、どれか一つのファイルは必須ファイルの為、予め準備しておく必要があります。
 
 ::: tip
-本ドキュメントでは、``Setting.json``もしくは``Setting.txt``をまとめて「設定ファイル」と表記します。
+本ドキュメントでは、``Setting.json``、``Setting.yml``、``Setting.txt``をまとめて「設定ファイル」と表記します。
 :::
+
+### 言語ファイル
+
+| ファイル名 | 拡張子 | 役割 |
+| ---------- | ------ | ---- |
+| Language.json | .json | スクリプトの実行言語の制御情報を記載。 |
+ 
+``Language.json``について、基本的にデフォルト設定のままで問題ありません。新しい言語の実行環境をインストールしたときに追記する為に使用します。  
+また、``Language.json``は任意ファイルの為、予め準備しておく必要はありません。
 
 ## 作成
 
@@ -23,14 +35,15 @@
 
 エディタソフトを使用して空ファイルを作成し、以下の文字コード/改行コードで保存します。
 
-| ファイル名 | 文字コード | 改行コード |
-| ---------- | ---------- | ---------- |
-| Setting.json | UTF8 with BOM | CRLF |
-| Setting.txt | UTF8 without BOM / UTF8 with BOM / Shift-JIS | CRLF |
+| ファイル名    | 文字コード | 改行コード |
+| ------------- | ---------- | ---------- |
+| Setting.json  | UTF8 with BOM | CRLF |
+| Setting.yml   | UTF8 with BOM | CRLF |
+| Setting.txt   | UTF8 without BOM / UTF8 with BOM / Shift-JIS | CRLF |
 | Language.json | UTF8 with BOM | CRLF |
 
 ※比較的最近のWindows 10のメモ帳でファイルを作成した場合、``UTF8 without BOM``で保存されます。  
-※``Setting.txt``は上表の3つの文字コードでのみ動作確認済みですが、その他の文字コードも基本的に使用可能です。
+※``Setting.txt``は上表の3つの文字コードでのみ動作確認済みです。他の文字コード(EUC-JP等)も利用できる可能性はありますが、非推奨です。
 
 ### 設定ファイルを記述(Setting.json)
 

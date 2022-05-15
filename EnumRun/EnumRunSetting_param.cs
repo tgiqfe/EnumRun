@@ -1,11 +1,11 @@
 ﻿using EnumRun.Lib;
-using EnumRun.Log.ProcessLog;
+using EnumRun.Logs.ProcessLog;
 using Hnx8.ReadJEnc;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using EnumRun.Log;
+using EnumRun.Logs;
 using EnumRun.Lib.Syslog;
 
 namespace EnumRun
@@ -61,5 +61,10 @@ namespace EnumRun
         /// Syslog設定情報
         /// </summary>
         public ParamSyslog Syslog { get; set; }
+
+        /// <summary>
+        /// ScriptDelivery設定情報
+        /// </summary>
+        public ParamScriptDelivery ScriptDelivery { get; set; }
     }
 }
