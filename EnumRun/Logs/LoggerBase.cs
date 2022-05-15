@@ -19,9 +19,6 @@ namespace EnumRun.Logs
         protected SyslogTransport _syslog = null;
         protected LiteDatabase _liteDB = null;
 
-        //  LogStatshやSyslogについて、サーバアクセス失敗時と、そもそもサーバアクセスする予定が無い場合で、
-        //  LiteDB保管要否が変わるので、分岐を追加する。
-
         protected virtual bool _logAppend { get; }
 
         #region LiteDB methods

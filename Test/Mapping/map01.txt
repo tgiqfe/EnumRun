@@ -1,0 +1,8 @@
+---
+Require:
+  Mode: And
+  Target: HostName, Param: { name=HOSTNAME01 }
+  Target: IPAddress, Param: { Address=192.168.10.51, Interface=Ethernet* }
+Work:
+  Source: example001.txt, Destination: C:\App\Sample\Example001.txt, Keep: true
+  Source: example002.txt, Destination: C:\App\Sample\Example002.txt
