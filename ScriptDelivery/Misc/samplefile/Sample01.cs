@@ -42,14 +42,12 @@ namespace ScriptDelivery.Misc.samplefile
             {
                 new Download()
                 {
-                    Source = "example001.txt",
-                    Destination = @"C:\App\Sample\Example001.txt",
+                    Path = "example001.txt",
                     Keep = "true",
                 },
                 new Download()
                 {
-                    Source = "example002.txt",
-                    Destination = @"C:\App\Sample\Example002.txt",
+                    Path = "example002.txt",
                 },
             };
 

@@ -41,6 +41,15 @@ namespace ScriptDelivery.Files
 
         private async void RecheckResource()
         {
+            //  変更後即再チェック。その後10秒待機した後にロック解除
+            //  ロック中にもう一回変更が発生した場合、ロック解除後に再チェック。
+            //  ロック解除待ちの間にさらにもう一回変更が発生した場合は即終了。
+            //  最大3スレッドが同時に稼働する可能性有り。
+            //
+            //  [問題発生]
+            //  変更イベントが発生した後、書き込みロックが完了していない間に再チェックスレッドを
+            //  開始してしまった場合、IOException
+            /*
             if (_during || _reserve)
             {
                 if (_reserve) { return; }
@@ -58,6 +67,30 @@ namespace ScriptDelivery.Files
 
             await Task.Delay(10000);        //  Recheckした後の待機時間 ⇒ 10秒
             _during = false;
+            */
+
+            //  [別アルゴリズムで実施]
+            //  変更開始後にロック開始。10秒巻待機後に再チェック
+            //  ロック中に変更があった場合は終了 (同時最大は2スレッドまで)
+            //  IOException発生時、最初に戻る(ループさせる)
+            if (_during) { return; }
+            _during = true;
+            while (_during)
+            {
+                try
+                {
+                    Item.Logger.Write(Logs.LogLevel.Info, null, "RecheckSource",
+                        "Recheck => {0}", _collection.GetType().Name);
+                    await Task.Delay(10000);
+                    _collection.CheckSource();
+                    _during = false;
+                }
+                catch (IOException e)
+                {
+                    Item.Logger.Write(Logs.LogLevel.Error, null, "RecheckResource", "IOException occurred.");
+                    Item.Logger.Write(Logs.LogLevel.Error, null, "RecheckResource", e.Message);
+                }
+            }
         }
 
         public void Close()

@@ -3,11 +3,8 @@ namespace ScriptDelivery.Maps.Works
 {
     internal class Download
     {
-        [YamlDotNet.Serialization.YamlMember(Alias = "source")]
-        public string Source { get; set; }
-
-        [YamlDotNet.Serialization.YamlMember(Alias = "destination")]
-        public string Destination { get; set; }
+        [YamlDotNet.Serialization.YamlMember(Alias = "path")]
+        public string Path { get; set; }
 
         [YamlDotNet.Serialization.YamlMember(Alias = "keep")]
         public string Keep { get; set; }

@@ -152,8 +152,7 @@ namespace ScriptDelivery.Maps
 
                 mapping.Work = new Work();
                 mapping.Work.Downloads = new Download[1] { new Download() };
-                mapping.Work.Downloads[0].Source = line["Source"];
-                mapping.Work.Downloads[0].Destination = line["Destination"];
+                mapping.Work.Downloads[0].Path = line["Path"];
                 mapping.Work.Downloads[0].Keep = line["Keep"];
                 mapping.Work.Downloads[0].UserName = line["User"];
                 mapping.Work.Downloads[0].Password = line["Password"];
@@ -172,8 +171,7 @@ namespace ScriptDelivery.Maps
                 "Match",
                 "Invert",
                 "Param",
-                "Source",
-                "Destination",
+                "Path",
                 "Keep",
                 "User",
                 "Password",
@@ -189,8 +187,7 @@ namespace ScriptDelivery.Maps
                     mapping.Require.Rules[0].GetInvert().ToString(),
                     mapping.Require.Rules?.Length > 0 ?
                         string.Join(" ", mapping.Require.Rules[0].Param.Select(x => $"{x.Key}={x.Value}")) : "",
-                    mapping.Work.Downloads[0].Source ?? "",
-                    mapping.Work.Downloads[0].Destination ?? "",
+                    mapping.Work.Downloads[0].Path ?? "",
                     mapping.Work.Downloads[0].GetKeep().ToString(),
                     mapping.Work.Downloads[0].UserName ?? "",
                     mapping.Work.Downloads[0].Password ?? "",
@@ -229,6 +226,10 @@ namespace ScriptDelivery.Maps
                 if (pattern_comment.IsMatch(readLine))
                 {
                     readLine = pattern_comment.Replace(readLine, "");
+                }
+                if (readLine == "")
+                {
+                    continue;
                 }
                 if (readLine.StartsWith("Require:", StringComparison.OrdinalIgnoreCase))
                 {
@@ -298,11 +299,8 @@ namespace ScriptDelivery.Maps
                             string val = field.Substring(field.IndexOf(":") + 1).Trim();
                             switch (key.ToLower())
                             {
-                                case "source":
-                                    download.Source = val;
-                                    break;
-                                case "destination":
-                                    download.Destination = val;
+                                case "path":
+                                    download.Path = val;
                                     break;
                                 case "keep":
                                     download.Keep = val;
@@ -356,8 +354,7 @@ namespace ScriptDelivery.Maps
                 foreach (var download in mapping.Work.Downloads)
                 {
                     var sb = new StringBuilder();
-                    sb.Append("  Source: " + download.Source);
-                    sb.Append(", Destination: " + download.Destination);
+                    sb.Append("  Path: " + download.Path);
                     if (download.GetKeep())
                     {
                         sb.Append(", Keep: true");

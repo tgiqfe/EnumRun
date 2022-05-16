@@ -161,23 +161,21 @@ namespace EnumRun
             {
                 foreach (var download in mapping.Work.Downloads)
                 {
-                    //if (string.IsNullOrEmpty(download.Source) || string.IsNullOrEmpty(download.Destination))
-                    if (string.IsNullOrEmpty(download.Source))
+                    if (string.IsNullOrEmpty(download.Path))
                     {
-                        _logger.Write(LogLevel.Attention, null, "Parameter mission, Source or Destination or both.");
+                        _logger.Write(LogLevel.Attention, null, "Parameter missing, Path parameter.");
                     }
-                    else if (download.Source.StartsWith("\\\\"))
+                    else if (download.Path.StartsWith("\\\\"))
                     {
                         //  Smbダウンロード用ファイル
-                        SmbDownloadList.Add(download.Source);
+                        SmbDownloadList.Add(download.Path);
                     }
                     else
                     {
                         //  Htttpダウンロード用ファイル
                         HttpDownloadList.Add(new DownloadFile()
                         {
-                            Name = download.Source,
-                            DestinationPath = download.Destination,
+                            Name = download.Path,
                             Overwrite = !download.GetKeep(),
                         });
                     }
@@ -238,6 +236,7 @@ namespace EnumRun
                 if (!(dlFile.Downloadable ?? false)) { continue; }
                 if (dlFile.CompareFile(dstPath) && !(dlFile.Overwrite ?? false))
                 {
+                    _logger.Write(LogLevel.Info, null, "Skip download, already exist. => {0}", dstPath);
                     continue;
                 }
                 TargetDirectory.CreateParent(dstPath);
@@ -256,6 +255,7 @@ namespace EnumRun
                         {
                             stream.CopyTo(fs);
                         }
+                        File.SetLastWriteTime(dstPath, dlFile.LastWriteTime);
                         _logger.Write(LogLevel.Info, null, "Success, file download. [{0}]", dstPath);
                     }
                     else
