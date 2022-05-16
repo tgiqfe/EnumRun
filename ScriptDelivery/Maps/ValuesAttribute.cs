@@ -90,6 +90,14 @@ namespace ScriptDelivery.Maps
                         new SubCandidate("reg_none", "none", "non", "no"),
                     }
                 },
+                {
+                    "DeleteAction", new SubCandidate[]
+                    {
+                        new SubCandidate("none", "no"),
+                        new SubCandidate("indivisual", "indi", "target"),
+                        new SubCandidate("exceptdownload", "except"),
+                    }
+                },
             };
         }
 

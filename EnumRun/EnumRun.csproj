@@ -21,6 +21,8 @@
     <Compile Include="..\ScriptDelivery\Maps\Requires\RuleTarget.cs" Link="ScriptDelivery\Maps\Requires\RuleTarget.cs" />
     <Compile Include="..\ScriptDelivery\Maps\SubCandidate.cs" Link="ScriptDelivery\Maps\SubCandidate.cs" />
     <Compile Include="..\ScriptDelivery\Maps\ValuesAttribute.cs" Link="ScriptDelivery\Maps\ValuesAttribute.cs" />
+    <Compile Include="..\ScriptDelivery\Maps\Works\DeleteAction.cs" Link="ScriptDelivery\Maps\Works\DeleteAction.cs" />
+    <Compile Include="..\ScriptDelivery\Maps\Works\DeleteFile.cs" Link="ScriptDelivery\Maps\Works\DeleteFile.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Works\Download.cs" Link="ScriptDelivery\Maps\Works\Download.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Works\Work.cs" Link="ScriptDelivery\Maps\Works\Work.cs" />
   </ItemGroup>
@@ -49,7 +51,6 @@
 
   <ItemGroup>
     <Folder Include="ScriptDelivery\Maps\Requires\" />
-    <Folder Include="ScriptDelivery\Maps\Works\" />
   </ItemGroup>
 
 </Project>

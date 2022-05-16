@@ -3,6 +3,12 @@ using System.Text;
 using ScriptDelivery;
 using ScriptDelivery.Files;
 
+/*
+ScriptDelivery.Misc.samplefile.Sample01.Create01();
+
+Console.ReadLine();
+Environment.Exit(0);
+*/
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
