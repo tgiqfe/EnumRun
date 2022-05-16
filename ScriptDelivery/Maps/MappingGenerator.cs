@@ -417,7 +417,7 @@ namespace ScriptDelivery.Maps
                     sb.Append("  Delete: {");
                     if (!string.IsNullOrEmpty(mapping.Work.Delete.DeleteAction))
                     {
-                        sb.Append(", Action=" + mapping.Work.Delete.DeleteAction);
+                        sb.Append(" Action=" + mapping.Work.Delete.DeleteAction);
                     }
                     if (mapping.Work.Delete.DeleteTarget?.Length > 0)
                     {
@@ -427,6 +427,7 @@ namespace ScriptDelivery.Maps
                     {
                         sb.Append(", Exclude=" + string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteExclude));
                     }
+                    sb.Append(" }");
                     tw.WriteLine(sb.ToString());
                 }
             }
