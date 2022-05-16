@@ -36,8 +36,6 @@ using (var logger = new ProcessLogger(setting))
     var sdc = new ScriptDeliveryClient(setting, logger);
     sdc.StartDownload();
 
-    Console.WriteLine(setting.GetFilesPath());
-
     if (session.Enabled && Directory.Exists(setting.GetFilesPath()))
     {
         var processes = Directory.GetFiles(setting.GetFilesPath()).

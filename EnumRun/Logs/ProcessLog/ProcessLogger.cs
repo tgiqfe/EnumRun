@@ -58,7 +58,7 @@ namespace EnumRun.Logs.ProcessLog
                 {
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                     Level = level,
-                    ScriptFile = scriptFile,
+                    ScriptFile = scriptFile ?? "-",
                     Message = message,
                 }).ConfigureAwait(false);
             }

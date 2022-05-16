@@ -25,6 +25,7 @@ namespace EnumRun.Lib.Infos
             private string[] _ipAddresses = null;
             public string[] GetIPAddresses()
             {
+                if (AddressSets == null) { return new string[0]; };
                 _ipAddresses ??= AddressSets.Select(x => x.IPAddress.ToString()).ToArray();
                 return _ipAddresses;
             }
