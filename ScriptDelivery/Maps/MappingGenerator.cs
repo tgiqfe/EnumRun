@@ -153,7 +153,7 @@ namespace ScriptDelivery.Maps
                 mapping.Work = new Work();
                 mapping.Work.Downloads = new Download[1] { new Download() };
                 mapping.Work.Downloads[0].Source = line["Source"];
-                mapping.Work.Downloads[0].Source = line["Destination"];
+                mapping.Work.Downloads[0].Destination = line["Destination"];
                 mapping.Work.Downloads[0].Keep = line["Keep"];
                 mapping.Work.Downloads[0].UserName = line["User"];
                 mapping.Work.Downloads[0].Password = line["Password"];
@@ -256,6 +256,8 @@ namespace ScriptDelivery.Maps
                         var rule = new RequireRule();
                         foreach (string field in fields)
                         {
+                            if (!field.Contains(":")) { continue; }
+
                             string key = field.Substring(0, field.IndexOf(":")).Trim();
                             string val = field.Substring(field.IndexOf(":") + 1).Trim();
                             switch (key.ToLower())

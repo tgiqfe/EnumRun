@@ -17,7 +17,7 @@ namespace ScriptDelivery.Logs
         public override string HostName { get; set; }
         public override string UserName { get; set; }
         public LogLevel Level { get; set; }
-        public string ClientAddress { get; set; }
+        public string Client { get; set; }
         public string Title { get; set; }
         public string Message { get; set; }
 

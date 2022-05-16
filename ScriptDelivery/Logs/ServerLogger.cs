@@ -53,7 +53,7 @@ namespace ScriptDelivery.Logs
                 {
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                     Level = level,
-                    ClientAddress = address,
+                    Client = address,
                     Title = title,
                     Message = message,
                 }).ConfigureAwait(false);
@@ -82,8 +82,8 @@ namespace ScriptDelivery.Logs
                 Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
                     body.Date,
                     body.Level,
-                    body.ClientAddress,
-                    body.Title,
+                    body.Client ?? "-",
+                    body.Title ?? "-",
                     body.Message);
 
                 //  ファイル書き込み

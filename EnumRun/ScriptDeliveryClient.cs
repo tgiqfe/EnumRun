@@ -22,6 +22,7 @@ namespace EnumRun
         private string uri = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
         private JsonSerializerOptions _options = null;
+        private string _filesPath = null;
 
         private List<Mapping> MappingList = null;
         private List<string> SmbDownloadList = null;
@@ -58,6 +59,7 @@ namespace EnumRun
                     //WriteIndented = true,
                     //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                 };
+                this._filesPath = setting.GetFilesPath();
 
                 _logger.Write(LogLevel.Info, null, "Connect server => {0}", uri);
 
@@ -159,7 +161,8 @@ namespace EnumRun
             {
                 foreach (var download in mapping.Work.Downloads)
                 {
-                    if (string.IsNullOrEmpty(download.Source) || string.IsNullOrEmpty(download.Destination))
+                    //if (string.IsNullOrEmpty(download.Source) || string.IsNullOrEmpty(download.Destination))
+                    if (string.IsNullOrEmpty(download.Source))
                     {
                         _logger.Write(LogLevel.Attention, null, "Parameter mission, Source or Destination or both.");
                     }
@@ -228,7 +231,8 @@ namespace EnumRun
 
             foreach (var dlFile in HttpDownloadList)
             {
-                string dstPath = ExpandEnvironment(dlFile.DestinationPath);
+                //string dstPath = ExpandEnvironment(dlFile.DestinationPath);
+                string dstPath = Path.Combine(_filesPath, dlFile.Name);
 
                 //  ローカル側のファイルとの一致チェック
                 if (!(dlFile.Downloadable ?? false)) { continue; }
@@ -240,9 +244,9 @@ namespace EnumRun
 
                 //  ダウンロード要求を送信し、ダウンロード開始
                 var query = new Dictionary<string, string>()
-                    {
-                        { "fileName", dlFile.Name }
-                    };
+                {
+                    { "fileName", dlFile.Name }
+                };
                 using (var response = await client.GetAsync(uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
                 {
                     if (response.StatusCode == HttpStatusCode.OK)
