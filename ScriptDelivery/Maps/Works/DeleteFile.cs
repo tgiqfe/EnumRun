@@ -8,10 +8,10 @@ namespace ScriptDelivery.Maps.Works
         public string DeleteAction { get; set; }
 
         [YamlDotNet.Serialization.YamlMember(Alias = "target")]
-        public string[] Targets { get; set; }
+        public string[] DeleteTarget { get; set; }
 
         [YamlDotNet.Serialization.YamlMember(Alias = "exclude")]
-        public string[] Excludes { get; set; }
+        public string[] DeleteExclude { get; set; }
 
         public DeleteAction GetDeleteAction()
         {

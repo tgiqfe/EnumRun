@@ -29,7 +29,7 @@ namespace ScriptDelivery.Files
             }
 
             Item.Logger.Write(ScriptDelivery.Logs.LogLevel.Info, null, "DownloadFileList", "DownloadFiles => [{0}]",
-                string.Join(", ", _list.Select(x => x.Name)));
+                string.Join(", ", _list.Select(x => x.Path)));
         }
 
         /// <summary>
@@ -40,26 +40,63 @@ namespace ScriptDelivery.Files
         public List<DownloadFile> RequestToResponse(List<DownloadFile> reqList)
         {
             var resList = new List<DownloadFile>();
-            foreach (DownloadFile dlFile in reqList)
+            foreach (DownloadFile reqFile in reqList)
             {
-                var findDlFile = _list.FirstOrDefault(x => x.Name == dlFile.Name);
+                //  Collectionインスタンスに格納しているリストを直接編集している為、
+                //  複数の指定内容の異なるアクセスがあった場合に、設定が正しく反映されない可能性大
+                /*
+                var findDlFile = _list.FirstOrDefault(x => x.Path == dlFile.Path);
                 if(findDlFile != null)
                 {
                     findDlFile.Downloadable = true;
-                    findDlFile.DestinationPath = dlFile.DestinationPath;
+                    //findDlFile.DestinationPath = dlFile.DestinationPath;
                     findDlFile.Overwrite = dlFile.Overwrite;
                     resList.Add(findDlFile);
                     continue;
                 }
-                _list.Where(x => x.Name.StartsWith(dlFile.Name + Path.DirectorySeparatorChar)).
+                _list.Where(x => x.Path.StartsWith(dlFile.Path + Path.DirectorySeparatorChar)).
                     ToList().
                     ForEach(x =>
                     {
                         x.Downloadable = true;
-                        x.DestinationPath = dlFile.DestinationPath;
+                        //x.DestinationPath = dlFile.DestinationPath;
                         x.Overwrite = dlFile.Overwrite;
                         resList.Add(x);
                     });
+                */
+
+                //  修正。
+                //  毎回全Downloadインスタンスを生成する方針で
+                var findFile = _list.FirstOrDefault(x => x.Path == reqFile.Path);
+                if (findFile != null)
+                {
+                    resList.Add(new DownloadFile()
+                    {
+                        Path = findFile.Path,
+                        LastWriteTime = findFile.LastWriteTime,
+                        Hash = findFile.Hash,
+                        Downloadable = true,
+                        Overwrite = reqFile.Overwrite,
+                    });
+                    continue;
+                }
+                var findFiles = _list.Where(x => x.Path.StartsWith(reqFile.Path + Path.DirectorySeparatorChar)).ToList();
+                if (findFiles.Count > 0)
+                {
+                    findFiles.ToList().ForEach(x =>
+                    {
+                        resList.Add(new DownloadFile()
+                        {
+                            Path = x.Path,
+                            LastWriteTime = x.LastWriteTime,
+                            Hash = x.Hash,
+                            Downloadable = true,
+                            Overwrite = reqFile.Overwrite,
+                        });
+                    });
+                    continue;
+                }
+                resList.Add(reqFile);
             }
             return resList;
 
