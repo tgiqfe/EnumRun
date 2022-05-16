@@ -42,3 +42,6 @@ namespace ScriptDelivery.Maps.Works
 //  Destinationを削除し、SourceをPathに変更
 
 //  相対パスである前提で記述してほしいけれど、もし絶対パスを記述された場合の対処も検討要
+
+//  ダウンロードするのみで、削除させる場合の処理も検討する必要有り。
+//  元々Smbでネットワーク越しのrobocopy /MIRの予定だった為、Httpの場合は検討が足りていない。
