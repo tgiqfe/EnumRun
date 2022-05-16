@@ -156,6 +156,11 @@ namespace ScriptDelivery.Maps
                 mapping.Work.Downloads[0].Keep = line["Keep"];
                 mapping.Work.Downloads[0].UserName = line["User"];
                 mapping.Work.Downloads[0].Password = line["Password"];
+                mapping.Work.Delete.DeleteAction = line["DeleteAction"];
+                mapping.Work.Delete.DeleteTarget = line["DeleteTarget"].
+                    Split(System.IO.Path.PathSeparator).Select(x => x.Trim()).ToArray();
+                mapping.Work.Delete.DeleteExclude = line["DeleteExclude"].
+                    Split(System.IO.Path.PathSeparator).Select(x => x.Trim()).ToArray();
 
                 list.Add(mapping);
             }
@@ -175,6 +180,9 @@ namespace ScriptDelivery.Maps
                 "Keep",
                 "User",
                 "Password",
+                "DeleteAction",
+                "DeleteTarget",
+                "DeleteExclude"
             };
 
             Func<Mapping, string[]> toParamArray = (mapping) =>
@@ -191,10 +199,12 @@ namespace ScriptDelivery.Maps
                     mapping.Work.Downloads[0].GetKeep().ToString(),
                     mapping.Work.Downloads[0].UserName ?? "",
                     mapping.Work.Downloads[0].Password ?? "",
+                    mapping.Work.Delete.GetDeleteAction().ToString(),
+                    string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteTarget),
+                    string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteExclude),
                 };
             };
 
-            //CsvWriter.Write(tw, _csvHeader, list.Select(x => x.ToParamArray()));
             CsvWriter.Write(tw, _csvHeader, list.Select(x => toParamArray(x)));
         }
 
@@ -248,11 +258,14 @@ namespace ScriptDelivery.Maps
                     if (isRequire ?? false)
                     {
                         //  Require取得
+                        //  Mode
                         if (readLine.StartsWith("Mode:", StringComparison.OrdinalIgnoreCase))
                         {
                             mapping.Require.Mode = readLine.Substring(readLine.IndexOf(":") + 1).Trim();
                             continue;
                         }
+
+                        //  RequireRule
                         string[] fields = pattern_delimiter.Split(readLine);
                         var rule = new RequireRule();
                         foreach (string field in fields)
@@ -289,6 +302,35 @@ namespace ScriptDelivery.Maps
                     else
                     {
                         //  Work取得
+                        //  Delete
+                        if (readLine.StartsWith("Delete:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string deleteVal = readLine.Substring(readLine.IndexOf(":") + 1).
+                                Trim().TrimStart('{').TrimEnd('}');
+                            string[] delFields = deleteVal.Split(',').Select(x => x.Trim()).ToArray();
+                            mapping.Work.Delete = new DeleteFile();
+                            foreach (string field in delFields)
+                            {
+                                if (string.IsNullOrEmpty(field)) { continue; }
+
+                                string key = field.Substring(0, field.IndexOf("=")).Trim().ToLower();
+                                string val = field.Substring(field.IndexOf("=") + 1).Trim();
+                                switch (key.ToLower())
+                                {
+                                    case "action":
+                                        mapping.Work.Delete.DeleteAction = val;
+                                        break;
+                                    case "target":
+                                        mapping.Work.Delete.DeleteTarget = val.Split(System.IO.Path.PathSeparator);
+                                        break;
+                                    case "exclude":
+                                        mapping.Work.Delete.DeleteExclude = val.Split(System.IO.Path.PathSeparator);
+                                        break;
+                                }
+                            }
+                        }
+
+                        //  Download
                         string[] fields = pattern_delimiter.Split(readLine);
                         var download = new Download();
                         foreach (string field in fields)
@@ -366,6 +408,24 @@ namespace ScriptDelivery.Maps
                     if (!string.IsNullOrEmpty(download.Password))
                     {
                         sb.Append(", Password: " + download.Password);
+                    }
+                    tw.WriteLine(sb.ToString());
+                }
+                if (mapping.Work.Delete != null)
+                {
+                    var sb = new StringBuilder();
+                    sb.Append("  Delete: {");
+                    if (!string.IsNullOrEmpty(mapping.Work.Delete.DeleteAction))
+                    {
+                        sb.Append(", Action=" + mapping.Work.Delete.DeleteAction);
+                    }
+                    if (mapping.Work.Delete.DeleteTarget?.Length > 0)
+                    {
+                        sb.Append(", Target=" + string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteTarget));
+                    }
+                    if (mapping.Work.Delete.DeleteExclude?.Length > 0)
+                    {
+                        sb.Append(", Exclude=" + string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteExclude));
                     }
                     tw.WriteLine(sb.ToString());
                 }
