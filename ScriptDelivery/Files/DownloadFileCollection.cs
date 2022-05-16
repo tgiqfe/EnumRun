@@ -29,7 +29,7 @@ namespace ScriptDelivery.Files
             }
 
             Item.Logger.Write(ScriptDelivery.Logs.LogLevel.Info, null, "DownloadFileList", "DownloadFiles => [{0}]",
-                string.Join(", ", _list.Select(x => x.Name)));
+                string.Join(", ", _list.Select(x => x.Path)));
         }
 
         /// <summary>
@@ -42,21 +42,21 @@ namespace ScriptDelivery.Files
             var resList = new List<DownloadFile>();
             foreach (DownloadFile dlFile in reqList)
             {
-                var findDlFile = _list.FirstOrDefault(x => x.Name == dlFile.Name);
+                var findDlFile = _list.FirstOrDefault(x => x.Path == dlFile.Path);
                 if(findDlFile != null)
                 {
                     findDlFile.Downloadable = true;
-                    findDlFile.DestinationPath = dlFile.DestinationPath;
+                    //findDlFile.DestinationPath = dlFile.DestinationPath;
                     findDlFile.Overwrite = dlFile.Overwrite;
                     resList.Add(findDlFile);
                     continue;
                 }
-                _list.Where(x => x.Name.StartsWith(dlFile.Name + Path.DirectorySeparatorChar)).
+                _list.Where(x => x.Path.StartsWith(dlFile.Path + Path.DirectorySeparatorChar)).
                     ToList().
                     ForEach(x =>
                     {
                         x.Downloadable = true;
-                        x.DestinationPath = dlFile.DestinationPath;
+                        //x.DestinationPath = dlFile.DestinationPath;
                         x.Overwrite = dlFile.Overwrite;
                         resList.Add(x);
                     });

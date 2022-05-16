@@ -175,7 +175,7 @@ namespace EnumRun
                         //  Htttpダウンロード用ファイル
                         HttpDownloadList.Add(new DownloadFile()
                         {
-                            Name = download.Path,
+                            Path = download.Path,
                             Overwrite = !download.GetKeep(),
                         });
                     }
@@ -230,13 +230,13 @@ namespace EnumRun
             foreach (var dlFile in HttpDownloadList)
             {
                 //string dstPath = ExpandEnvironment(dlFile.DestinationPath);
-                string dstPath = Path.Combine(_filesPath, dlFile.Name);
+                string dstPath = Path.Combine(_filesPath, dlFile.Path);
 
                 //  ローカル側のファイルとの一致チェック
                 if (!(dlFile.Downloadable ?? false)) { continue; }
                 if (dlFile.CompareFile(dstPath) && !(dlFile.Overwrite ?? false))
                 {
-                    _logger.Write(LogLevel.Info, null, "Skip download, already exist. => {0}", dstPath);
+                    _logger.Write(LogLevel.Info, null, "Skip download, already exist. => [{0}]", dstPath);
                     continue;
                 }
                 TargetDirectory.CreateParent(dstPath);
@@ -244,7 +244,7 @@ namespace EnumRun
                 //  ダウンロード要求を送信し、ダウンロード開始
                 var query = new Dictionary<string, string>()
                 {
-                    { "fileName", dlFile.Name }
+                    { "fileName", dlFile.Path }
                 };
                 using (var response = await client.GetAsync(uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
                 {
@@ -264,15 +264,6 @@ namespace EnumRun
                     }
                 }
             }
-        }
-
-        private string ExpandEnvironment(string text)
-        {
-            for (int i = 0; i < 5 && text.Contains("%"); i++)
-            {
-                text = Environment.ExpandEnvironmentVariables(text);
-            }
-            return text;
         }
     }
 }
