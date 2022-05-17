@@ -8,7 +8,10 @@ using EnumRun.Lib;
 
 namespace EnumRun.ScriptDelivery
 {
-    internal class DeleteControl
+    /// <summary>
+    /// 対象ファイル/フォルダーの削除対象と削除対象外を管理
+    /// </summary>
+    internal class DeleteManager
     {
         #region Inner class
 
@@ -43,31 +46,18 @@ namespace EnumRun.ScriptDelivery
         public List<string> Targetlist { get; set; }
         public List<string> ExcludeList { get; set; }
 
-
-        //private List<SearchPath> _targetList = null;
-        //private List<SearchPath> _excludeList = null;
         private List<string> _fList = null;
         private List<string> _dList = null;
         private string _targetDir = null;
         private string _trashPath = null;
 
-        public DeleteControl(string targetDir, string trashPath)
+        public DeleteManager(string targetDir, string trashPath)
         {
             this._targetDir = Path.GetFullPath(targetDir);
             this._trashPath = trashPath;
             this.Targetlist = new List<string>();
             this.ExcludeList = new List<string>();
         }
-
-        /*
-        public DeleteControl(List<string> targets, List<string> excludes, string targetDir, string trashPath)
-        {
-            _targetList = new List<SearchPath>(targets.Select(x => new SearchPath(targetDir, x)));
-            _excludeList = new List<SearchPath>(excludes.Select(x => new SearchPath(targetDir, x)));
-            _targetDir = Path.GetFullPath(targetDir);
-            _trashPath = trashPath;
-        }
-        */
 
         public void SearchTarget()
         {

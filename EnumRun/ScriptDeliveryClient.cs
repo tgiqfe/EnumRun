@@ -24,16 +24,14 @@ namespace EnumRun
         private JsonSerializerOptions _options = null;
         private string _filesPath = null;
 
-        private List<Mapping> MappingList = null;
-        private List<string> SmbDownloadList = null;
-        private List<DownloadFile> HttpDownloadList = null;
+        private List<Mapping> _mappingList = null;
+        private List<string> _smbDownloadList = null;
+        private List<DownloadFile> _httpDownloadList = null;
+        private ScriptDelivery.DeleteManager _deleteManager = null;
 
         //  後日、SmbとHttpのダウンロード用処理部分だけを別クラスに分離する予定。
 
-        private ScriptDelivery.DeleteControl _deleteControl = null;
 
-        //private List<string> DeleteTargetList = null;
-        //private List<string> DeleteExcludeList = null;
 
         /// <summary>
         /// コンストラクタ
@@ -73,9 +71,9 @@ namespace EnumRun
                 if (!string.IsNullOrEmpty(uri))
                 {
                     this.Enabled = true;
-                    this.SmbDownloadList = new List<string>();
-                    this.HttpDownloadList = new List<DownloadFile>();
-                    _deleteControl = new ScriptDelivery.DeleteControl(setting.FilesPath, @"D:\Test\Trash");      //  trash先の設定は後日修正
+                    this._smbDownloadList = new List<string>();
+                    this._httpDownloadList = new List<DownloadFile>();
+                    this._deleteManager = new ScriptDelivery.DeleteManager(setting.FilesPath, @"D:\Test\Trash");      //  trash先の設定は後日修正
                 }
             }
         }
@@ -88,17 +86,17 @@ namespace EnumRun
                 {
                     DownloadMappingFile(client).Wait();
                     MapMathcingCheck();
-                    if (SmbDownloadList.Count > 0)
+                    if (_smbDownloadList.Count > 0)
                     {
                         DownloadSmbFile();
                     }
-                    if (HttpDownloadList.Count > 0)
+                    if (_httpDownloadList.Count > 0)
                     {
                         DownloadHttpSearch(client).Wait();
                         DownloadHttpStart(client).Wait();
                     }
-                    _deleteControl.SearchTarget();
-                    _deleteControl.DeleteTarget();
+                    _deleteManager.SearchTarget();
+                    _deleteManager.DeleteTarget();
                 }
             }
         }
@@ -116,7 +114,7 @@ namespace EnumRun
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    this.MappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
+                    this._mappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
                     _logger.Write(LogLevel.Info, "Success, download mapping object.");
 
 
@@ -141,7 +139,7 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "Check, mapping object.");
 
-            MappingList = MappingList.Where(x =>
+            _mappingList = _mappingList.Where(x =>
             {
                 RequireMode mode = x.Require.GetRequireMode();
                 if (mode == RequireMode.None)
@@ -163,9 +161,9 @@ namespace EnumRun
                 };
             }).ToList();
 
-            _logger.Write(LogLevel.Debug, null, "Finish, require check [Match => {0} count]", MappingList.Count);
+            _logger.Write(LogLevel.Debug, null, "Finish, require check [Match => {0} count]", _mappingList.Count);
 
-            foreach (var mapping in MappingList)
+            foreach (var mapping in _mappingList)
             {
                 foreach (var download in mapping.Work.Downloads)
                 {
@@ -176,12 +174,12 @@ namespace EnumRun
                     else if (download.Path.StartsWith("\\\\"))
                     {
                         //  Smbダウンロード用ファイル
-                        SmbDownloadList.Add(download.Path);
+                        _smbDownloadList.Add(download.Path);
                     }
                     else
                     {
                         //  Htttpダウンロード用ファイル
-                        HttpDownloadList.Add(new DownloadFile()
+                        _httpDownloadList.Add(new DownloadFile()
                         {
                             Path = download.Path,
                             DestinationPath = download.Destination,
@@ -191,13 +189,8 @@ namespace EnumRun
                 }
                 if (mapping.Work.Delete != null)
                 {
-                    //this.DeleteTargetList ??= new List<string>();
-                    //this.DeleteExcludeList ??= new List<string>();
-                    //DeleteTargetList.AddRange(mapping.Work.Delete.DeleteTarget);
-                    //DeleteExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
-
-                    _deleteControl.Targetlist.AddRange(mapping.Work.Delete.DeleteTarget);
-                    _deleteControl.ExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
+                    _deleteManager.Targetlist.AddRange(mapping.Work.Delete.DeleteTarget);
+                    _deleteManager.ExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
                 }
             }
         }
@@ -221,13 +214,13 @@ namespace EnumRun
             _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
 
             using (var content = new StringContent(
-                 JsonSerializer.Serialize(HttpDownloadList, _options), Encoding.UTF8, "application/json"))
+                 JsonSerializer.Serialize(_httpDownloadList, _options), Encoding.UTF8, "application/json"))
             using (var response = await client.PostAsync(uri + "/download/list", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    HttpDownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
+                    _httpDownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
 
                     _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
                 }
@@ -246,11 +239,8 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "Start, Http download.");
 
-            foreach (var dlFile in HttpDownloadList)
+            foreach (var dlFile in _httpDownloadList)
             {
-                //string dstPath = ExpandEnvironment(dlFile.DestinationPath);
-                //string dstPath = Path.Combine(_filesPath, dlFile.Path);
-
                 string dstPath = string.IsNullOrEmpty(dlFile.DestinationPath) ?
                     Path.Combine(_filesPath, dlFile.Path) :
                     Path.Combine(dlFile.DestinationPath, dlFile.Path);
