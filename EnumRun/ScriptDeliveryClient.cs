@@ -110,14 +110,13 @@ namespace EnumRun
                     this.MappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
                     _logger.Write(LogLevel.Info, "Success, download mapping object.");
 
-                    //  バージョンチェック用の処理
-                    /*
-                    var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version");
-                    if(appVersion != System.Relction.Assebmly.GetExecutingAssembly().GetName().Version.ToString())
+
+                    var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version").Value.First();
+                    var localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                    if (appVersion != localVersion)
                     {
-                        //  サーバとバージョン不一致と判明。アップデート等対応
+                        _logger.Write(LogLevel.Warn, null, "AppVersion mismatch. server=>{0} local=>{1}", appVersion, localVersion);
                     }
-                    */
                 }
                 else
                 {
