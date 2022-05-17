@@ -153,10 +153,10 @@ namespace ScriptDelivery.Maps
                 mapping.Work = new Work();
                 mapping.Work.Downloads = new Download[1] { new Download() };
                 mapping.Work.Downloads[0].Path = line["Path"];
+                mapping.Work.Downloads[0].Destination = line["Destination"];
                 mapping.Work.Downloads[0].Keep = line["Keep"];
                 mapping.Work.Downloads[0].UserName = line["User"];
                 mapping.Work.Downloads[0].Password = line["Password"];
-                mapping.Work.Delete.DeleteAction = line["DeleteAction"];
                 mapping.Work.Delete.DeleteTarget = line["DeleteTarget"].
                     Split(System.IO.Path.PathSeparator).Select(x => x.Trim()).ToArray();
                 mapping.Work.Delete.DeleteExclude = line["DeleteExclude"].
@@ -177,10 +177,10 @@ namespace ScriptDelivery.Maps
                 "Invert",
                 "Param",
                 "Path",
+                "Destination",
                 "Keep",
                 "User",
                 "Password",
-                "DeleteAction",
                 "DeleteTarget",
                 "DeleteExclude"
             };
@@ -196,10 +196,10 @@ namespace ScriptDelivery.Maps
                     mapping.Require.Rules?.Length > 0 ?
                         string.Join(" ", mapping.Require.Rules[0].Param.Select(x => $"{x.Key}={x.Value}")) : "",
                     mapping.Work.Downloads[0].Path ?? "",
+                    mapping.Work.Downloads[0].Destination ?? "",
                     mapping.Work.Downloads[0].GetKeep().ToString(),
                     mapping.Work.Downloads[0].UserName ?? "",
                     mapping.Work.Downloads[0].Password ?? "",
-                    mapping.Work.Delete.GetDeleteAction().ToString(),
                     string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteTarget),
                     string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteExclude),
                 };
@@ -317,9 +317,6 @@ namespace ScriptDelivery.Maps
                                 string val = field.Substring(field.IndexOf("=") + 1).Trim();
                                 switch (key.ToLower())
                                 {
-                                    case "action":
-                                        mapping.Work.Delete.DeleteAction = val;
-                                        break;
                                     case "target":
                                         mapping.Work.Delete.DeleteTarget = val.Split(System.IO.Path.PathSeparator);
                                         break;
@@ -343,6 +340,9 @@ namespace ScriptDelivery.Maps
                             {
                                 case "path":
                                     download.Path = val;
+                                    break;
+                                case "destination":
+                                    download.Destination = val;
                                     break;
                                 case "keep":
                                     download.Keep = val;
@@ -397,6 +397,10 @@ namespace ScriptDelivery.Maps
                 {
                     var sb = new StringBuilder();
                     sb.Append("  Path: " + download.Path);
+                    if (!string.IsNullOrEmpty(download.Destination))
+                    {
+                        sb.Append(", Destination: " + download.Destination);
+                    }
                     if (download.GetKeep())
                     {
                         sb.Append(", Keep: true");
@@ -415,13 +419,9 @@ namespace ScriptDelivery.Maps
                 {
                     var sb = new StringBuilder();
                     sb.Append("  Delete: {");
-                    if (!string.IsNullOrEmpty(mapping.Work.Delete.DeleteAction))
-                    {
-                        sb.Append(" Action=" + mapping.Work.Delete.DeleteAction);
-                    }
                     if (mapping.Work.Delete.DeleteTarget?.Length > 0)
                     {
-                        sb.Append(", Target=" + string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteTarget));
+                        sb.Append(" Target=" + string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteTarget));
                     }
                     if (mapping.Work.Delete.DeleteExclude?.Length > 0)
                     {
