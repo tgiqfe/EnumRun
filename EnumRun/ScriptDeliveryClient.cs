@@ -30,8 +30,10 @@ namespace EnumRun
 
         //  後日、SmbとHttpのダウンロード用処理部分だけを別クラスに分離する予定。
 
-        private List<string> DeleteTargetList = null;
-        private List<string> DeleteExcludeList = null;
+        private ScriptDelivery.DeleteControl _deleteControl = null;
+
+        //private List<string> DeleteTargetList = null;
+        //private List<string> DeleteExcludeList = null;
 
         /// <summary>
         /// コンストラクタ
@@ -71,6 +73,9 @@ namespace EnumRun
                 if (!string.IsNullOrEmpty(uri))
                 {
                     this.Enabled = true;
+                    this.SmbDownloadList = new List<string>();
+                    this.HttpDownloadList = new List<DownloadFile>();
+                    _deleteControl = new ScriptDelivery.DeleteControl(setting.FilesPath, @"D:\Test\Trash");      //  trash先の設定は後日修正
                 }
             }
         }
@@ -79,9 +84,6 @@ namespace EnumRun
         {
             if (this.Enabled)
             {
-                this.SmbDownloadList = new List<string>();
-                this.HttpDownloadList = new List<DownloadFile>();
-
                 using (var client = new HttpClient())
                 {
                     DownloadMappingFile(client).Wait();
@@ -95,6 +97,8 @@ namespace EnumRun
                         DownloadHttpSearch(client).Wait();
                         DownloadHttpStart(client).Wait();
                     }
+                    _deleteControl.SearchTarget();
+                    _deleteControl.DeleteTarget();
                 }
             }
         }
@@ -187,10 +191,13 @@ namespace EnumRun
                 }
                 if (mapping.Work.Delete != null)
                 {
-                    this.DeleteTargetList ??= new List<string>();
-                    this.DeleteExcludeList ??= new List<string>();
-                    DeleteTargetList.AddRange(mapping.Work.Delete.DeleteTarget);
-                    DeleteExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
+                    //this.DeleteTargetList ??= new List<string>();
+                    //this.DeleteExcludeList ??= new List<string>();
+                    //DeleteTargetList.AddRange(mapping.Work.Delete.DeleteTarget);
+                    //DeleteExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
+
+                    _deleteControl.Targetlist.AddRange(mapping.Work.Delete.DeleteTarget);
+                    _deleteControl.ExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
                 }
             }
         }
@@ -280,15 +287,6 @@ namespace EnumRun
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// ローカル側のファイル/フォルダーを削除。
-        /// Item.Setting.Files配下のみを削除対象とする為、それ以外のパスは無視
-        /// </summary>
-        private void DeleteLocalFiles()
-        {
-            //  未実装
         }
     }
 }
