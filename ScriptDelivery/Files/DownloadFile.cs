@@ -18,7 +18,7 @@ namespace ScriptDelivery.Files
         public string Hash { get; set; }            //  サーバ側のファイルのMD5ハッシュ値
         public bool? Downloadable { get; set; }     //  サーバ側に対象のファイルが存在し、ダウンロードが可能かどうか
 
-        //public string DestinationPath { get; set; } //  クライアント側のファイルのダウンロード先ファイル名。フォルダー名指定は非対応
+        public string DestinationPath { get; set; } //  クライアント側のファイルのダウンロード先ファイル名。フォルダー名指定は非対応
         public bool? Overwrite { get; set; }        //  クライアント側で上書き保存を許可するかどうか
         
         public DownloadFile() { }
