@@ -123,7 +123,7 @@ namespace EnumRun
 
             public override string ToString()
             {
-                return string.Format("[ Server={{0}} Process={1}",
+                return string.Format("[ Server={0} Process={1}",
                     string.Join(", ", this.Server),
                     this.Process);
             }

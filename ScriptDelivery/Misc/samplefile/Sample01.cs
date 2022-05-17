@@ -56,6 +56,7 @@ namespace ScriptDelivery.Misc.samplefile
                 new Download()
                 {
                     Path = "example002.txt",
+                    Destination = "D:\\Test\\Files2",
                 },
             };
 
@@ -67,7 +68,6 @@ namespace ScriptDelivery.Misc.samplefile
             List<Mapping> list = Create01();
             list[0].Work.Delete = new DeleteFile()
             {
-                DeleteAction = "Indivisual",
                 DeleteTarget = new string[] { "example001.txt", "childDir\\*" },
                 DeleteExclude = new string[] { "childdir\\sample01.txt" },
             };

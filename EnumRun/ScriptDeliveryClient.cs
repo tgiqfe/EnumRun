@@ -28,6 +28,11 @@ namespace EnumRun
         private List<string> SmbDownloadList = null;
         private List<DownloadFile> HttpDownloadList = null;
 
+        //  後日、SmbとHttpのダウンロード用処理部分だけを別クラスに分離する予定。
+
+        private List<string> DeleteTargetList = null;
+        private List<string> DeleteExcludeList = null;
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
@@ -110,14 +115,13 @@ namespace EnumRun
                     this.MappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
                     _logger.Write(LogLevel.Info, "Success, download mapping object.");
 
-                    //  バージョンチェック用の処理
-                    /*
-                    var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version");
-                    if(appVersion != System.Relction.Assebmly.GetExecutingAssembly().GetName().Version.ToString())
+
+                    var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version").Value.First();
+                    var localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                    if (appVersion != localVersion)
                     {
-                        //  サーバとバージョン不一致と判明。アップデート等対応
+                        _logger.Write(LogLevel.Warn, null, "AppVersion mismatch. server=>{0} local=>{1}", appVersion, localVersion);
                     }
-                    */
                 }
                 else
                 {
@@ -176,9 +180,17 @@ namespace EnumRun
                         HttpDownloadList.Add(new DownloadFile()
                         {
                             Path = download.Path,
+                            DestinationPath = download.Destination,
                             Overwrite = !download.GetKeep(),
                         });
                     }
+                }
+                if (mapping.Work.Delete != null)
+                {
+                    this.DeleteTargetList ??= new List<string>();
+                    this.DeleteExcludeList ??= new List<string>();
+                    DeleteTargetList.AddRange(mapping.Work.Delete.DeleteTarget);
+                    DeleteExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
                 }
             }
         }
@@ -230,7 +242,11 @@ namespace EnumRun
             foreach (var dlFile in HttpDownloadList)
             {
                 //string dstPath = ExpandEnvironment(dlFile.DestinationPath);
-                string dstPath = Path.Combine(_filesPath, dlFile.Path);
+                //string dstPath = Path.Combine(_filesPath, dlFile.Path);
+
+                string dstPath = string.IsNullOrEmpty(dlFile.DestinationPath) ?
+                    Path.Combine(_filesPath, dlFile.Path) :
+                    Path.Combine(dlFile.DestinationPath, dlFile.Path);
 
                 //  ローカル側のファイルとの一致チェック
                 if (!(dlFile.Downloadable ?? false)) { continue; }
@@ -264,6 +280,15 @@ namespace EnumRun
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// ローカル側のファイル/フォルダーを削除。
+        /// Item.Setting.Files配下のみを削除対象とする為、それ以外のパスは無視
+        /// </summary>
+        private void DeleteLocalFiles()
+        {
+            //  未実装
         }
     }
 }
