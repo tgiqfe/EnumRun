@@ -7,7 +7,6 @@ using ScriptDelivery.Files;
 using EnumRun.Logs;
 using EnumRun.Logs.ProcessLog;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Net;
 using EnumRun.Lib;
 
@@ -19,8 +18,7 @@ namespace EnumRun.ScriptDelivery
         private string _filesPath = null;
         private ProcessLogger _logger = null;
         private JsonSerializerOptions _options = null;
-
-        public List<DownloadFile> DownloadList = null;
+        private List<DownloadFile> _list = null;
 
         public HttpDownloadManager(string uri, string filesPath, ProcessLogger logger)
         {
@@ -37,9 +35,19 @@ namespace EnumRun.ScriptDelivery
             };
         }
 
+        public void Add(string path, string destination, bool? overwrite)
+        {
+            _list.Add(new DownloadFile()
+            {
+                Path = path,
+                DestinationPath = destination,
+                Overwrite = overwrite,
+            });
+        }
+
         public void Process(HttpClient client)
         {
-            if (this.DownloadList.Count > 0)
+            if (this._list.Count > 0)
             {
                 DownloadHttpSearch(client).Wait();
                 DownloadHttpStart(client).Wait();
@@ -55,13 +63,13 @@ namespace EnumRun.ScriptDelivery
             _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
 
             using (var content = new StringContent(
-                 JsonSerializer.Serialize(DownloadList, _options), Encoding.UTF8, "application/json"))
+                 JsonSerializer.Serialize(_list, _options), Encoding.UTF8, "application/json"))
             using (var response = await client.PostAsync(_uri + "/download/list", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    DownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
+                    _list = JsonSerializer.Deserialize<List<DownloadFile>>(json);
 
                     _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
                 }
@@ -80,7 +88,7 @@ namespace EnumRun.ScriptDelivery
         {
             _logger.Write(LogLevel.Debug, "Start, Http download.");
 
-            foreach (var dlFile in DownloadList)
+            foreach (var dlFile in _list)
             {
                 string dstPath = string.IsNullOrEmpty(dlFile.DestinationPath) ?
                     Path.Combine(_filesPath, dlFile.Path) :
