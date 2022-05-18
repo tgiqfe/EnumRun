@@ -49,6 +49,7 @@ namespace EnumRun
             {
                 Server = new string[] { "http://localhost:5000" },
                 Process = "StartupScript",
+                TrashPath = null,
             };
         }
 
@@ -376,6 +377,7 @@ namespace EnumRun
                     sw.WriteLine("ScriptDelivery:");
                     sw.WriteLine($"  Server: {string.Join(", ", this.ScriptDelivery.Server)}");
                     sw.WriteLine($"  Process: {this.ScriptDelivery.Process}");
+                    sw.WriteLine($"  TrashPath: {this.ScriptDelivery.TrashPath}");
                 }
             }
         }

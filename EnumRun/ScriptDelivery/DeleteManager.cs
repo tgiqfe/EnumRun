@@ -59,8 +59,16 @@ namespace EnumRun.ScriptDelivery
             this.ExcludeList = new List<string>();
         }
 
-        public void SearchTarget()
+        public void Process()
         {
+            SearchTarget();
+            DeleteTarget();
+        }
+
+        private void SearchTarget()
+        {
+            if (!Directory.Exists(_targetDir)) { return; }
+
             List<SearchPath> _targetList = new List<SearchPath>(Targetlist.Select(x => new SearchPath(_targetDir, x)));
             List<SearchPath> _excludeList = new List<SearchPath>(ExcludeList.Select(x => new SearchPath(_targetDir, x)));
 
@@ -112,33 +120,18 @@ namespace EnumRun.ScriptDelivery
             Console.WriteLine("fList => {0}, dList => {1}", _fList.Count, _dList.Count);
         }
 
-        public void DeleteTarget()
+        private void DeleteTarget()
         {
-            foreach (string delTarget in _dList)
+            foreach (string delTarget in _dList ?? new List<string>())
             {
                 try
                 {
-                    string destination = Path.Combine(_trashPath, Path.GetRelativePath(_targetDir, delTarget));
-                    string parent = Path.GetDirectoryName(destination);
-                    if (!Directory.Exists(parent))
+                    if (_trashPath == null)
                     {
-                        Directory.CreateDirectory(parent);
+                        Directory.Delete(delTarget, true);
+                        Console.WriteLine("▲;[Del] {0}", delTarget);
                     }
-                    if (Directory.Exists(destination))
-                    {
-                        Directory.Delete(destination, true);
-                    }
-                    Directory.Move(delTarget, destination);
-
-                    Console.WriteLine("▲;[Del] {0}", destination);
-                }
-                catch { }
-            }
-            foreach (string delTarget in _fList)
-            {
-                if (File.Exists(delTarget))
-                {
-                    try
+                    else
                     {
                         string destination = Path.Combine(_trashPath, Path.GetRelativePath(_targetDir, delTarget));
                         string parent = Path.GetDirectoryName(destination);
@@ -146,13 +139,44 @@ namespace EnumRun.ScriptDelivery
                         {
                             Directory.CreateDirectory(parent);
                         }
-                        if (File.Exists(destination))
+                        if (Directory.Exists(destination))
                         {
-                            File.Delete(destination);
+                            Directory.Delete(destination, true);
                         }
-                        File.Move(delTarget, destination);
+                        Directory.Move(delTarget, destination);
 
-                        Console.WriteLine("▲:[Del] {0}", destination);
+                        Console.WriteLine("▲;[Del] {0} -> {1}", delTarget, destination);
+                    }
+                }
+                catch { }
+            }
+            foreach (string delTarget in _fList ?? new List<string>())
+            {
+                if (File.Exists(delTarget))
+                {
+                    try
+                    {
+                        if (_trashPath == null)
+                        {
+                            File.Delete(delTarget);
+                            Console.WriteLine("▲;[Del] {0}", delTarget);
+                        }
+                        else
+                        {
+                            string destination = Path.Combine(_trashPath, Path.GetRelativePath(_targetDir, delTarget));
+                            string parent = Path.GetDirectoryName(destination);
+                            if (!Directory.Exists(parent))
+                            {
+                                Directory.CreateDirectory(parent);
+                            }
+                            if (File.Exists(destination))
+                            {
+                                File.Delete(destination);
+                            }
+                            File.Move(delTarget, destination);
+
+                            Console.WriteLine("▲:[Del] {0} -> {1}", delTarget, destination);
+                        }
                     }
                     catch { }
                 }
