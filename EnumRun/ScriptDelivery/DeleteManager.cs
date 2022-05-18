@@ -43,20 +43,22 @@ namespace EnumRun.ScriptDelivery
 
         #endregion
 
-        public List<string> Targetlist { get; set; }
-        public List<string> ExcludeList { get; set; }
+        private string _targetDir = null;
+        private string _trashPath = null;
+        private EnumRun.Logs.ProcessLog.ProcessLogger _logger = null;
+        private List<string> _targets { get; set; }
+        private List<string> _excludes { get; set; }
 
         private List<string> _fList = null;
         private List<string> _dList = null;
-        private string _targetDir = null;
-        private string _trashPath = null;
 
-        public DeleteManager(string targetDir, string trashPath)
+        public DeleteManager(string targetDir, string trashPath, EnumRun.Logs.ProcessLog.ProcessLogger logger)
         {
             this._targetDir = Path.GetFullPath(targetDir);
             this._trashPath = trashPath;
-            this.Targetlist = new List<string>();
-            this.ExcludeList = new List<string>();
+            this._logger = logger;
+            this._targets = new List<string>();
+            this._excludes = new List<string>();
         }
 
         public void Process()
@@ -65,51 +67,81 @@ namespace EnumRun.ScriptDelivery
             DeleteTarget();
         }
 
+        public void AddTarget(string[] array)
+        {
+            if(array?.Length > 0)
+            {
+                this._targets.AddRange(array);
+            }
+        }
+
+        public void AddExclude(string[] array)
+        {
+            if(array?.Length > 0)
+            {
+                this._excludes.AddRange(array);
+            }
+        }
+
         private void SearchTarget()
         {
             if (!Directory.Exists(_targetDir)) { return; }
 
-            List<SearchPath> _targetList = new List<SearchPath>(Targetlist.Select(x => new SearchPath(_targetDir, x)));
-            List<SearchPath> _excludeList = new List<SearchPath>(ExcludeList.Select(x => new SearchPath(_targetDir, x)));
+            List<SearchPath> targetList = new List<SearchPath>(_targets.Select(x => new SearchPath(_targetDir, x)));
+            List<SearchPath> excludeList = new List<SearchPath>(_excludes.Select(x => new SearchPath(_targetDir, x)));
 
             _fList = Directory.GetFiles(_targetDir, "*", SearchOption.AllDirectories).
-                Where(x => _targetList.Any(y => y.IsMatch(x))).
+                Where(x => targetList.Any(y => y.IsMatch(x))).
                 ToList();
             _dList = Directory.GetDirectories(_targetDir, "*", SearchOption.AllDirectories).
-                Where(x => _targetList.Any(y => y.IsMatch(x))).
+                Where(x => targetList.Any(y => y.IsMatch(x))).
                 ToList();
 
-            Console.WriteLine("fList => {0}, dList => {1}", _fList.Count, _dList.Count);
+            _logger.Write(Logs.LogLevel.Debug, null, "Delete [file => {0}, directory => {1}]", _fList.Count, _dList.Count);
+            //Console.WriteLine("fList => {0}, dList => {1}", _fList.Count, _dList.Count);
 
             for (int i = _dList.Count - 1; i >= 0; i--)
             {
-                var matchSearch = _excludeList.FirstOrDefault(x => x.IsMatch(_dList[i]));
+                var matchSearch = excludeList.FirstOrDefault(x => x.IsMatch(_dList[i]));
                 if (matchSearch != null)
                 {
-                    Console.WriteLine("■;[ExcD] {0}", _dList[i]);
+                    _logger.Write(Logs.LogLevel.Info, null, "Exclude directory, [{0}]", _dList[i]);
+                    //Console.WriteLine("■;[ExcD] {0}", _dList[i]);
 
-                    _fList.Where(x => x.StartsWith(_dList[i] + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).
+                    string dirName = _dList[i];
+                    _dList.RemoveAt(i);
+
+                    _fList.Where(x => x.StartsWith(dirName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).
                         ToList().
                         ForEach(x =>
                         {
-                            Console.WriteLine("■:[SubF] {0}", x);
+                            _logger.Write(Logs.LogLevel.Info, null, "Exclude lower path file, [{0}]", x);
+                            //Console.WriteLine("■:[SubF] {0}", x);
                         });
-                    _fList.RemoveAll(x => x.StartsWith(_dList[i] + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
-                    _dList.RemoveAt(i);
+                    _dList.Where(x => x.StartsWith(dirName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).
+                        ToList().
+                        ForEach(x =>
+                        {
+                            _logger.Write(Logs.LogLevel.Info, null, "Exclude lower path directory, [{0}]", x);
+                        });
+                    _fList.RemoveAll(x => x.StartsWith(dirName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                    _dList.RemoveAll(x => x.StartsWith(dirName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
                 }
             }
             for (int i = _fList.Count - 1; i >= 0; i--)
             {
-                var matchSearch = _excludeList.FirstOrDefault(x => x.IsMatch(_fList[i]));
+                var matchSearch = excludeList.FirstOrDefault(x => x.IsMatch(_fList[i]));
                 if (matchSearch != null)
                 {
-                    Console.WriteLine("★;[ExcF] {0}", _fList[i]);
+                    _logger.Write(Logs.LogLevel.Info, null, "Exclude file, [{0}]", _fList[i]);
+                    //Console.WriteLine("★;[ExcF] {0}", _fList[i]);
 
                     _dList.Where(x => _fList[i].StartsWith(x + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).
                         ToList().
                         ForEach(x =>
                         {
-                            Console.WriteLine("★:[SubD] {0}", x);
+                            _logger.Write(Logs.LogLevel.Info, null, "Exclude upper path directory, [{0}]", x);
+                            //Console.WriteLine("★:[SubD] {0}", x);
                         });
 
                     _dList.RemoveAll(x => _fList[i].StartsWith(x + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
@@ -117,7 +149,8 @@ namespace EnumRun.ScriptDelivery
                 }
             }
 
-            Console.WriteLine("fList => {0}, dList => {1}", _fList.Count, _dList.Count);
+            _logger.Write(Logs.LogLevel.Debug, null, "Delete [file => {0}, directory => {1}]", _fList.Count, _dList.Count);
+            //Console.WriteLine("fList => {0}, dList => {1}", _fList.Count, _dList.Count);
         }
 
         private void DeleteTarget()
@@ -129,7 +162,9 @@ namespace EnumRun.ScriptDelivery
                     if (_trashPath == null)
                     {
                         Directory.Delete(delTarget, true);
-                        Console.WriteLine("▲;[Del] {0}", delTarget);
+
+                        _logger.Write(Logs.LogLevel.Info, null, "Delete directory, [{0}]", delTarget);
+                        //Console.WriteLine("▲;[Del] {0}", delTarget);
                     }
                     else
                     {
@@ -145,7 +180,8 @@ namespace EnumRun.ScriptDelivery
                         }
                         Directory.Move(delTarget, destination);
 
-                        Console.WriteLine("▲;[Del] {0} -> {1}", delTarget, destination);
+                        _logger.Write(Logs.LogLevel.Info, null, "Move directory, [{0} -> {1}]", delTarget, destination);
+                        //Console.WriteLine("▲;[Del] {0} -> {1}", delTarget, destination);
                     }
                 }
                 catch { }
@@ -159,7 +195,8 @@ namespace EnumRun.ScriptDelivery
                         if (_trashPath == null)
                         {
                             File.Delete(delTarget);
-                            Console.WriteLine("▲;[Del] {0}", delTarget);
+                            _logger.Write(Logs.LogLevel.Info, null, "Delete file, [{0}]", delTarget);
+                            //Console.WriteLine("▲;[Del] {0}", delTarget);
                         }
                         else
                         {
@@ -175,7 +212,8 @@ namespace EnumRun.ScriptDelivery
                             }
                             File.Move(delTarget, destination);
 
-                            Console.WriteLine("▲:[Del] {0} -> {1}", delTarget, destination);
+                            _logger.Write(Logs.LogLevel.Info, null, "Move file, [{0} -> {1}]", delTarget, destination);
+                            //Console.WriteLine("▲:[Del] {0} -> {1}", delTarget, destination);
                         }
                     }
                     catch { }

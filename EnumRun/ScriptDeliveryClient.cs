@@ -62,7 +62,7 @@ namespace EnumRun
                     this._httpDownloadManager = new ScriptDelivery.HttpDownloadManager(
                         _uri, _filesPath, _logger);
                     this._deleteManager = new ScriptDelivery.DeleteManager(
-                        setting.FilesPath, setting.ScriptDelivery.TrashPath);
+                        setting.FilesPath, setting.ScriptDelivery.TrashPath, _logger);
                 }
             }
         }
@@ -163,20 +163,14 @@ namespace EnumRun
                     {
                         //  Htttpダウンロード用ファイル
                         _httpDownloadManager.Add(download.Path, download.Destination, !download.GetKeep());
-                        /*
-                        _httpDownloadManager.DownloadList.Add(new DownloadFile()
-                        {
-                            Path = download.Path,
-                            DestinationPath = download.Destination,
-                            Overwrite = !download.GetKeep(),
-                        });
-                        */
                     }
                 }
                 if (mapping.Work.Delete != null)
                 {
-                    _deleteManager.Targetlist.AddRange(mapping.Work.Delete.DeleteTarget);
-                    _deleteManager.ExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
+                    _deleteManager.AddTarget(mapping.Work.Delete.DeleteTarget);
+                    _deleteManager.AddExclude(mapping.Work.Delete.DeleteExclude);
+                    //_deleteManager.Targetlist.AddRange(mapping.Work.Delete.DeleteTarget);
+                    //_deleteManager.ExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
                 }
             }
         }
