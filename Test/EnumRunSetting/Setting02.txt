@@ -1,0 +1,17 @@
+FilesPath: D:\Test\Files
+LogsPath: D:\Test\Logs
+OutputPath: D:\Test\Output
+RestTime: 60
+DefaultOutput: False
+RetentionPeriod: 7
+MinLogLevel: debug
+Ranges:
+  StartupScript: 0-9
+  ShutdownScript: 11-29
+  LogonScript: 81-89
+  LogoffScript: 91-99
+  EnumRun: 0-99
+ScriptDelivery:
+  Server: http://localhost:5000
+  Process: EnumRun
+  TrashPath: D:\Test\Trash

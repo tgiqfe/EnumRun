@@ -20,7 +20,7 @@ namespace ScriptDelivery.Files
 
         public string DestinationPath { get; set; } //  クライアント側のファイルのダウンロード先ファイル名。フォルダー名指定は非対応
         public bool? Overwrite { get; set; }        //  クライアント側で上書き保存を許可するかどうか
-        
+
         public DownloadFile() { }
         public DownloadFile(string basePath, string filePath)
         {
@@ -55,8 +55,7 @@ namespace ScriptDelivery.Files
         /// <returns></returns>
         public bool CompareFile(string path)
         {
-            return File.Exists(path) &&
-                (File.GetLastWriteTime(path) == this.LastWriteTime) &&
+            return (File.GetLastWriteTime(path) == this.LastWriteTime) &&
                 (GetHash(path) == this.Hash);
         }
     }

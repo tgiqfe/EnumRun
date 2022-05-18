@@ -33,6 +33,7 @@ namespace EnumRun.ScriptDelivery
                 //WriteIndented = true,
                 //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
+            this._list = new List<DownloadFile>();
         }
 
         public void Add(string path, string destination, bool? overwrite)
@@ -91,12 +92,13 @@ namespace EnumRun.ScriptDelivery
             foreach (var dlFile in _list)
             {
                 string dstPath = string.IsNullOrEmpty(dlFile.DestinationPath) ?
-                    Path.Combine(_filesPath, dlFile.Path) :
-                    Path.Combine(dlFile.DestinationPath, dlFile.Path);
+                    Path.Combine(_filesPath, Path.GetFileName(dlFile.Path)) :
+                    Path.Combine(dlFile.DestinationPath, Path.GetFileName(dlFile.Path));
 
                 //  ローカル側のファイルとの一致チェック
                 if (!(dlFile.Downloadable ?? false)) { continue; }
-                if (dlFile.CompareFile(dstPath) && !(dlFile.Overwrite ?? false))
+                if (File.Exists(dstPath) &&
+                    (dlFile.CompareFile(dstPath) || !(dlFile.Overwrite ?? false)))
                 {
                     _logger.Write(LogLevel.Info, null, "Skip download, already exist. => [{0}]", dstPath);
                     continue;

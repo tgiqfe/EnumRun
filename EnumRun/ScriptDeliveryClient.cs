@@ -59,8 +59,10 @@ namespace EnumRun
                 {
                     this.Enabled = true;
                     this._smbDownloadManager = new ScriptDelivery.SmbDownloadManager();
-                    this._httpDownloadManager = new ScriptDelivery.HttpDownloadManager(_uri, _filesPath, _logger);
-                    this._deleteManager = new ScriptDelivery.DeleteManager(setting.FilesPath, @"D:\Test\Trash");      //  trash先の設定は後日修正
+                    this._httpDownloadManager = new ScriptDelivery.HttpDownloadManager(
+                        _uri, _filesPath, _logger);
+                    this._deleteManager = new ScriptDelivery.DeleteManager(
+                        setting.FilesPath, setting.ScriptDelivery.TrashPath);
                 }
             }
         }
