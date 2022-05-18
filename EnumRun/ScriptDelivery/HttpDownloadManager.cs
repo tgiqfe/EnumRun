@@ -15,22 +15,36 @@ namespace EnumRun.ScriptDelivery
 {
     internal class HttpDownloadManager
     {
-        private string uri = null;
-        private Logs.ProcessLog.ProcessLogger _logger = null;
-        private JsonSerializerOptions _options = null;
+        private string _uri = null;
         private string _filesPath = null;
+        private ProcessLogger _logger = null;
+        private JsonSerializerOptions _options = null;
 
-        private List<DownloadFile> _httpDownloadList = null;
+        public List<DownloadFile> DownloadList = null;
 
-        public HttpDownloadManager()
+        public HttpDownloadManager(string uri, string filesPath, ProcessLogger logger)
         {
-
+            this._uri = uri;
+            this._filesPath = filesPath;
+            this._logger = logger;
+            this._options = new System.Text.Json.JsonSerializerOptions()
+            {
+                //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                IgnoreReadOnlyProperties = true,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                //WriteIndented = true,
+                //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
         }
 
-
-
-
-
+        public void Process(HttpClient client)
+        {
+            if (this.DownloadList.Count > 0)
+            {
+                DownloadHttpSearch(client).Wait();
+                DownloadHttpStart(client).Wait();
+            }
+        }
 
         /// <summary>
         /// Httpダウンロードする場合に、ScriptDeliveryサーバにダウンロード可能ファイルを問い合わせ
@@ -41,13 +55,13 @@ namespace EnumRun.ScriptDelivery
             _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
 
             using (var content = new StringContent(
-                 JsonSerializer.Serialize(_httpDownloadList, _options), Encoding.UTF8, "application/json"))
-            using (var response = await client.PostAsync(uri + "/download/list", content))
+                 JsonSerializer.Serialize(DownloadList, _options), Encoding.UTF8, "application/json"))
+            using (var response = await client.PostAsync(_uri + "/download/list", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    _httpDownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
+                    DownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
 
                     _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
                 }
@@ -66,7 +80,7 @@ namespace EnumRun.ScriptDelivery
         {
             _logger.Write(LogLevel.Debug, "Start, Http download.");
 
-            foreach (var dlFile in _httpDownloadList)
+            foreach (var dlFile in DownloadList)
             {
                 string dstPath = string.IsNullOrEmpty(dlFile.DestinationPath) ?
                     Path.Combine(_filesPath, dlFile.Path) :
@@ -86,7 +100,7 @@ namespace EnumRun.ScriptDelivery
                 {
                     { "fileName", dlFile.Path }
                 };
-                using (var response = await client.GetAsync(uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
+                using (var response = await client.GetAsync(_uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
                 {
                     if (response.StatusCode == HttpStatusCode.OK)
                     {

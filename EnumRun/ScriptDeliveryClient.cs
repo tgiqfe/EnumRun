@@ -19,14 +19,15 @@ namespace EnumRun
     {
         public bool Enabled { get; set; }
 
-        private string uri = null;
+        private string _uri = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
         private JsonSerializerOptions _options = null;
         private string _filesPath = null;
 
         private List<Mapping> _mappingList = null;
         private List<string> _smbDownloadList = null;
-        private List<DownloadFile> _httpDownloadList = null;
+        //private List<DownloadFile> _httpDownloadList = null;
+        private ScriptDelivery.HttpDownloadManager _httpDownloadManager = null;
         private ScriptDelivery.DeleteManager _deleteManager = null;
 
         //  後日、SmbとHttpのダウンロード用処理部分だけを別クラスに分離する予定。
@@ -50,12 +51,13 @@ namespace EnumRun
                     var connect = new TcpConnect(info.Server, info.Port);
                     if (connect.TcpConnectSuccess)
                     {
-                        uri = info.URI;
+                        _uri = info.URI;
                         break;
                     }
                 }
 
                 this._logger = logger;
+                /*
                 this._options = new System.Text.Json.JsonSerializerOptions()
                 {
                     //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -64,15 +66,17 @@ namespace EnumRun
                     //WriteIndented = true,
                     //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                 };
+                */
                 this._filesPath = setting.GetFilesPath();
 
-                _logger.Write(LogLevel.Info, null, "Connect server => {0}", uri);
+                _logger.Write(LogLevel.Info, null, "Connect server => {0}", _uri);
 
-                if (!string.IsNullOrEmpty(uri))
+                if (!string.IsNullOrEmpty(_uri))
                 {
                     this.Enabled = true;
                     this._smbDownloadList = new List<string>();
-                    this._httpDownloadList = new List<DownloadFile>();
+                    //this._httpDownloadList = new List<DownloadFile>();
+                    this._httpDownloadManager = new ScriptDelivery.HttpDownloadManager(_uri, _filesPath, _logger);
                     this._deleteManager = new ScriptDelivery.DeleteManager(setting.FilesPath, @"D:\Test\Trash");      //  trash先の設定は後日修正
                 }
             }
@@ -90,16 +94,22 @@ namespace EnumRun
                     {
                         DownloadSmbFile();
                     }
+
+                    _httpDownloadManager.Process(client);
+
+                    /*
                     if (_httpDownloadList.Count > 0)
                     {
                         DownloadHttpSearch(client).Wait();
                         DownloadHttpStart(client).Wait();
                     }
+                    */
                     _deleteManager.SearchTarget();
                     _deleteManager.DeleteTarget();
                 }
             }
         }
+
 
         /// <summary>
         /// ScriptDeliveryサーバからMappingファイルをダウンロード
@@ -109,7 +119,7 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "ScriptDelivery init.");
             using (var content = new StringContent(""))
-            using (var response = await client.PostAsync(uri + "/map", content))
+            using (var response = await client.PostAsync(_uri + "/map", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -179,12 +189,21 @@ namespace EnumRun
                     else
                     {
                         //  Htttpダウンロード用ファイル
+                        _httpDownloadManager.DownloadList.Add(new DownloadFile()
+                        {
+                            Path = download.Path,
+                            DestinationPath = download.Destination,
+                            Overwrite = !download.GetKeep(),
+                        });
+
+                        /*
                         _httpDownloadList.Add(new DownloadFile()
                         {
                             Path = download.Path,
                             DestinationPath = download.Destination,
                             Overwrite = !download.GetKeep(),
                         });
+                        */
                     }
                 }
                 if (mapping.Work.Delete != null)
@@ -205,6 +224,7 @@ namespace EnumRun
             //  未実装
         }
 
+        /*
         /// <summary>
         /// Httpダウンロードする場合に、ScriptDeliveryサーバにダウンロード可能ファイルを問い合わせ
         /// </summary>
@@ -215,7 +235,7 @@ namespace EnumRun
 
             using (var content = new StringContent(
                  JsonSerializer.Serialize(_httpDownloadList, _options), Encoding.UTF8, "application/json"))
-            using (var response = await client.PostAsync(uri + "/download/list", content))
+            using (var response = await client.PostAsync(_uri + "/download/list", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -259,7 +279,7 @@ namespace EnumRun
                 {
                     { "fileName", dlFile.Path }
                 };
-                using (var response = await client.GetAsync(uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
+                using (var response = await client.GetAsync(_uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
                 {
                     if (response.StatusCode == HttpStatusCode.OK)
                     {
@@ -278,5 +298,6 @@ namespace EnumRun
                 }
             }
         }
+        */
     }
 }
