@@ -59,7 +59,13 @@ namespace EnumRun.ScriptDelivery
             this.ExcludeList = new List<string>();
         }
 
-        public void SearchTarget()
+        public void Process()
+        {
+            SearchTarget();
+            DeleteTarget();
+        }
+
+        private void SearchTarget()
         {
             List<SearchPath> _targetList = new List<SearchPath>(Targetlist.Select(x => new SearchPath(_targetDir, x)));
             List<SearchPath> _excludeList = new List<SearchPath>(ExcludeList.Select(x => new SearchPath(_targetDir, x)));
@@ -112,7 +118,7 @@ namespace EnumRun.ScriptDelivery
             Console.WriteLine("fList => {0}, dList => {1}", _fList.Count, _dList.Count);
         }
 
-        public void DeleteTarget()
+        private void DeleteTarget()
         {
             foreach (string delTarget in _dList)
             {

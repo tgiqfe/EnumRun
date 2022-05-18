@@ -21,12 +21,13 @@ namespace EnumRun
 
         private string _uri = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
-        private JsonSerializerOptions _options = null;
+        //private JsonSerializerOptions _options = null;
         private string _filesPath = null;
 
         private List<Mapping> _mappingList = null;
-        private List<string> _smbDownloadList = null;
+        //private List<string> _smbDownloadList = null;
         //private List<DownloadFile> _httpDownloadList = null;
+        private ScriptDelivery.SmbDownloadManager _smbDownloadManager = null;
         private ScriptDelivery.HttpDownloadManager _httpDownloadManager = null;
         private ScriptDelivery.DeleteManager _deleteManager = null;
 
@@ -74,7 +75,8 @@ namespace EnumRun
                 if (!string.IsNullOrEmpty(_uri))
                 {
                     this.Enabled = true;
-                    this._smbDownloadList = new List<string>();
+                    //this._smbDownloadList = new List<string>();
+                    this._smbDownloadManager = new ScriptDelivery.SmbDownloadManager();
                     //this._httpDownloadList = new List<DownloadFile>();
                     this._httpDownloadManager = new ScriptDelivery.HttpDownloadManager(_uri, _filesPath, _logger);
                     this._deleteManager = new ScriptDelivery.DeleteManager(setting.FilesPath, @"D:\Test\Trash");      //  trash先の設定は後日修正
@@ -90,10 +92,14 @@ namespace EnumRun
                 {
                     DownloadMappingFile(client).Wait();
                     MapMathcingCheck();
+
+                    _smbDownloadManager.Process();
+                    /*
+                    
                     if (_smbDownloadList.Count > 0)
                     {
                         DownloadSmbFile();
-                    }
+                    }*/
 
                     _httpDownloadManager.Process(client);
 
@@ -104,8 +110,13 @@ namespace EnumRun
                         DownloadHttpStart(client).Wait();
                     }
                     */
+
+                    _deleteManager.Process();
+
+                    /*
                     _deleteManager.SearchTarget();
                     _deleteManager.DeleteTarget();
+                    */
                 }
             }
         }
@@ -184,7 +195,8 @@ namespace EnumRun
                     else if (download.Path.StartsWith("\\\\"))
                     {
                         //  Smbダウンロード用ファイル
-                        _smbDownloadList.Add(download.Path);
+                        //_smbDownloadManager.～～～～
+                        //  未実装
                     }
                     else
                     {
@@ -214,6 +226,7 @@ namespace EnumRun
             }
         }
 
+        /*
         /// <summary>
         /// Smbダウンロード
         /// </summary>
@@ -223,6 +236,7 @@ namespace EnumRun
 
             //  未実装
         }
+        */
 
         /*
         /// <summary>
