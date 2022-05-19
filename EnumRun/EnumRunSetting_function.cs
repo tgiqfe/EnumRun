@@ -25,9 +25,9 @@ namespace EnumRun
             this.Ranges = new ParamRanges()
             {
                 { "StartupScript", "0-9" },
-                { "ShutdownScript", "11-29" },
-                { "LogonScript", "81-89" },
-                { "LogoffScript", "91-99" },
+                { "LogonScript", "11-29" },
+                { "LogoffScript", "81-89" },
+                { "ShutdownScript", "91-99" },
             };
             this.Logstash = new ParamLogstash()
             {

@@ -57,9 +57,9 @@ JSONファイルの記述ルール等の解説は割愛します。
   "MinLogLevel": "Info",
   "Ranges": {
     "StartupScript": "0-9",
-    "ShutdownScript": "11-29",
-    "LogonScript": "81-89",
-    "LogoffScript": "91-99"
+    "LogonScript": "11-29",
+    "LogoffScript": "81-89",
+    "ShutdownScript": "91-99"
   }
 }
 ```
@@ -78,9 +78,9 @@ RetentionPeriod: 10
 MinLogLevel: Info
 Ranges:
   StartupScript: 0-9
-  ShutdownScript: 11-29
-  LogonScript: 81-89
-  LogoffScript: 91-99
+  LogonScript: 11-29
+  LogoffScript: 81-89
+  ShutdownScript: 91-99
 ```
 
 Yamlの記述ルールに近いのですが、オリジナルの記述ルールです。  
