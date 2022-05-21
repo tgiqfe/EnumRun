@@ -41,57 +41,10 @@ namespace EnumRun.ScriptDelivery
         {
             foreach (var smb in _list)
             {
-                if (FileExists(smb.TargetPath))
-                {
-                    DownloadFile(smb.TargetPath, smb.Destination, smb.Overwrite);
-                    return;
-                }
-                if (DirectoryExists(smb.TargetPath))
-                {
-                    DownloadDirectory(smb.TargetPath, smb.Destination, smb.Overwrite);
-                    return;
-                }
+                string targetPath = smb.TargetPath;
+                string destination = smb.Destination;
+                bool overwrite = smb.Overwrite;
 
-                //bool ret = ConnectServer(smb.TargetPath, smb.UserName, smb.Password);
-                bool ret = ConnectServer(smb);
-                if (ret)
-                {
-                    _logger.Write(LogLevel.Info, null, "Connect success.");
-                    if (FileExists(smb.TargetPath))
-                    {
-                        DownloadFile(smb.TargetPath, smb.Destination, smb.Overwrite);
-                        return;
-                    }
-                    if (DirectoryExists(smb.TargetPath))
-                    {
-                        DownloadDirectory(smb.TargetPath, smb.Destination, smb.Overwrite);
-                        return;
-                    }
-                }
-                else
-                {
-                    _logger.Write(LogLevel.Warn, null, "Connect failed.");
-                }
-            }
-        }
-
-        public void Process(string targetPath, string destination, string userName, string password, bool overwrite)
-        {
-            if (FileExists(targetPath))
-            {
-                DownloadFile(targetPath, destination, overwrite);
-                return;
-            }
-            if (DirectoryExists(targetPath))
-            {
-                DownloadDirectory(targetPath, destination, overwrite);
-                return;
-            }
-
-            bool ret = ConnectServer(targetPath, userName, password);
-            if (ret)
-            {
-                _logger.Write(LogLevel.Info, null, "Connect success.");
                 if (FileExists(targetPath))
                 {
                     DownloadFile(targetPath, destination, overwrite);
@@ -102,10 +55,26 @@ namespace EnumRun.ScriptDelivery
                     DownloadDirectory(targetPath, destination, overwrite);
                     return;
                 }
-            }
-            else
-            {
-                _logger.Write(LogLevel.Warn, null, "Connect failed.");
+
+                bool ret = ConnectServer(smb);
+                if (ret)
+                {
+                    _logger.Write(LogLevel.Info, null, "Connect success.");
+                    if (FileExists(targetPath))
+                    {
+                        DownloadFile(targetPath, destination, overwrite);
+                        return;
+                    }
+                    if (DirectoryExists(targetPath))
+                    {
+                        DownloadDirectory(targetPath, destination, overwrite);
+                        return;
+                    }
+                }
+                else
+                {
+                    _logger.Write(LogLevel.Warn, null, "Connect failed.");
+                }
             }
         }
 
@@ -135,23 +104,6 @@ namespace EnumRun.ScriptDelivery
 
             return _sessions[shareName].Connected;
         }
-
-        /*
-        public bool ConnectServer(string targetPath, string userName, string password)
-        {
-            string shareName = SmbSession.GetShareName(targetPath);
-            _logger.Write(LogLevel.Debug, null, "Connect server => {0}", shareName);
-
-            if (_sessions.ContainsKey(shareName))
-            {
-                _sessions[shareName].Disconnect();
-            }
-            _sessions[shareName] = new SmbSession(shareName, userName, password);
-            _sessions[shareName].Connect();
-
-            return _sessions[shareName].Connected;
-        }
-        */
 
         private void DownloadFile(string targetPath, string destination, bool overwrite)
         {
