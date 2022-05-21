@@ -62,31 +62,37 @@ namespace EnumRun.Logs.SessionLog
                 await _writer.WriteLineAsync(json);
 
                 //  Logstash転送
-                bool res = false;
-                if (_logstash?.Enabled ?? false)
+                if (_logstash != null)
                 {
-                    res = await _logstash.SendAsync(json);
-                }
-                if (!res)
-                {
-                    _liteDB ??= GetLiteDB();
-                    _logstashCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_logstash");
-                    _logstashCollection.Upsert(body);
+                    bool res = false;
+                    if (_logstash.Enabled)
+                    {
+                        res = await _logstash.SendAsync(json);
+                    }
+                    if (!res)
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _logstashCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_logstash");
+                        _logstashCollection.Upsert(body);
+                    }
                 }
 
                 //  Syslog転送
-                if (_syslog?.Enabled ?? false)
+                if (_syslog != null)
                 {
-                    foreach (var pair in body.GetSyslogMessage())
+                    if (_syslog.Enabled)
                     {
-                        await _syslog.SendAsync(LogLevel.Info, pair.Key, pair.Value);
+                        foreach (var pair in body.GetSyslogMessage())
+                        {
+                            await _syslog.SendAsync(LogLevel.Info, pair.Key, pair.Value);
+                        }
                     }
-                }
-                else
-                {
-                    _liteDB ??= GetLiteDB();
-                    _syslogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
-                    _syslogCollection.Upsert(body);
+                    else
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _syslogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
+                        _syslogCollection.Upsert(body);
+                    }
                 }
             }
             catch { }

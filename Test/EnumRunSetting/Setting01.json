@@ -1,0 +1,36 @@
+﻿{
+  "FilesPath": "C:\\App\\Files",
+  "LogsPath": "C:\\App\\Logs",
+  "OutputPath": "C:\\App\\Output",
+  "RestTime": 60,
+  "DefaultOutput": false,
+  "RetentionPeriod": 7,
+  "MinLogLevel": "debug",
+  "Ranges": {
+    "StartupScript": "0-9",
+    "ShutdownScript": "11-29",
+    "LogonScript": "81-89",
+    "LogoffScript": "91-99",
+    "EnumRun": "0-99"
+  },
+  "Logstash": {
+    "Server": "http://localhost:8080"
+  },
+  "Syslog": {
+    "Server": "tcp://192.168.10.100:514",
+    "Facility": "local0",
+    "Format": "RFC3164",
+    "SslEncrypt": false,
+    "SslTimeout": 3000,
+    "SslCertFile": "C:\\App\\Cert\\cert.crt",
+    "SslCertPassword": "C:\\App\\Cert\\cert.key",
+    "SslCertFriendryName": "syslog",
+    "SslIgnoreCheck": false
+  },
+  "ScriptDelivery": {
+    "Server": [
+      "http://localhost:5000"
+    ],
+    "Process": "EnumRun"
+  }
+}

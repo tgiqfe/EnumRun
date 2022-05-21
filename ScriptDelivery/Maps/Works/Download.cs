@@ -1,28 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Serialization;
-using System.Diagnostics;
-
+﻿
 namespace ScriptDelivery.Maps.Works
 {
     internal class Download
     {
-        [YamlMember(Alias = "source")]
-        public string Source { get; set; }
+        [YamlDotNet.Serialization.YamlMember(Alias = "path")]
+        public string Path { get; set; }
 
-        [YamlMember(Alias = "destination")]
+        [YamlDotNet.Serialization.YamlMember(Alias = "destination")]
         public string Destination { get; set; }
 
-        [YamlMember(Alias = "keep")]
+        [YamlDotNet.Serialization.YamlMember(Alias = "keep")]
         public string Keep { get; set; }
 
-        [YamlMember(Alias = "user")]
+        [YamlDotNet.Serialization.YamlMember(Alias = "user")]
         public string UserName { get; set; }
 
-        [YamlMember(Alias = "password")]
+        [YamlDotNet.Serialization.YamlMember(Alias = "password")]
         public string Password { get; set; }
 
         public bool GetKeep()

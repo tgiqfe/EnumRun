@@ -120,6 +120,15 @@ namespace EnumRun
         {
             public string[] Server { get; set; }
             public string Process { get; set; }
+            public string TrashPath { get; set; }
+
+            public override string ToString()
+            {
+                return string.Format("[ Server={0} Process={1} TrashPath={2}",
+                    string.Join(", ", this.Server),
+                    this.Process,
+                    this.TrashPath);
+            }
         }
 
         #endregion

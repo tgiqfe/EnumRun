@@ -19,13 +19,14 @@ namespace EnumRun
     {
         public bool Enabled { get; set; }
 
-        private string uri = null;
+        private string _uri = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
-        private JsonSerializerOptions _options = null;
+        private string _filesPath = null;
 
-        private List<Mapping> MappingList = null;
-        private List<string> SmbDownloadList = null;
-        private List<DownloadFile> HttpDownloadList = null;
+        private List<Mapping> _mappingList = null;
+        private ScriptDelivery.SmbDownloader _smbDownloader = null;
+        private ScriptDelivery.HttpDownloader _httpDownloader = null;
+        private ScriptDelivery.DeleteManager _deleteManager = null;
 
         /// <summary>
         /// コンストラクタ
@@ -40,30 +41,28 @@ namespace EnumRun
                 string[] array = setting.ScriptDelivery.Server.OrderBy(x => random.Next()).ToArray();
                 foreach (var sv in array)
                 {
-                    var info = new ServerInfo(sv);
+                    var info = new ServerInfo(sv, 5000, "http");
                     var connect = new TcpConnect(info.Server, info.Port);
                     if (connect.TcpConnectSuccess)
                     {
-                        uri = info.URI;
+                        _uri = info.URI;
                         break;
                     }
                 }
 
                 this._logger = logger;
-                this._options = new System.Text.Json.JsonSerializerOptions()
-                {
-                    //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    IgnoreReadOnlyProperties = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                    //WriteIndented = true,
-                    //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                };
+                this._filesPath = setting.GetFilesPath();
 
-                _logger.Write(LogLevel.Info, null, "Connect server => {0}", uri);
+                _logger.Write(LogLevel.Info, null, "Connect server => {0}", _uri);
 
-                if (!string.IsNullOrEmpty(uri))
+                if (!string.IsNullOrEmpty(_uri))
                 {
                     this.Enabled = true;
+                    this._smbDownloader = new ScriptDelivery.SmbDownloader(_logger);
+                    this._httpDownloader = new ScriptDelivery.HttpDownloader(
+                        _uri, _filesPath, _logger);
+                    this._deleteManager = new ScriptDelivery.DeleteManager(
+                        setting.FilesPath, setting.ScriptDelivery.TrashPath, _logger);
                 }
             }
         }
@@ -76,12 +75,14 @@ namespace EnumRun
                 {
                     DownloadMappingFile(client).Wait();
                     MapMathcingCheck();
-                    DownloadSmbFile();
-                    DownloadHttpSearch(client).Wait();
-                    DownloadHttpStart(client).Wait();
+
+                    _smbDownloader.Process();
+                    _httpDownloader.Process(client);
+                    _deleteManager.Process();
                 }
             }
         }
+
 
         /// <summary>
         /// ScriptDeliveryサーバからMappingファイルをダウンロード
@@ -91,22 +92,21 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "ScriptDelivery init.");
             using (var content = new StringContent(""))
-            using (var response = await client.PostAsync(uri + "/map", content))
+            using (var response = await client.PostAsync(_uri + "/map", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    this.MappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
+                    this._mappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
                     _logger.Write(LogLevel.Info, "Success, download mapping object.");
 
-                    //  バージョンチェック用の処理
-                    /*
-                    var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version");
-                    if(appVersion != System.Relction.Assebmly.GetExecutingAssembly().GetName().Version.ToString())
+
+                    var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version").Value.First();
+                    var localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                    if (appVersion != localVersion)
                     {
-                        //  サーバとバージョン不一致と判明。アップデート等対応
+                        _logger.Write(LogLevel.Warn, null, "AppVersion mismatch. server=>{0} local=>{1}", appVersion, localVersion);
                     }
-                    */
                 }
                 else
                 {
@@ -122,7 +122,7 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "Check, mapping object.");
 
-            MappingList = MappingList.Where(x =>
+            _mappingList = _mappingList.Where(x =>
             {
                 RequireMode mode = x.Require.GetRequireMode();
                 if (mode == RequireMode.None)
@@ -144,130 +144,33 @@ namespace EnumRun
                 };
             }).ToList();
 
-            _logger.Write(LogLevel.Debug, null, "Finish, require check [Match => {0} count]", MappingList.Count);
-            this.SmbDownloadList = new List<string>();
-            this.HttpDownloadList = new List<DownloadFile>();
+            _logger.Write(LogLevel.Debug, null, "Finish, require check [Match => {0} count]", _mappingList.Count);
 
-            foreach (var mapping in MappingList)
+            foreach (var mapping in _mappingList)
             {
                 foreach (var download in mapping.Work.Downloads)
                 {
-                    if (string.IsNullOrEmpty(download.Source) || string.IsNullOrEmpty(download.Destination))
+                    if (string.IsNullOrEmpty(download.Path))
                     {
-                        _logger.Write(LogLevel.Attention, null, "Parameter mission, Source or Destination or both.");
+                        _logger.Write(LogLevel.Attention, null, "Parameter missing, Path parameter.");
                     }
-                    else if (download.Source.StartsWith("\\\\"))
+                    else if (download.Path.StartsWith("\\\\"))
                     {
                         //  Smbダウンロード用ファイル
-                        SmbDownloadList.Add(download.Source);
+                        _smbDownloader.Add(download.Path, download.Destination, download.UserName, download.Password, !download.GetKeep());
                     }
                     else
                     {
                         //  Htttpダウンロード用ファイル
-                        HttpDownloadList.Add(new DownloadFile()
-                        {
-                            Name = download.Source,
-                            DestinationPath = download.Destination,
-                            Overwrite = !download.GetKeep(),
-                        });
+                        _httpDownloader.Add(download.Path, download.Destination, !download.GetKeep());
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Smbダウンロード
-        /// </summary>
-        private void DownloadSmbFile()
-        {
-            _logger.Write(LogLevel.Debug, "Search, download file from SMB server.");
-
-            if (SmbDownloadList?.Count > 0) { }
-        }
-
-        /// <summary>
-        /// Httpダウンロードする場合に、ScriptDeliveryサーバにダウンロード可能ファイルを問い合わせ
-        /// </summary>
-        /// <returns></returns>
-        private async Task DownloadHttpSearch(HttpClient client)
-        {
-            _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
-
-            if (HttpDownloadList?.Count > 0)
-            {
-                using (var content = new StringContent(
-                     JsonSerializer.Serialize(HttpDownloadList, _options), Encoding.UTF8, "application/json"))
-                using (var response = await client.PostAsync(uri + "/download/list", content))
+                if (mapping.Work.Delete != null)
                 {
-                    if (response.StatusCode == HttpStatusCode.OK)
-                    {
-                        string json = await response.Content.ReadAsStringAsync();
-                        HttpDownloadList = JsonSerializer.Deserialize<List<DownloadFile>>(json);
-
-                        _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
-                    }
-                    else
-                    {
-                        _logger.Write(LogLevel.Error, "Failed, download DownloadFile list object");
-                    }
+                    _deleteManager.AddTarget(mapping.Work.Delete.DeleteTarget);
+                    _deleteManager.AddExclude(mapping.Work.Delete.DeleteExclude);
                 }
             }
-        }
-
-        /// <summary>
-        /// ScriptDeliveryサーバからファイルダウンロード
-        /// </summary>
-        /// <returns></returns>
-        private async Task DownloadHttpStart(HttpClient client)
-        {
-            _logger.Write(LogLevel.Debug, "Start, Http download.");
-
-            if (HttpDownloadList?.Count > 0)
-            {
-                foreach (var dlFile in HttpDownloadList)
-                {
-                    string dstPath = ExpandEnvironment(dlFile.DestinationPath);
-
-                    //  ローカル側のファイルとの一致チェック
-                    if (!(dlFile.Downloadable ?? false)) { continue; }
-                    if (dlFile.CompareFile(dstPath) && !(dlFile.Overwrite ?? false))
-                    {
-                        continue;
-                    }
-
-                    //  ダウンロード要求を送信し、ダウンロード開始
-                    var query = new Dictionary<string, string>()
-                    {
-                        { "fileName", dlFile.Name }
-                    };
-                    using (var response = await client.GetAsync(uri + $"/download/files?{await new FormUrlEncodedContent(query).ReadAsStringAsync()}"))
-                    {
-                        if (response.StatusCode == HttpStatusCode.OK)
-                        {
-                            using (var stream = await response.Content.ReadAsStreamAsync())
-                            using (var fs = new FileStream(dstPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                            {
-                                stream.CopyTo(fs);
-                            }
-
-                            _logger.Write(LogLevel.Info, "Success, file download. [{0}]", dstPath);
-                        }
-                        else
-                        {
-                            _logger.Write(LogLevel.Info, "Failed, file download. [{0}]", dstPath);
-                        }
-                    }
-                }
-            }
-        }
-
-        private string ExpandEnvironment(string text)
-        {
-            for (int i = 0; i < 5 && text.Contains("%"); i++)
-            {
-                text = Environment.ExpandEnvironmentVariables(text);
-            }
-            return text;
         }
     }
 }

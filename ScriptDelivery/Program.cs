@@ -3,6 +3,12 @@ using System.Text;
 using ScriptDelivery;
 using ScriptDelivery.Files;
 
+/*
+ScriptDelivery.Misc.samplefile.Sample01.Create();
+
+Console.ReadLine();
+Environment.Exit(0);
+*/
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -43,9 +49,9 @@ app.MapPost("/download/list", async (HttpContext context) =>
     {
         Item.Logger.Write(ScriptDelivery.Logs.LogLevel.Info, address, "Post_download_list", "Send, DownloadList");
 
-        List<DownloadFile> dlFileList = await context.Request.ReadFromJsonAsync<List<DownloadFile>>();
-        Item.DownloadFileCollection.RequestToResponse(dlFileList);
-        await context.Response.WriteAsJsonAsync(dlFileList, options);
+        List<DownloadHttp> reqList = await context.Request.ReadFromJsonAsync<List<DownloadHttp>>();
+        List<DownloadHttp> resList = Item.DownloadFileCollection.RequestToResponse(reqList);
+        await context.Response.WriteAsJsonAsync(resList, options);
     }
     else
     {

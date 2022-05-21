@@ -13,7 +13,6 @@ namespace ScriptDelivery.Files
     {
         private FileSystemWatcher _watcher = null;
         private bool _during = false;
-        private bool _reserve = false;
         private IStoredFileCollection _collection = null;
 
         public DirectoryWatcher(string targetPath, IStoredFileCollection collection)
@@ -41,23 +40,27 @@ namespace ScriptDelivery.Files
 
         private async void RecheckResource()
         {
-            if (_during || _reserve)
-            {
-                if (_reserve) { return; }
-                _reserve = true;
-
-                await Task.Delay(10000);
-                _reserve = false;
-            }
-
+            //  変更開始後にロック開始。10秒巻待機後に再チェック
+            //  ロック中に変更があった場合は終了 (同時最大は2スレッドまで)
+            //  IOException発生時、最初に戻る(ループさせる)
+            if (_during) { return; }
             _during = true;
-
-            Item.Logger.Write(Logs.LogLevel.Info, null, "RecheckSource",
-                "Recheck => {0}", _collection.GetType().Name);
-            _collection.CheckSource();
-
-            await Task.Delay(10000);        //  Recheckした後の待機時間 ⇒ 10秒
-            _during = false;
+            while (_during)
+            {
+                try
+                {
+                    Item.Logger.Write(Logs.LogLevel.Info, null, "RecheckSource",
+                        "Recheck => {0}", _collection.GetType().Name);
+                    await Task.Delay(10000);
+                    _collection.CheckSource();
+                    _during = false;
+                }
+                catch (IOException e)
+                {
+                    Item.Logger.Write(Logs.LogLevel.Error, null, "RecheckResource", "IOException occurred.");
+                    Item.Logger.Write(Logs.LogLevel.Error, null, "RecheckResource", e.Message);
+                }
+            }
         }
 
         public void Close()

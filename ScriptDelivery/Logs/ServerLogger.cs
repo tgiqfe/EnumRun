@@ -53,7 +53,7 @@ namespace ScriptDelivery.Logs
                 {
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                     Level = level,
-                    ClientAddress = address,
+                    Client = address,
                     Title = title,
                     Message = message,
                 }).ConfigureAwait(false);
@@ -82,8 +82,8 @@ namespace ScriptDelivery.Logs
                 Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
                     body.Date,
                     body.Level,
-                    body.ClientAddress,
-                    body.Title,
+                    body.Client ?? "-",
+                    body.Title ?? "-",
                     body.Message);
 
                 //  ファイル書き込み
@@ -91,15 +91,18 @@ namespace ScriptDelivery.Logs
                 await _writer.WriteLineAsync(json);
 
                 //  Syslog転送
-                if (_syslog?.Enabled ?? false)
+                if(_syslog != null)
                 {
-                    await _syslog.SendAsync(body.Level, body.Title, body.Message);
-                }
-                else
-                {
-                    _liteDB ??= GetLiteDB();
-                    _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
-                    _syslogCollection.Upsert(body);
+                    if (_syslog.Enabled)
+                    {
+                        await _syslog.SendAsync(body.Level, body.Title, body.Message);
+                    }
+                    else
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
+                        _syslogCollection.Upsert(body);
+                    }
                 }
 
                 writed = true;

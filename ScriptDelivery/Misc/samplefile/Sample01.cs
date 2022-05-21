@@ -9,9 +9,17 @@ using ScriptDelivery.Maps.Requires;
 
 namespace ScriptDelivery.Misc.samplefile
 {
-    public class Sample01
+    internal class Sample01
     {
-        public static void Create01()
+        public static void Create()
+        {
+            List<Mapping> list = Create02();
+            MappingGenerator.Serialize(list, @"bin\sample01.yml");
+            MappingGenerator.Serialize(list, @"bin\sample01.csv");
+            MappingGenerator.Serialize(list, @"bin\sample01.txt");
+        }
+
+        private static List<Mapping> Create01()
         {
             var mapping = new Mapping();
             mapping.Require = new Require();
@@ -42,21 +50,28 @@ namespace ScriptDelivery.Misc.samplefile
             {
                 new Download()
                 {
-                    Source = "example001.txt",
-                    Destination = @"C:\App\Sample\Example001.txt",
+                    Path = "example001.txt",
                     Keep = "true",
                 },
                 new Download()
                 {
-                    Source = "example002.txt",
-                    Destination = @"C:\App\Sample\Example002.txt",
+                    Path = "example002.txt",
+                    Destination = "D:\\Test\\Files2",
                 },
             };
 
-            var list = new List<Mapping>() { mapping };
-            MappingGenerator.Serialize(list, @"bin\sample01.yml");
-            MappingGenerator.Serialize(list, @"bin\sample01.csv");
-            MappingGenerator.Serialize(list, @"bin\sample01.txt");
+            return new List<Mapping>() { mapping };
+        }
+
+        private static List<Mapping> Create02()
+        {
+            List<Mapping> list = Create01();
+            list[0].Work.Delete = new DeleteFile()
+            {
+                DeleteTarget = new string[] { "example001.txt", "childDir\\*" },
+                DeleteExclude = new string[] { "childdir\\sample01.txt" },
+            };
+            return list;
         }
     }
 }

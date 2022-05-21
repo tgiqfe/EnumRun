@@ -15,8 +15,6 @@ namespace EnumRun.Logs.ProcessLog
         private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ProcessLogBody> _syslogCollection = null;
 
-        //public ProcessLogger() { }
-
         public ProcessLogger(EnumRunSetting setting)
         {
             string logFileName =
@@ -60,7 +58,7 @@ namespace EnumRun.Logs.ProcessLog
                 {
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                     Level = level,
-                    ScriptFile = scriptFile,
+                    ScriptFile = scriptFile ?? "-",
                     Message = message,
                 }).ConfigureAwait(false);
             }
@@ -113,30 +111,38 @@ namespace EnumRun.Logs.ProcessLog
                 //  Logstash転送
                 //  事前の接続可否チェック(コンストラクタ実行時)で導通不可、あるいは、
                 //  ログ転送時のResponseでHTTPResult:200でない場合にローカルDBへ格納
-                bool res = false;
-                if (_logstash?.Enabled ?? false)
+                if (_logstash != null)
                 {
-                    res = await _logstash.SendAsync(json);
-                }
-                if (!res)
-                {
-                    _liteDB ??= GetLiteDB();
-                    _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
-
-                    _logstashCollection.Upsert(body);
+                    bool res = false;
+                    if (_logstash.Enabled)
+                    {
+                        if (_logstash.Enabled)
+                        {
+                            res = await _logstash.SendAsync(json);
+                        }
+                        if (!res)
+                        {
+                            _liteDB ??= GetLiteDB();
+                            _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
+                            _logstashCollection.Upsert(body);
+                        }
+                    }
                 }
 
                 //  Syslog転送
                 //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
-                if (_syslog?.Enabled ?? false)
+                if(_syslog != null)
                 {
-                    await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
-                }
-                else
-                {
-                    _liteDB ??= GetLiteDB();
-                    _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
-                    _syslogCollection.Upsert(body);
+                    if (_syslog.Enabled)
+                    {
+                        await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
+                    }
+                    else
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
+                        _syslogCollection.Upsert(body);
+                    }
                 }
             }
             catch { }

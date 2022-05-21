@@ -69,7 +69,7 @@ namespace EnumRun
             //    終了待ち:false/標準出力:false ⇒ wait無し。別プロセスとして非管理で実行
             //    終了待ち:false/標準出力:true  ⇒ スレッド内でのみwait。全スレッド終了待ち
             //    終了待ち:true/標準出力:false  ⇒ スレッド内でもwait。スレッド呼び出し元でもwait
-            //    終了待ち:true/標準出力:true   ⇒ スレオッド内でwait。スレッド呼び出し元でもwait
+            //    終了待ち:true/標準出力:true   ⇒ スレッド内でwait。スレッド呼び出し元でもwait
             Task task = (this._setting.DefaultOutput ?? false) || this.Option.Contains(OptionType.Output) ?
                 ProcessThreadAndOutput() :
                 ProcessThread();

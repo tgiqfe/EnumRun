@@ -4,14 +4,14 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyVersion>0.7.0.3</AssemblyVersion>
-    <FileVersion>0.7.0.3</FileVersion>
+    <AssemblyVersion>0.7.0.5</AssemblyVersion>
+    <FileVersion>0.7.0.5</FileVersion>
     <DebugType>full</DebugType>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\ScriptDelivery\Files\DownloadFile.cs" Link="ScriptDelivery\Files\DownloadFile.cs" />
+    <Compile Include="..\ScriptDelivery\Files\DownloadHttp.cs" Link="ScriptDelivery\DownloadHttp.cs" />
     <Compile Include="..\ScriptDelivery\Maps\KeysAttribute.cs" Link="ScriptDelivery\Maps\KeysAttribute.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Mapping.cs" Link="ScriptDelivery\Maps\Mapping.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Requires\Require.cs" Link="ScriptDelivery\Maps\Requires\Require.cs" />
@@ -21,6 +21,7 @@
     <Compile Include="..\ScriptDelivery\Maps\Requires\RuleTarget.cs" Link="ScriptDelivery\Maps\Requires\RuleTarget.cs" />
     <Compile Include="..\ScriptDelivery\Maps\SubCandidate.cs" Link="ScriptDelivery\Maps\SubCandidate.cs" />
     <Compile Include="..\ScriptDelivery\Maps\ValuesAttribute.cs" Link="ScriptDelivery\Maps\ValuesAttribute.cs" />
+    <Compile Include="..\ScriptDelivery\Maps\Works\DeleteFile.cs" Link="ScriptDelivery\Maps\Works\DeleteFile.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Works\Download.cs" Link="ScriptDelivery\Maps\Works\Download.cs" />
     <Compile Include="..\ScriptDelivery\Maps\Works\Work.cs" Link="ScriptDelivery\Maps\Works\Work.cs" />
   </ItemGroup>
@@ -48,9 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ScriptDelivery\Files\" />
     <Folder Include="ScriptDelivery\Maps\Requires\" />
-    <Folder Include="ScriptDelivery\Maps\Works\" />
   </ItemGroup>
 
 </Project>
