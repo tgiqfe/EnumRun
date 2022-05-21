@@ -13,7 +13,6 @@ namespace ScriptDelivery.Files
     {
         private FileSystemWatcher _watcher = null;
         private bool _during = false;
-        private bool _reserve = false;
         private IStoredFileCollection _collection = null;
 
         public DirectoryWatcher(string targetPath, IStoredFileCollection collection)
@@ -41,35 +40,6 @@ namespace ScriptDelivery.Files
 
         private async void RecheckResource()
         {
-            //  変更後即再チェック。その後10秒待機した後にロック解除
-            //  ロック中にもう一回変更が発生した場合、ロック解除後に再チェック。
-            //  ロック解除待ちの間にさらにもう一回変更が発生した場合は即終了。
-            //  最大3スレッドが同時に稼働する可能性有り。
-            //
-            //  [問題発生]
-            //  変更イベントが発生した後、書き込みロックが完了していない間に再チェックスレッドを
-            //  開始してしまった場合、IOException
-            /*
-            if (_during || _reserve)
-            {
-                if (_reserve) { return; }
-                _reserve = true;
-
-                await Task.Delay(10000);
-                _reserve = false;
-            }
-
-            _during = true;
-
-            Item.Logger.Write(Logs.LogLevel.Info, null, "RecheckSource",
-                "Recheck => {0}", _collection.GetType().Name);
-            _collection.CheckSource();
-
-            await Task.Delay(10000);        //  Recheckした後の待機時間 ⇒ 10秒
-            _during = false;
-            */
-
-            //  [別アルゴリズムで実施]
             //  変更開始後にロック開始。10秒巻待機後に再チェック
             //  ロック中に変更があった場合は終了 (同時最大は2スレッドまで)
             //  IOException発生時、最初に戻る(ループさせる)

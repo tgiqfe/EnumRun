@@ -74,7 +74,7 @@ namespace ScriptDelivery
         /// <summary>
         /// ダウンロード対象ファイルのリスト
         /// </summary>
-        public static DownloadFileCollection DownloadFileCollection { get; set; }
+        public static DownloadHttpCollection DownloadFileCollection { get; set; }
 
         /// <summary>
         /// アプリケーションの現在のバージョン
