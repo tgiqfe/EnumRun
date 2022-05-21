@@ -12,7 +12,7 @@ using EnumRun.Lib;
 
 namespace EnumRun.ScriptDelivery
 {
-    internal class HttpDownloadManager
+    internal class HttpDownloader
     {
         private string _uri = null;
         private string _filesPath = null;
@@ -20,7 +20,7 @@ namespace EnumRun.ScriptDelivery
         private JsonSerializerOptions _options = null;
         private List<DownloadFile> _list = null;
 
-        public HttpDownloadManager(string uri, string filesPath, ProcessLogger logger)
+        public HttpDownloader(string uri, string filesPath, ProcessLogger logger)
         {
             this._uri = uri;
             this._filesPath = filesPath;
