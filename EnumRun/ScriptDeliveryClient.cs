@@ -24,8 +24,8 @@ namespace EnumRun
         private string _filesPath = null;
 
         private List<Mapping> _mappingList = null;
-        private ScriptDelivery.SmbDownloadManager _smbDownloadManager = null;
-        private ScriptDelivery.HttpDownloadManager _httpDownloadManager = null;
+        private ScriptDelivery.SmbDownloader _smbDownloader = null;
+        private ScriptDelivery.HttpDownloader _httpDownloader = null;
         private ScriptDelivery.DeleteManager _deleteManager = null;
 
         /// <summary>
@@ -58,11 +58,11 @@ namespace EnumRun
                 if (!string.IsNullOrEmpty(_uri))
                 {
                     this.Enabled = true;
-                    this._smbDownloadManager = new ScriptDelivery.SmbDownloadManager();
-                    this._httpDownloadManager = new ScriptDelivery.HttpDownloadManager(
+                    this._smbDownloader = new ScriptDelivery.SmbDownloader(_logger);
+                    this._httpDownloader = new ScriptDelivery.HttpDownloader(
                         _uri, _filesPath, _logger);
                     this._deleteManager = new ScriptDelivery.DeleteManager(
-                        setting.FilesPath, setting.ScriptDelivery.TrashPath);
+                        setting.FilesPath, setting.ScriptDelivery.TrashPath, _logger);
                 }
             }
         }
@@ -76,8 +76,8 @@ namespace EnumRun
                     DownloadMappingFile(client).Wait();
                     MapMathcingCheck();
 
-                    _smbDownloadManager.Process();
-                    _httpDownloadManager.Process(client);
+                    _smbDownloader.Process();
+                    _httpDownloader.Process(client);
                     _deleteManager.Process();
                 }
             }
@@ -157,26 +157,18 @@ namespace EnumRun
                     else if (download.Path.StartsWith("\\\\"))
                     {
                         //  Smbダウンロード用ファイル
-                        //  未実装
+                        _smbDownloader.Add(download.Path, download.Destination, download.UserName, download.Password, !download.GetKeep());
                     }
                     else
                     {
                         //  Htttpダウンロード用ファイル
-                        _httpDownloadManager.Add(download.Path, download.Destination, !download.GetKeep());
-                        /*
-                        _httpDownloadManager.DownloadList.Add(new DownloadFile()
-                        {
-                            Path = download.Path,
-                            DestinationPath = download.Destination,
-                            Overwrite = !download.GetKeep(),
-                        });
-                        */
+                        _httpDownloader.Add(download.Path, download.Destination, !download.GetKeep());
                     }
                 }
                 if (mapping.Work.Delete != null)
                 {
-                    _deleteManager.Targetlist.AddRange(mapping.Work.Delete.DeleteTarget);
-                    _deleteManager.ExcludeList.AddRange(mapping.Work.Delete.DeleteExclude);
+                    _deleteManager.AddTarget(mapping.Work.Delete.DeleteTarget);
+                    _deleteManager.AddExclude(mapping.Work.Delete.DeleteExclude);
                 }
             }
         }

@@ -50,7 +50,7 @@ namespace ScriptDelivery
             Item.MappingFileCollection = mappingFileCollection;
 
             //  ダウンロードリストを取得
-            var downloadFileCollection = new DownloadFileCollection(Item.Setting.FilesPath);
+            var downloadFileCollection = new DownloadHttpCollection(Item.Setting.FilesPath);
             _downloadFileWatcher = new DirectoryWatcher(Item.Setting.FilesPath, downloadFileCollection);
             Item.DownloadFileCollection = downloadFileCollection;
 

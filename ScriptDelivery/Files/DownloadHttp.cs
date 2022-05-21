@@ -9,7 +9,7 @@ namespace ScriptDelivery.Files
     /// ダウンロードファイルについての情報を格納
     /// サーバ側/クライアント側の両方で使用。
     /// </summary>
-    public class DownloadFile
+    public class DownloadHttp
     {
         [JsonIgnore]
         public string FullPath { get; set; }        //  サーバ側でのみ使用。対象ファイルへの絶対パス
@@ -21,8 +21,8 @@ namespace ScriptDelivery.Files
         public string DestinationPath { get; set; } //  クライアント側のファイルのダウンロード先ファイル名。フォルダー名指定は非対応
         public bool? Overwrite { get; set; }        //  クライアント側で上書き保存を許可するかどうか
 
-        public DownloadFile() { }
-        public DownloadFile(string basePath, string filePath)
+        public DownloadHttp() { }
+        public DownloadHttp(string basePath, string filePath)
         {
             this.FullPath = System.IO.Path.GetFullPath(filePath);
             this.Path = System.IO.Path.GetRelativePath(basePath, filePath);

@@ -12,15 +12,15 @@ using EnumRun.Lib;
 
 namespace EnumRun.ScriptDelivery
 {
-    internal class HttpDownloadManager
+    internal class HttpDownloader
     {
         private string _uri = null;
         private string _filesPath = null;
         private ProcessLogger _logger = null;
         private JsonSerializerOptions _options = null;
-        private List<DownloadFile> _list = null;
+        private List<DownloadHttp> _list = null;
 
-        public HttpDownloadManager(string uri, string filesPath, ProcessLogger logger)
+        public HttpDownloader(string uri, string filesPath, ProcessLogger logger)
         {
             this._uri = uri;
             this._filesPath = filesPath;
@@ -33,12 +33,12 @@ namespace EnumRun.ScriptDelivery
                 //WriteIndented = true,
                 //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
-            this._list = new List<DownloadFile>();
+            this._list = new List<DownloadHttp>();
         }
 
         public void Add(string path, string destination, bool? overwrite)
         {
-            _list.Add(new DownloadFile()
+            _list.Add(new DownloadHttp()
             {
                 Path = path,
                 DestinationPath = destination,
@@ -70,7 +70,7 @@ namespace EnumRun.ScriptDelivery
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    _list = JsonSerializer.Deserialize<List<DownloadFile>>(json);
+                    _list = JsonSerializer.Deserialize<List<DownloadHttp>>(json);
 
                     _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
                 }

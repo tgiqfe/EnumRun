@@ -23,9 +23,9 @@
   "MinLogLevel": "Info",
   "Ranges": {
     "StartupScript": "0-9",
-    "ShutdownScript": "11-29",
-    "LogonScript": "81-89",
-    "LogoffScript": "91-99"
+    "LogonScript": "11-29",
+    "LogoffScript": "81-89",
+    "ShutdownScript": "91-99"
   }
 }
 ```
@@ -40,9 +40,9 @@ setting:
   minLogLevel: Info
   ranges:
     StartupScript: 0-9
-    ShutdownScript: 11-29
-    LogonScript: 81-89
-    LogoffScript: 91-99
+    LogonScript: 11-29
+    LogoffScript: 81-89
+    ShutdownScript: 91-99
 ```
 
 </code-block>
@@ -54,9 +54,9 @@ RetentionPeriod: 10
 MinLogLevel: Info
 Ranges:
   StartupScript: 0-9
-  ShutdownScript: 11-29
-  LogonScript: 81-89
-  LogoffScript: 91-99
+  LogonScript: 11-29
+  LogoffScript: 81-89
+  ShutdownScript: 91-99
 ```
 
 </code-block>

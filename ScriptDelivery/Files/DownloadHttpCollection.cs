@@ -4,15 +4,15 @@ using ScriptDelivery.Lib;
 
 namespace ScriptDelivery.Files
 {
-    public class DownloadFileCollection : IStoredFileCollection
+    public class DownloadHttpCollection : IStoredFileCollection
     {
-        private List<DownloadFile> _list = null;
+        private List<DownloadHttp> _list = null;
 
         private string _baseDir = null;
 
-        public DownloadFileCollection() { }
+        public DownloadHttpCollection() { }
 
-        public DownloadFileCollection(string filesPath)
+        public DownloadHttpCollection(string filesPath)
         {
             _baseDir = filesPath;
             CheckSource();
@@ -20,12 +20,12 @@ namespace ScriptDelivery.Files
 
         public void CheckSource()
         {
-            _list = new List<DownloadFile>();
+            _list = new List<DownloadHttp>();
             if (Directory.Exists(_baseDir))
             {
                 foreach (string file in Directory.GetFiles(_baseDir, "*", SearchOption.AllDirectories))
                 {
-                    _list.Add(new DownloadFile(_baseDir, file));
+                    _list.Add(new DownloadHttp(_baseDir, file));
                 }
             }
 
@@ -38,16 +38,16 @@ namespace ScriptDelivery.Files
         /// </summary>
         /// <param name="reqList"></param>
         /// <returns></returns>
-        public List<DownloadFile> RequestToResponse(List<DownloadFile> reqList)
+        public List<DownloadHttp> RequestToResponse(List<DownloadHttp> reqList)
         {
-            var resList = new List<DownloadFile>();
-            foreach (DownloadFile reqFile in reqList)
+            var resList = new List<DownloadHttp>();
+            foreach (DownloadHttp reqFile in reqList)
             {
                 //  reqのDownloadFileインスタンスのPathが、_listのPathと一致している場合のチェック
                 var findFile = _list.FirstOrDefault(x => x.Path == reqFile.Path);
                 if (findFile != null)
                 {
-                    resList.Add(new DownloadFile()
+                    resList.Add(new DownloadHttp()
                     {
                         Path = findFile.Path,
                         LastWriteTime = findFile.LastWriteTime,
@@ -65,7 +65,7 @@ namespace ScriptDelivery.Files
                 {
                     findFiles.ToList().ForEach(x =>
                     {
-                        resList.Add(new DownloadFile()
+                        resList.Add(new DownloadHttp()
                         {
                             Path = x.Path,
                             LastWriteTime = x.LastWriteTime,
@@ -86,7 +86,7 @@ namespace ScriptDelivery.Files
                         ToList().
                         ForEach(x =>
                         {
-                            resList.Add(new DownloadFile()
+                            resList.Add(new DownloadHttp()
                             {
                                 Path = x.Path,
                                 LastWriteTime = x.LastWriteTime,
