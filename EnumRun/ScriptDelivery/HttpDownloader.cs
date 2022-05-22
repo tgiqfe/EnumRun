@@ -36,14 +36,33 @@ namespace EnumRun.ScriptDelivery
             this._list = new List<DownloadHttp>();
         }
 
-        public void Add(string path, string destination, bool? overwrite)
+        public void Add(string path, string destination, bool overwrite)
         {
-            _list.Add(new DownloadHttp()
+            if (CheckParam(path, destination))
             {
-                Path = path,
-                DestinationPath = destination,
-                Overwrite = overwrite,
-            });
+                _list.Add(new DownloadHttp()
+                {
+                    Path = path,
+                    DestinationPath = destination,
+                    Overwrite = overwrite,
+                });
+            }
+        }
+
+        private bool CheckParam(string path, string destination)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                _logger.Write(LogLevel.Attention, "Http download parameter is not enough.");
+                return false;
+            }
+            if (Path.IsPathRooted(path))
+            {
+                _logger.Write(LogLevel.Attention, "Http download parameter is incorrect, path is absolute path.");
+                return false;
+            }
+
+            return true;
         }
 
         public void Process(HttpClient client)
@@ -73,6 +92,10 @@ namespace EnumRun.ScriptDelivery
                     _list = JsonSerializer.Deserialize<List<DownloadHttp>>(json);
 
                     _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
+                    foreach (var downloadHttp in _list)
+                    {
+                        _logger.Write(downloadHttp.ToLog());
+                    }
                 }
                 else
                 {
@@ -100,7 +123,7 @@ namespace EnumRun.ScriptDelivery
                 if (File.Exists(dstPath) &&
                     (dlFile.CompareFile(dstPath) || !(dlFile.Overwrite ?? false)))
                 {
-                    _logger.Write(LogLevel.Info, null, "Skip download, already exist. => [{0}]", dstPath);
+                    _logger.Write(LogLevel.Info, null, "Skip Http download, already exist. => [{0}]", dstPath);
                     continue;
                 }
                 TargetDirectory.CreateParent(dstPath);

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json.Serialization;
+using System.Reflection;
 
 namespace ScriptDelivery.Files
 {
@@ -57,6 +58,15 @@ namespace ScriptDelivery.Files
         {
             return (File.GetLastWriteTime(path) == this.LastWriteTime) &&
                 (GetHash(path) == this.Hash);
+        }
+
+        public string ToLog()
+        {
+            var props = this.GetType().GetProperties(
+                BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance).
+                Where(x => x.Name != "FullPath");
+            return string.Join(", ",
+                props.Select(x => x.Name + " => " + x.GetValue(this)?.ToString()));
         }
     }
 }

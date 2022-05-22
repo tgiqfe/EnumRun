@@ -100,7 +100,6 @@ namespace EnumRun
                     this._mappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
                     _logger.Write(LogLevel.Info, "Success, download mapping object.");
 
-
                     var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version").Value.First();
                     var localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
                     if (appVersion != localVersion)
