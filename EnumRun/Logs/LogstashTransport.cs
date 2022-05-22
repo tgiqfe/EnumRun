@@ -10,6 +10,9 @@ using EnumRun.Lib.Infos;
 
 namespace EnumRun.Logs
 {
+    /// <summary>
+    /// Elasticsearch + Kibana + Logstash環境の、Logstashサーバへログを転送する
+    /// </summary>
     internal class LogstashTransport
     {
         public bool Enabled { get; set; }

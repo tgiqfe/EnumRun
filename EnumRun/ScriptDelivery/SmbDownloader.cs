@@ -26,15 +26,35 @@ namespace EnumRun.ScriptDelivery
 
         public void Add(string targetPath, string destination, string userName, string password, bool overwrite)
         {
-            _list.Add(new DownloadSmb()
+            if (CheckParam(targetPath, destination, userName, password))
             {
-                TargetPath = targetPath,
-                ShareName = SmbSession.GetShareName(targetPath),
-                Destination = destination,
-                UserName = userName,
-                Password = password,
-                Overwrite = overwrite,
-            });
+                _list.Add(new DownloadSmb()
+                {
+                    TargetPath = targetPath,
+                    ShareName = SmbSession.GetShareName(targetPath),
+                    Destination = destination,
+                    UserName = userName,
+                    Password = password,
+                    Overwrite = overwrite,
+                });
+            }
+        }
+
+        private bool CheckParam(string targetPath, string destination, string userName, string password)
+        {
+            if (string.IsNullOrEmpty(targetPath) ||
+                !(string.IsNullOrEmpty(userName) ^ string.IsNullOrEmpty(password)))
+            {
+                _logger.Write(LogLevel.Attention, "Smb download parameter is not enough.");
+                return false;
+            }
+            if (targetPath.Contains("*") || (destination?.Contains("*") ?? false))
+            {
+                _logger.Write(LogLevel.Attention, "Smb download parameter is incorrect, * is included.");
+                return false;
+            }
+
+            return true;
         }
 
         public void Process()
@@ -118,6 +138,7 @@ namespace EnumRun.ScriptDelivery
                 if (File.Exists(destinationFilePath) && !overwrite)
                 {
                     //  上書き禁止 終了
+                    _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destinationFilePath);
                     return;
                 }
                 if (!Directory.Exists(destination))
@@ -138,6 +159,7 @@ namespace EnumRun.ScriptDelivery
                 if (File.Exists(destinationFilePath) && !overwrite)
                 {
                     //  上書き禁止 終了
+                    _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destinationFilePath);
                     return;
                 }
                 File.Copy(targetPath, destinationFilePath, overwrite: true);
@@ -149,6 +171,7 @@ namespace EnumRun.ScriptDelivery
             if (File.Exists(destination) && !overwrite)
             {
                 //  上書き禁止 終了
+                _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destination);
                 return;
             }
             string parent = Path.GetDirectoryName(destination);
@@ -186,6 +209,7 @@ namespace EnumRun.ScriptDelivery
                 if (Directory.Exists(destinationChild) && !overwrite)
                 {
                     //  上書き禁止 終了
+                    _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destinationChild);
                     return;
                 }
                 robocopy(targetPath, destinationChild);
@@ -194,9 +218,10 @@ namespace EnumRun.ScriptDelivery
             }
 
             //  フォルダーをダウンロード
-            if (Directory.Exists(destination))
+            if (Directory.Exists(destination) && !overwrite)
             {
                 //  上書き禁止 終了
+                _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destination);
                 return;
             }
             _logger.Write(LogLevel.Debug, null, "Directory copy, to => {0}", destination);
