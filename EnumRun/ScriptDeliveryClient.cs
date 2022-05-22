@@ -59,8 +59,9 @@ namespace EnumRun
                 {
                     this.Enabled = true;
                     this._smbDownloader = new ScriptDelivery.SmbDownloader(_logger);
-                    this._httpDownloader = new ScriptDelivery.HttpDownloader(
-                        _uri, _filesPath, _logger);
+                    //this._httpDownloader = new ScriptDelivery.HttpDownloader(
+                    //    _uri, _filesPath, _logger);
+                    this._httpDownloader = new ScriptDelivery.HttpDownloader(_filesPath, _logger);
                     this._deleteManager = new ScriptDelivery.DeleteManager(
                         setting.FilesPath, setting.ScriptDelivery.TrashPath, _logger);
                 }
@@ -77,7 +78,8 @@ namespace EnumRun
                     MapMathcingCheck();
 
                     _smbDownloader.Process();
-                    _httpDownloader.Process(client);
+                    //_httpDownloader.Process(client);
+                    _httpDownloader.Process(client, _uri);
                     _deleteManager.Process();
                 }
             }

@@ -14,15 +14,16 @@ namespace EnumRun.ScriptDelivery
 {
     internal class HttpDownloader
     {
-        private string _uri = null;
+        //private string _uri = null;
         private string _filesPath = null;
         private ProcessLogger _logger = null;
         private JsonSerializerOptions _options = null;
         private List<DownloadHttp> _list = null;
 
-        public HttpDownloader(string uri, string filesPath, ProcessLogger logger)
+        //public HttpDownloader(string uri, string filesPath, ProcessLogger logger)
+        public HttpDownloader(string filesPath, ProcessLogger logger)
         {
-            this._uri = uri;
+            //this._uri = uri;
             this._filesPath = filesPath;
             this._logger = logger;
             this._options = new System.Text.Json.JsonSerializerOptions()
@@ -65,12 +66,12 @@ namespace EnumRun.ScriptDelivery
             return true;
         }
 
-        public void Process(HttpClient client)
+        public void Process(HttpClient client, string uri)
         {
             if (this._list.Count > 0)
             {
-                DownloadHttpSearch(client).Wait();
-                DownloadHttpStart(client).Wait();
+                DownloadHttpSearch(client, uri).Wait();
+                DownloadHttpStart(client, uri).Wait();
             }
         }
 
@@ -78,7 +79,7 @@ namespace EnumRun.ScriptDelivery
         /// Httpダウンロードする場合に、ScriptDeliveryサーバにダウンロード可能ファイルを問い合わせ
         /// </summary>
         /// <returns></returns>
-        private async Task DownloadHttpSearch(HttpClient client)
+        private async Task DownloadHttpSearch(HttpClient client, string _uri)
         {
             _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
 
@@ -108,7 +109,7 @@ namespace EnumRun.ScriptDelivery
         /// ScriptDeliveryサーバからファイルダウンロード
         /// </summary>
         /// <returns></returns>
-        private async Task DownloadHttpStart(HttpClient client)
+        private async Task DownloadHttpStart(HttpClient client, string _uri)
         {
             _logger.Write(LogLevel.Debug, "Start, Http download.");
 
