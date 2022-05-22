@@ -7,6 +7,9 @@ using System.Net;
 
 namespace EnumRun.Logs
 {
+    /// <summary>
+    /// ScriptDeliveryサーバへログを転送する
+    /// </summary>
     internal class ScriptDeliveryTransport : IDisposable
     {
         public bool Enabled { get; set; }
@@ -16,6 +19,8 @@ namespace EnumRun.Logs
         public ScriptDeliveryTransport() { }
 
 
+
+        
 
 
         public void Close()

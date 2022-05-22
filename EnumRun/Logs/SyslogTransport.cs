@@ -13,6 +13,9 @@ using EnumRun.Lib.Infos;
 
 namespace EnumRun.Logs
 {
+    /// <summary>
+    /// Syslogサーバへログを転送する
+    /// </summary>
     internal class SyslogTransport : IDisposable
     {
         public bool Enabled { get; set; }
