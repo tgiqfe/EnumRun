@@ -16,7 +16,8 @@ namespace EnumRun.Logs
         protected StreamWriter _writer = null;
         //protected ReaderWriterLock _rwLock = null;
 
-        protected ReaderWriterLockSlim _lockSlim = null;
+        //protected ReaderWriterLockSlim _lockSlim = null;
+        protected AsyncLock _lock = null;
 
         protected LogstashTransport _logstash = null;
         protected SyslogTransport _syslog = null;
@@ -50,8 +51,9 @@ namespace EnumRun.Logs
             {
                 //_rwLock.AcquireWriterLock(10000);
                 //_rwLock.ReleaseWriterLock();
-                _lockSlim.EnterWriteLock();
-                _lockSlim.ExitWriteLock();
+                //_lockSlim.EnterWriteLock();
+                //_lockSlim.ExitWriteLock();
+
             }
             catch { }
 

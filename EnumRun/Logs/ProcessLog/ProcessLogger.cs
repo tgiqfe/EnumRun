@@ -27,7 +27,8 @@ namespace EnumRun.Logs.ProcessLog
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             //_rwLock = new ReaderWriterLock();
-            _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+            //_lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+            _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -109,62 +110,67 @@ namespace EnumRun.Logs.ProcessLog
             try
             {
                 //_rwLock.AcquireWriterLock(1000);
-                _lockSlim.EnterWriteLock();
+                //_lockSlim.EnterWriteLock();
 
-                string json = body.GetJson();
-
-                //ファイル書き込み
-                await _writer.WriteLineAsync(json);
-
-                //  Logstash転送
-                //  事前の接続可否チェック(コンストラクタ実行時)で導通不可、あるいは、
-                //  ログ転送時のResponseでHTTPResult:200でない場合にローカルDBへ格納
-                if (_logstash != null)
+                using (await _lock.LockAsync())
                 {
-                    bool res = false;
-                    if (_logstash.Enabled)
+                    string json = body.GetJson();
+
+                    //ファイル書き込み
+                    await _writer.WriteLineAsync(json);
+
+                    //  Logstash転送
+                    //  事前の接続可否チェック(コンストラクタ実行時)で導通不可、あるいは、
+                    //  ログ転送時のResponseでHTTPResult:200でない場合にローカルDBへ格納
+                    if (_logstash != null)
                     {
+                        bool res = false;
                         if (_logstash.Enabled)
                         {
-                            res = await _logstash.SendAsync(json);
+                            if (_logstash.Enabled)
+                            {
+                                res = await _logstash.SendAsync(json);
+                            }
+                            if (!res)
+                            {
+                                _liteDB ??= GetLiteDB();
+                                _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
+                                _logstashCollection.Upsert(body);
+                            }
                         }
-                        if (!res)
+                    }
+
+                    //  Syslog転送
+                    //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
+                    if (_syslog != null)
+                    {
+                        if (_syslog.Enabled)
+                        {
+                            await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
+                        }
+                        else
                         {
                             _liteDB ??= GetLiteDB();
-                            _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
-                            _logstashCollection.Upsert(body);
+                            _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
+                            _syslogCollection.Upsert(body);
                         }
                     }
-                }
 
-                //  Syslog転送
-                //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
-                if (_syslog != null)
-                {
-                    if (_syslog.Enabled)
+                    //  DynamicLog転送
+                    if (_dynamicLog != null)
                     {
-                        await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
-                    }
-                    else
-                    {
-                        _liteDB ??= GetLiteDB();
-                        _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
-                        _syslogCollection.Upsert(body);
-                    }
-                }
-
-                //  DynamicLog転送
-                if (_dynamicLog != null)
-                {
-                    if (_dynamicLog.Enabled)
-                    {
-                        await _dynamicLog.SendAsync("ProcessLog", json);
-                    }
-                    else
-                    {
-                        _liteDB ??= GetLiteDB();
-                        _dynamicLogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_dynamicLog");
-                        _syslogCollection.Upsert(body);
+                        Console.WriteLine("tenso");
+                        if (_dynamicLog.Enabled)
+                        {
+                            await _dynamicLog.SendAsync("ProcessLog", json);
+                        }
+                        else
+                        {
+                            _liteDB ??= GetLiteDB();
+                            _dynamicLogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_dynamicLog");
+                            _syslogCollection.Upsert(body);
+                        }
+                        Console.WriteLine("tenso_owari");
                     }
                 }
             }
@@ -172,7 +178,9 @@ namespace EnumRun.Logs.ProcessLog
             finally
             {
                 //_rwLock.ReleaseWriterLock();
-                _lockSlim.ExitReadLock();
+
+                //_lockSlim.ExitWriteLock();
+                Console.WriteLine("kaijo");
             }
         }
 
@@ -184,8 +192,8 @@ namespace EnumRun.Logs.ProcessLog
             {
                 //_rwLock.AcquireWriterLock(10000);
                 //_rwLock.ReleaseWriterLock();
-                _lockSlim.EnterWriteLock();
-                _lockSlim.ExitWriteLock();
+                //_lockSlim.EnterWriteLock();
+                //_lockSlim.ExitWriteLock();
             }
             catch { }
 
