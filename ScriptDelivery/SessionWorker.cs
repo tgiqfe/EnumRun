@@ -70,6 +70,11 @@ namespace ScriptDelivery
             _downloadFileWatcher.Dispose();
 
             //  ログ出力終了
+            if(Item.DynamicLogger != null)
+            {
+                Item.DynamicLogger.Dispose();
+                Item.DynamicLogger = null;
+            }
             if (Item.Logger != null)
             {
                 Item.Logger.Dispose();

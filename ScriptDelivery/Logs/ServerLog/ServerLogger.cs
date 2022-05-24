@@ -14,7 +14,7 @@ namespace ScriptDelivery.Logs.ServerLog
         //private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ServerLogBody> _syslogCollection = null;
 
-        private bool writed = false;
+        private bool _writed = false;
 
         public ServerLogger(Setting setting)
         {
@@ -98,13 +98,13 @@ namespace ScriptDelivery.Logs.ServerLog
                     }
                     else
                     {
-                        _liteDB ??= GetLiteDB();
+                        _liteDB ??= GetLiteDB("ScriptDelivery");
                         _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
                         _syslogCollection.Upsert(body);
                     }
                 }
 
-                writed = true;
+                _writed = true;
             }
             catch { }
             finally
@@ -122,7 +122,7 @@ namespace ScriptDelivery.Logs.ServerLog
             while (true)
             {
                 await Task.Delay(60 * 1000);
-                if (writed)
+                if (_writed)
                 {
                     try
                     {
@@ -133,14 +133,16 @@ namespace ScriptDelivery.Logs.ServerLog
                     catch { }
                     finally
                     {
-                        writed = false;
+                        _writed = false;
                         _rwLock.ReleaseWriterLock();
                     }
                 }
             }
         }
 
-
+        /// <summary>
+        /// クローズ処理
+        /// </summary>
         public override void Close()
         {
             Write("終了");
