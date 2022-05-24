@@ -76,6 +76,7 @@ app.MapPost("/logs/{table}", (HttpContext context) =>
     }
     var table = context.Request.RouteValues["table"]?.ToString();
     Item.DynamicLogger.Write(table, context.Request.Body);
+    return "";
 });
 
 #endregion

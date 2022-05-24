@@ -299,7 +299,8 @@ namespace EnumRun.Lib
         /// <param name="valueKind"></param>
         /// <param name="noResolv"></param>
         /// <param name="compression"></param>
-        /// <param name="textBlock"></param>
+        /// <param name="textB
+        /// "></param>
         /// <returns></returns>
         public static string RegistryValueToString(RegistryKey regKey, string name, RegistryValueKind valueKind, bool noResolv, bool compress, int textBlock)
         {
