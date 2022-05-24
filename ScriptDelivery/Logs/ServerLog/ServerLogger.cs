@@ -1,11 +1,10 @@
 ﻿using ScriptDelivery.Lib;
 using System.Text;
 using LiteDB;
-using ScriptDelivery.Logs;
 using ScriptDelivery.Lib.Syslog;
 using System.Diagnostics;
 
-namespace ScriptDelivery.Logs
+namespace ScriptDelivery.Logs.ServerLog
 {
     internal class ServerLogger : LoggerBase
     {
@@ -91,7 +90,7 @@ namespace ScriptDelivery.Logs
                 await _writer.WriteLineAsync(json);
 
                 //  Syslog転送
-                if(_syslog != null)
+                if (_syslog != null)
                 {
                     if (_syslog.Enabled)
                     {

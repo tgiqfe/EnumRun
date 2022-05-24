@@ -3,8 +3,8 @@ using System.Text;
 using ScriptDelivery;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using ScriptDelivery.Files;
-using ScriptDelivery.Logs;
+using ScriptDelivery.Logs.DynamicLog;
+using ScriptDelivery.Logs.ServerLog;
 
 /// <summary>
 /// 静的パラメータを格納
@@ -62,23 +62,28 @@ namespace ScriptDelivery
         public static Setting Setting { get; set; }
 
         /// <summary>
+        /// アプリケーションの現在のバージョン
+        /// </summary>
+        public static string CurrentVersion { get; set; }
+
+        /// <summary>
         /// ログ出力用
         /// </summary>
         public static ServerLogger Logger { get; set; }
 
         /// <summary>
+        /// DynamicLog受信/出力用
+        /// </summary>
+        public static DynamicLogger DynamicLogger { get; set; }
+
+        /// <summary>
         /// Mappingのリストとそれらの操作
         /// </summary>
-        public static MappingFileCollection MappingFileCollection { get; set; }
+        public static Files.MappingFileCollection MappingFileCollection { get; set; }
 
         /// <summary>
         /// ダウンロード対象ファイルのリスト
         /// </summary>
-        public static DownloadHttpCollection DownloadFileCollection { get; set; }
-
-        /// <summary>
-        /// アプリケーションの現在のバージョン
-        /// </summary>
-        public static string CurrentVersion { get; set; }
+        public static Files.DownloadHttpCollection DownloadFileCollection { get; set; }
     }
 }

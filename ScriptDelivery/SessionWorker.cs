@@ -42,7 +42,10 @@ namespace ScriptDelivery
             Item.Setting.ChangePath();
 
             //  ログ出力開始
-            Item.Logger = new Logs.ServerLogger(Item.Setting);
+            Item.Logger = new Logs.ServerLog.ServerLogger(Item.Setting);
+
+            //  DynamicLog受信/出力開始
+            Item.DynamicLogger = new Logs.DynamicLog.DynamicLogger(Item.Setting);
 
             //  Mappingリストを取得
             var mappingFileCollection = new MappingFileCollection(Item.Setting.MapsPath);

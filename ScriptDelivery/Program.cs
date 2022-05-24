@@ -66,6 +66,18 @@ app.MapGet("/download/files", async (HttpContext context) =>
     await context.Response.SendFileAsync(filePath);
 });
 
+//  LogReceive—p
+app.MapPost("/logs/{table}", (HttpContext context) =>
+{
+    var syncIOFeature = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+    if (syncIOFeature != null)
+    {
+        syncIOFeature.AllowSynchronousIO = true;
+    }
+    var table = context.Request.RouteValues["table"]?.ToString();
+    Item.DynamicLogger.Write(table, context.Request.Body);
+});
+
 #endregion
 
 using (var worker = new SessionWorker())
