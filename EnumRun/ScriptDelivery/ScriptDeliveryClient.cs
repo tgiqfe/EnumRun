@@ -20,7 +20,7 @@ namespace EnumRun.ScriptDelivery
         //public bool Enabled { get; set; }
 
         //private string _uri = null;
-        
+
         private ScriptDeliverySession _session = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
         private string _filesPath = null;
@@ -91,19 +91,16 @@ namespace EnumRun.ScriptDelivery
         public void StartDownload()
         {
             //if (Enabled)
-            if(_session.EnableDelivery)
+            if (_session.EnableDelivery && _session.Enabled)
             {
-                using (var client = new HttpClient())
-                {
-                    DownloadMappingFile(client).Wait();
-                    MapMathcingCheck();
+                DownloadMappingFile(_session.Client).Wait();
+                MapMathcingCheck();
 
-                    _smbDownloader.Process();
-                    //_httpDownloader.Process(client);
-                    //_httpDownloader.Process(client, _uri);
-                    _httpDownloader.Process(client, _session.Uri);
-                    _deleteManager.Process();
-                }
+                _smbDownloader.Process();
+                //_httpDownloader.Process(client);
+                //_httpDownloader.Process(client, _uri);
+                _httpDownloader.Process(_session.Client, _session.Uri);
+                _deleteManager.Process();
             }
         }
 

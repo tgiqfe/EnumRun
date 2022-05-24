@@ -15,6 +15,7 @@ namespace EnumRun.Logs.SessionLog
 
         private ILiteCollection<SessionLogBody> _logstashCollection = null;
         private ILiteCollection<SessionLogBody> _syslogCollection = null;
+        private ILiteCollection<SessionLogBody> _dynamicLogCollection = null;
 
         public SessionLogger(EnumRunSetting setting)
         {
@@ -91,6 +92,21 @@ namespace EnumRun.Logs.SessionLog
                     {
                         _liteDB ??= GetLiteDB();
                         _syslogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
+                        _syslogCollection.Upsert(body);
+                    }
+                }
+
+                //  DynamicLog転送
+                if (_dynamicLog != null)
+                {
+                    if (_dynamicLog.Enabled)
+                    {
+                        await _dynamicLog.SendAsync(json);
+                    }
+                    else
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _dynamicLogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_dynamicLog");
                         _syslogCollection.Upsert(body);
                     }
                 }

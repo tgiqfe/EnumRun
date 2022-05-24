@@ -26,7 +26,7 @@ LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
 using (var sdSession = new ScriptDeliverySession(setting))
-using (var logger = new ProcessLogger(setting))
+using (var logger = new ProcessLogger(setting, sdSession))
 {
     logger.Write(setting.ToLog());
 

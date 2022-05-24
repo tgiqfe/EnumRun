@@ -4,6 +4,7 @@ using LiteDB;
 using EnumRun.Logs;
 using EnumRun.Lib.Syslog;
 using System.Diagnostics;
+using EnumRun.ScriptDelivery;
 
 namespace EnumRun.Logs.ProcessLog
 {
@@ -14,8 +15,9 @@ namespace EnumRun.Logs.ProcessLog
         private LogLevel _minLogLevel = LogLevel.Info;
         private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ProcessLogBody> _syslogCollection = null;
+        private ILiteCollection<ProcessLogBody> _dynamicLogCollection = null;
 
-        public ProcessLogger(EnumRunSetting setting)
+        public ProcessLogger(EnumRunSetting setting, ScriptDeliverySession session)
         {
             string logFileName =
                 $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log";
@@ -37,6 +39,10 @@ namespace EnumRun.Logs.ProcessLog
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
                 _syslog.ProcId = ProcessLogBody.TAG;
+            }
+            if (session.EnableLogTransport)
+            {
+                _dynamicLog = new DynamicLogTransport(session);
             }
 
             Write("開始");
@@ -131,7 +137,7 @@ namespace EnumRun.Logs.ProcessLog
 
                 //  Syslog転送
                 //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
-                if(_syslog != null)
+                if (_syslog != null)
                 {
                     if (_syslog.Enabled)
                     {
@@ -141,6 +147,21 @@ namespace EnumRun.Logs.ProcessLog
                     {
                         _liteDB ??= GetLiteDB();
                         _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
+                        _syslogCollection.Upsert(body);
+                    }
+                }
+
+                //  DynamicLog転送
+                if (_dynamicLog != null)
+                {
+                    if (_dynamicLog.Enabled)
+                    {
+                        await _dynamicLog.SendAsync(json);
+                    }
+                    else
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _dynamicLogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_dynamicLog");
                         _syslogCollection.Upsert(body);
                     }
                 }

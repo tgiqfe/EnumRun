@@ -13,6 +13,7 @@ namespace EnumRun.Logs.MachineLog
     {
         private ILiteCollection<MachineLogBody> _logstashCollection = null;
         private ILiteCollection<MachineLogBody> _syslogCollection = null;
+        private ILiteCollection<MachineLogBody> _dynamicLogCollection = null;
 
         public MachineLogger(EnumRunSetting setting)
         {
@@ -84,6 +85,21 @@ namespace EnumRun.Logs.MachineLog
                     {
                         _liteDB ??= GetLiteDB();
                         _syslogCollection ??= GetCollection<MachineLogBody>(MachineLogBody.TAG + "_syslog");
+                        _syslogCollection.Upsert(body);
+                    }
+                }
+
+                //  DynamicLog転送
+                if (_dynamicLog != null)
+                {
+                    if (_dynamicLog.Enabled)
+                    {
+                        await _dynamicLog.SendAsync(json);
+                    }
+                    else
+                    {
+                        _liteDB ??= GetLiteDB();
+                        _dynamicLogCollection ??= GetCollection<MachineLogBody>(MachineLogBody.TAG + "_dynamicLog");
                         _syslogCollection.Upsert(body);
                     }
                 }

@@ -10,6 +10,7 @@ namespace EnumRun.ScriptDelivery
 {
     internal class ScriptDeliverySession : IDisposable
     {
+        public bool Enabled { get; private set; }
         public string Uri { get; private set; }
         public HttpClient Client { get; private set; }
 
@@ -40,17 +41,13 @@ namespace EnumRun.ScriptDelivery
                         {
                             this.Uri = info.URI;
                             this.Client = new HttpClient();
+                            this.Enabled = true;
                             break;
                         }
                     }
                 }
             }
         }
-
-
-
-
-
 
         public void Close()
         {

@@ -17,6 +17,7 @@ namespace EnumRun.Logs
         protected ReaderWriterLock _rwLock = null;
         protected LogstashTransport _logstash = null;
         protected SyslogTransport _syslog = null;
+        protected DynamicLogTransport _dynamicLog = null;
         protected LiteDatabase _liteDB = null;
 
         protected virtual bool _logAppend { get; }
