@@ -11,8 +11,6 @@ namespace ScriptDelivery.Logs.DynamicLog
 
         private Dictionary<string, ILiteCollection<BsonDocument>> _collections = null;
 
-        private bool _writed = false;
-
         public DynamicLogger(Setting setting)
         {
             string logFileName =
@@ -69,6 +67,7 @@ namespace ScriptDelivery.Logs.DynamicLog
             }
         }
 
+        /*
         /// <summary>
         /// 定期的にログをファイルに書き込む
         /// </summary>
@@ -95,6 +94,7 @@ namespace ScriptDelivery.Logs.DynamicLog
                 }
             }
         }
+        */
 
         /// <summary>
         /// クローズ処理

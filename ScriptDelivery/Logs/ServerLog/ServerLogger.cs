@@ -14,7 +14,7 @@ namespace ScriptDelivery.Logs.ServerLog
         //private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ServerLogBody> _syslogCollection = null;
 
-        private bool _writed = false;
+        //private bool _writed = false;
 
         public ServerLogger(Setting setting)
         {
@@ -113,6 +113,7 @@ namespace ScriptDelivery.Logs.ServerLog
             }
         }
 
+        /*
         /// <summary>
         /// 定期的にログをファイルに書き込む
         /// </summary>
@@ -139,6 +140,7 @@ namespace ScriptDelivery.Logs.ServerLog
                 }
             }
         }
+        */
 
         /// <summary>
         /// クローズ処理
