@@ -30,12 +30,12 @@ namespace EnumRun.Logs
             this.Enabled = session.EnableLogTransport && session.Enabled;
         }
 
-        public async Task<bool> SendAsync(string json)
+        public async Task<bool> SendAsync(string table, string json)
         {
             //_logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
 
             using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
-            using (var response = await _session.Client.PostAsync(_session.Uri + "/download/list", content))
+            using (var response = await _session.Client.PostAsync(_session.Uri + $"/logs/{table}", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {

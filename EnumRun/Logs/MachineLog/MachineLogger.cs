@@ -94,7 +94,7 @@ namespace EnumRun.Logs.MachineLog
                 {
                     if (_dynamicLog.Enabled)
                     {
-                        await _dynamicLog.SendAsync(json);
+                        await _dynamicLog.SendAsync("MachineLog", json);
                     }
                     else
                     {

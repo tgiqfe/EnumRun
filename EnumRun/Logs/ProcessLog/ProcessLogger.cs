@@ -156,7 +156,7 @@ namespace EnumRun.Logs.ProcessLog
                 {
                     if (_dynamicLog.Enabled)
                     {
-                        await _dynamicLog.SendAsync(json);
+                        await _dynamicLog.SendAsync("ProcessLog", json);
                     }
                     else
                     {

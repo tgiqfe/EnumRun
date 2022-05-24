@@ -101,7 +101,7 @@ namespace EnumRun.Logs.SessionLog
                 {
                     if (_dynamicLog.Enabled)
                     {
-                        await _dynamicLog.SendAsync(json);
+                        await _dynamicLog.SendAsync("SEssionLog", json);
                     }
                     else
                     {
