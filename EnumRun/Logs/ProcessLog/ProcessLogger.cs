@@ -26,8 +26,6 @@ namespace EnumRun.Logs.ProcessLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            //_rwLock = new ReaderWriterLock();
-            //_lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
             _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
@@ -109,9 +107,6 @@ namespace EnumRun.Logs.ProcessLog
         {
             try
             {
-                //_rwLock.AcquireWriterLock(1000);
-                //_lockSlim.EnterWriteLock();
-
                 using (await _lock.LockAsync())
                 {
                     string json = body.GetJson();
@@ -159,7 +154,6 @@ namespace EnumRun.Logs.ProcessLog
                     //  DynamicLog転送
                     if (_dynamicLog != null)
                     {
-                        Console.WriteLine("tenso");
                         if (_dynamicLog.Enabled)
                         {
                             await _dynamicLog.SendAsync("ProcessLog", json);
@@ -168,38 +162,24 @@ namespace EnumRun.Logs.ProcessLog
                         {
                             _liteDB ??= GetLiteDB();
                             _dynamicLogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_dynamicLog");
-                            _syslogCollection.Upsert(body);
+                            _dynamicLogCollection.Upsert(body);
                         }
-                        Console.WriteLine("tenso_owari");
                     }
                 }
             }
             catch { }
-            finally
-            {
-                //_rwLock.ReleaseWriterLock();
-
-                //_lockSlim.ExitWriteLock();
-                Console.WriteLine("kaijo");
-            }
         }
 
         public override void Close()
         {
             Write("終了");
 
-            try
-            {
-                //_rwLock.AcquireWriterLock(10000);
-                //_rwLock.ReleaseWriterLock();
-                //_lockSlim.EnterWriteLock();
-                //_lockSlim.ExitWriteLock();
-            }
-            catch { }
-
+            base.Close();
+            /*
             if (_writer != null) { _writer.Dispose(); }
             if (_liteDB != null) { _liteDB.Dispose(); }
             if (_syslog != null) { _syslog.Dispose(); }
+            */
         }
     }
 }
