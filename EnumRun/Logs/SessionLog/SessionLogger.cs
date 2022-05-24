@@ -26,7 +26,8 @@ namespace EnumRun.Logs.SessionLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            //_rwLock = new ReaderWriterLock();
+            _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
             {
@@ -55,7 +56,8 @@ namespace EnumRun.Logs.SessionLog
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
+                //_rwLock.AcquireWriterLock(10000);
+                _lockSlim.EnterWriteLock();
 
                 string json = body.GetJson();
 
@@ -114,7 +116,8 @@ namespace EnumRun.Logs.SessionLog
             catch { }
             finally
             {
-                _rwLock.ReleaseWriterLock();
+                //_rwLock.ReleaseWriterLock();
+                _lockSlim.ExitReadLock();
             }
         }
     }

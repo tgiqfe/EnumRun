@@ -26,7 +26,8 @@ namespace EnumRun.Logs.ProcessLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            //_rwLock = new ReaderWriterLock();
+            _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -107,7 +108,8 @@ namespace EnumRun.Logs.ProcessLog
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
+                //_rwLock.AcquireWriterLock(1000);
+                _lockSlim.EnterWriteLock();
 
                 string json = body.GetJson();
 
@@ -169,7 +171,8 @@ namespace EnumRun.Logs.ProcessLog
             catch { }
             finally
             {
-                _rwLock.ReleaseWriterLock();
+                //_rwLock.ReleaseWriterLock();
+                _lockSlim.ExitReadLock();
             }
         }
 
@@ -179,8 +182,10 @@ namespace EnumRun.Logs.ProcessLog
 
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
+                //_rwLock.AcquireWriterLock(10000);
+                //_rwLock.ReleaseWriterLock();
+                _lockSlim.EnterWriteLock();
+                _lockSlim.ExitWriteLock();
             }
             catch { }
 
