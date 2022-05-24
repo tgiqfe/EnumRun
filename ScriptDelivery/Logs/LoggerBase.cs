@@ -20,14 +20,26 @@ namespace ScriptDelivery.Logs
         protected LiteDatabase _liteDB = null;
 
         protected virtual bool _logAppend { get; }
+        protected bool _writed = false;
 
         #region LiteDB methods
 
+        /*
         protected LiteDatabase GetLiteDB()
         {
             string dbPath = Path.Combine(
                 _logDir,
                 "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
+            return new LiteDatabase($"Filename={dbPath};Connection=shared");
+        }
+        */
+
+        protected LiteDatabase GetLiteDB(string preName)
+        {
+            string today = DateTime.Now.ToString("yyyyMMdd");
+            string dbPath = Path.Combine(
+                _logDir,
+                $"{preName}_{today}.db");
             return new LiteDatabase($"Filename={dbPath};Connection=shared");
         }
 
@@ -39,6 +51,33 @@ namespace ScriptDelivery.Logs
         }
 
         #endregion
+
+        /// <summary>
+        /// 定期的にログをファイルに書き込む
+        /// </summary>
+        /// <param name="logPath"></param>
+        protected async void WriteInFile(string logPath)
+        {
+            while (true)
+            {
+                await Task.Delay(60 * 1000);
+                if (_writed)
+                {
+                    try
+                    {
+                        _rwLock.AcquireWriterLock(10000);
+                        _writer.Dispose();
+                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
+                    }
+                    catch { }
+                    finally
+                    {
+                        _writed = false;
+                        _rwLock.ReleaseWriterLock();
+                    }
+                }
+            }
+        }
 
         public virtual void Close()
         {

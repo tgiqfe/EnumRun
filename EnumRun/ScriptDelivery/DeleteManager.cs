@@ -153,7 +153,7 @@ namespace EnumRun.ScriptDelivery
             {
                 try
                 {
-                    if (_trashPath == null)
+                    if (string.IsNullOrEmpty(_trashPath))
                     {
                         Directory.Delete(delTarget, true);
 
@@ -184,7 +184,7 @@ namespace EnumRun.ScriptDelivery
                 {
                     try
                     {
-                        if (_trashPath == null)
+                        if (string.IsNullOrEmpty(_trashPath))
                         {
                             File.Delete(delTarget);
                             _logger.Write(Logs.LogLevel.Info, null, "Delete file, [{0}]", delTarget);

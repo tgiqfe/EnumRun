@@ -14,13 +14,11 @@ namespace EnumRun.ScriptDelivery
 {
     internal class HttpDownloader
     {
-        //private string _uri = null;
         private string _filesPath = null;
         private ProcessLogger _logger = null;
         private JsonSerializerOptions _options = null;
         private List<DownloadHttp> _list = null;
 
-        //public HttpDownloader(string uri, string filesPath, ProcessLogger logger)
         public HttpDownloader(string filesPath, ProcessLogger logger)
         {
             //this._uri = uri;

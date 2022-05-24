@@ -1,11 +1,10 @@
 ﻿using ScriptDelivery.Lib;
 using System.Text;
 using LiteDB;
-using ScriptDelivery.Logs;
 using ScriptDelivery.Lib.Syslog;
 using System.Diagnostics;
 
-namespace ScriptDelivery.Logs
+namespace ScriptDelivery.Logs.ServerLog
 {
     internal class ServerLogger : LoggerBase
     {
@@ -15,7 +14,7 @@ namespace ScriptDelivery.Logs
         //private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ServerLogBody> _syslogCollection = null;
 
-        private bool writed = false;
+        //private bool _writed = false;
 
         public ServerLogger(Setting setting)
         {
@@ -91,7 +90,7 @@ namespace ScriptDelivery.Logs
                 await _writer.WriteLineAsync(json);
 
                 //  Syslog転送
-                if(_syslog != null)
+                if (_syslog != null)
                 {
                     if (_syslog.Enabled)
                     {
@@ -99,13 +98,13 @@ namespace ScriptDelivery.Logs
                     }
                     else
                     {
-                        _liteDB ??= GetLiteDB();
+                        _liteDB ??= GetLiteDB("ScriptDelivery");
                         _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
                         _syslogCollection.Upsert(body);
                     }
                 }
 
-                writed = true;
+                _writed = true;
             }
             catch { }
             finally
@@ -114,6 +113,7 @@ namespace ScriptDelivery.Logs
             }
         }
 
+        /*
         /// <summary>
         /// 定期的にログをファイルに書き込む
         /// </summary>
@@ -123,7 +123,7 @@ namespace ScriptDelivery.Logs
             while (true)
             {
                 await Task.Delay(60 * 1000);
-                if (writed)
+                if (_writed)
                 {
                     try
                     {
@@ -134,14 +134,17 @@ namespace ScriptDelivery.Logs
                     catch { }
                     finally
                     {
-                        writed = false;
+                        _writed = false;
                         _rwLock.ReleaseWriterLock();
                     }
                 }
             }
         }
+        */
 
-
+        /// <summary>
+        /// クローズ処理
+        /// </summary>
         public override void Close()
         {
             Write("終了");

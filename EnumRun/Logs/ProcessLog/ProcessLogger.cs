@@ -4,6 +4,7 @@ using LiteDB;
 using EnumRun.Logs;
 using EnumRun.Lib.Syslog;
 using System.Diagnostics;
+using EnumRun.ScriptDelivery;
 
 namespace EnumRun.Logs.ProcessLog
 {
@@ -14,8 +15,9 @@ namespace EnumRun.Logs.ProcessLog
         private LogLevel _minLogLevel = LogLevel.Info;
         private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ProcessLogBody> _syslogCollection = null;
+        private ILiteCollection<ProcessLogBody> _dynamicLogCollection = null;
 
-        public ProcessLogger(EnumRunSetting setting)
+        public ProcessLogger(EnumRunSetting setting, ScriptDeliverySession session)
         {
             string logFileName =
                 $"{Item.ProcessName}_{DateTime.Now.ToString("yyyyMMdd")}.log";
@@ -24,7 +26,7 @@ namespace EnumRun.Logs.ProcessLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
@@ -37,6 +39,10 @@ namespace EnumRun.Logs.ProcessLog
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
                 _syslog.ProcId = ProcessLogBody.TAG;
+            }
+            if (session.EnableLogTransport)
+            {
+                _dynamicLog = new DynamicLogTransport(session);
             }
 
             Write("開始");
@@ -101,71 +107,79 @@ namespace EnumRun.Logs.ProcessLog
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-
-                string json = body.GetJson();
-
-                //ファイル書き込み
-                await _writer.WriteLineAsync(json);
-
-                //  Logstash転送
-                //  事前の接続可否チェック(コンストラクタ実行時)で導通不可、あるいは、
-                //  ログ転送時のResponseでHTTPResult:200でない場合にローカルDBへ格納
-                if (_logstash != null)
+                using (await _lock.LockAsync())
                 {
-                    bool res = false;
-                    if (_logstash.Enabled)
+                    string json = body.GetJson();
+
+                    //ファイル書き込み
+                    await _writer.WriteLineAsync(json);
+
+                    //  Logstash転送
+                    //  事前の接続可否チェック(コンストラクタ実行時)で導通不可、あるいは、
+                    //  ログ転送時のResponseでHTTPResult:200でない場合にローカルDBへ格納
+                    if (_logstash != null)
                     {
+                        bool res = false;
                         if (_logstash.Enabled)
                         {
-                            res = await _logstash.SendAsync(json);
+                            if (_logstash.Enabled)
+                            {
+                                res = await _logstash.SendAsync(json);
+                            }
+                            if (!res)
+                            {
+                                _liteDB ??= GetLiteDB();
+                                _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
+                                _logstashCollection.Upsert(body);
+                            }
                         }
-                        if (!res)
+                    }
+
+                    //  Syslog転送
+                    //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
+                    if (_syslog != null)
+                    {
+                        if (_syslog.Enabled)
+                        {
+                            await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
+                        }
+                        else
                         {
                             _liteDB ??= GetLiteDB();
-                            _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
-                            _logstashCollection.Upsert(body);
+                            _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
+                            _syslogCollection.Upsert(body);
                         }
                     }
-                }
 
-                //  Syslog転送
-                //  事前の接続可否チェック(コンストラクタ実行時)で導通不可の場合にローカルDBへ格納
-                if(_syslog != null)
-                {
-                    if (_syslog.Enabled)
+                    //  DynamicLog転送
+                    if (_dynamicLog != null)
                     {
-                        await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
-                    }
-                    else
-                    {
-                        _liteDB ??= GetLiteDB();
-                        _syslogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_syslog");
-                        _syslogCollection.Upsert(body);
+                        if (_dynamicLog.Enabled)
+                        {
+                            await _dynamicLog.SendAsync("ProcessLog", json);
+                        }
+                        else
+                        {
+                            _liteDB ??= GetLiteDB();
+                            _dynamicLogCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_dynamicLog");
+                            _dynamicLogCollection.Upsert(body);
+                        }
                     }
                 }
             }
             catch { }
-            finally
-            {
-                _rwLock.ReleaseWriterLock();
-            }
         }
 
         public override void Close()
         {
             Write("終了");
 
-            try
-            {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
-            }
-            catch { }
-
+            base.Close();
+            /*
             if (_writer != null) { _writer.Dispose(); }
             if (_liteDB != null) { _liteDB.Dispose(); }
             if (_syslog != null) { _syslog.Dispose(); }
+            */
         }
     }
 }
