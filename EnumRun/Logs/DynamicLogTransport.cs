@@ -13,10 +13,6 @@ namespace EnumRun.Logs
 
         HttpClient _client = null;
 
-        public DynamicLogTransport(string uri)
-        {
-
-        }
 
 
 
