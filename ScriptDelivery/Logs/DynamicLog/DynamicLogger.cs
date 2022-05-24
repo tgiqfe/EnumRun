@@ -20,7 +20,8 @@ namespace ScriptDelivery.Logs.DynamicLog
 
             _logDir = setting.GetCynamicLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            //_rwLock = new ReaderWriterLock();
+            _lock = new AsyncLock();
 
             _liteDB = GetLiteDB("DynamicLog");
             _collections = new Dictionary<string, ILiteCollection<BsonDocument>>();
@@ -33,37 +34,41 @@ namespace ScriptDelivery.Logs.DynamicLog
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-                
-                if (string.IsNullOrEmpty(table))
-                {
-                    return;
-                }
+                //_rwLock.AcquireWriterLock(10000);
 
-                ILiteCollection<BsonDocument> collection = null;
-                try
+                using (await _lock.LockAsync())
                 {
-                    collection = _collections[table];
-                }
-                catch
-                {
-                    collection = _liteDB.GetCollection(table);
-                    _collections[table] = collection;
-                }
-                using (var sr = new StreamReader(bodyStream))
-                {
-                    var bsonValue = JsonSerializer.Deserialize(sr);
-                    BsonDocument doc = bsonValue as BsonDocument;
-                    collection.Insert(doc);
+                    if (string.IsNullOrEmpty(table))
+                    {
+                        return;
+                    }
 
-                    await _writer.WriteLineAsync(doc);
+                    ILiteCollection<BsonDocument> collection = null;
+                    try
+                    {
+                        collection = _collections[table];
+                    }
+                    catch
+                    {
+                        collection = _liteDB.GetCollection(table);
+                        _collections[table] = collection;
+                    }
+                    using (var sr = new StreamReader(bodyStream))
+                    {
+                        var bsonValue = JsonSerializer.Deserialize(sr);
+                        BsonDocument doc = bsonValue as BsonDocument;
+                        collection.Insert(doc);
+
+                        await _writer.WriteLineAsync(doc.ToString());
+                    }
+
                     _writed = true;
                 }
             }
             catch { }
             finally
             {
-                _rwLock.ReleaseWriterLock();
+                //_rwLock.ReleaseWriterLock();
             }
         }
 

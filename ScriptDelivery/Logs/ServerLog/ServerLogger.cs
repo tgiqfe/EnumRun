@@ -25,7 +25,8 @@ namespace ScriptDelivery.Logs.ServerLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            //_rwLock = new ReaderWriterLock();
+            _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             if (!string.IsNullOrEmpty(setting.Syslog?.Server))
@@ -75,41 +76,43 @@ namespace ScriptDelivery.Logs.ServerLog
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-
-                //  コンソール出力
-                Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
-                    body.Date,
-                    body.Level,
-                    body.Client ?? "-",
-                    body.Title ?? "-",
-                    body.Message);
-
-                //  ファイル書き込み
-                string json = body.GetJson();
-                await _writer.WriteLineAsync(json);
-
-                //  Syslog転送
-                if (_syslog != null)
+                //_rwLock.AcquireWriterLock(10000);
+                using (await _lock.LockAsync())
                 {
-                    if (_syslog.Enabled)
-                    {
-                        await _syslog.SendAsync(body.Level, body.Title, body.Message);
-                    }
-                    else
-                    {
-                        _liteDB ??= GetLiteDB("ScriptDelivery");
-                        _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
-                        _syslogCollection.Upsert(body);
-                    }
-                }
+                    //  コンソール出力
+                    Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
+                        body.Date,
+                        body.Level,
+                        body.Client ?? "-",
+                        body.Title ?? "-",
+                        body.Message);
 
-                _writed = true;
+                    //  ファイル書き込み
+                    string json = body.GetJson();
+                    await _writer.WriteLineAsync(json);
+
+                    //  Syslog転送
+                    if (_syslog != null)
+                    {
+                        if (_syslog.Enabled)
+                        {
+                            await _syslog.SendAsync(body.Level, body.Title, body.Message);
+                        }
+                        else
+                        {
+                            _liteDB ??= GetLiteDB("ScriptDelivery");
+                            _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
+                            _syslogCollection.Upsert(body);
+                        }
+                    }
+
+                    _writed = true;
+                }
             }
             catch { }
             finally
             {
-                _rwLock.ReleaseWriterLock();
+                //_rwLock.ReleaseWriterLock();
             }
         }
 
@@ -149,12 +152,16 @@ namespace ScriptDelivery.Logs.ServerLog
         {
             Write("終了");
 
+            /*
             try
             {
                 _rwLock.AcquireWriterLock(10000);
                 _rwLock.ReleaseWriterLock();
             }
             catch { }
+            */
+            base.Close();
+
 
             if (_writer != null) { _writer.Dispose(); }
             if (_liteDB != null) { _liteDB.Dispose(); }

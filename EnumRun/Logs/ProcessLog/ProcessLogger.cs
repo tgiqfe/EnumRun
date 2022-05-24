@@ -170,16 +170,27 @@ namespace EnumRun.Logs.ProcessLog
             catch { }
         }
 
-        public override void Close()
+        public override async Task CloseAsync()
         {
+            Console.WriteLine("close logger");
             Write("終了");
 
+            using (await _lock.LockAsync())
+            {
+                Close();
+            }
+        }
+
+        /*
+        public override void Close()
+        {
             base.Close();
-            /*
+            
             if (_writer != null) { _writer.Dispose(); }
             if (_liteDB != null) { _liteDB.Dispose(); }
             if (_syslog != null) { _syslog.Dispose(); }
-            */
+            
         }
+        */
     }
 }
