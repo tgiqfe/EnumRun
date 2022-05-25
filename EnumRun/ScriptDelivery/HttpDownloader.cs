@@ -37,7 +37,7 @@ namespace EnumRun.ScriptDelivery
 
         public void Add(string path, string destination, bool overwrite)
         {
-            if (CheckParam(path, destination))
+            if (CheckParam(path))
             {
                 _list.Add(new DownloadHttp()
                 {
@@ -48,23 +48,25 @@ namespace EnumRun.ScriptDelivery
             }
         }
 
-        private bool CheckParam(string path, string destination)
+        private bool CheckParam(string path)
         {
+            string logTitle = "CheckParam";
+
             if (string.IsNullOrEmpty(path))
             {
-                _logger.Write(LogLevel.Attention, "Http download parameter is not enough.");
+                _logger.Write(LogLevel.Attention, logTitle, "Http download parameter is not enough.");
                 return false;
             }
             if (Path.IsPathRooted(path))
             {
-                _logger.Write(LogLevel.Attention, "Http download parameter is incorrect, path is absolute path.");
+                _logger.Write(LogLevel.Attention, logTitle, "Http download parameter is incorrect, path is absolute path.");
                 return false;
             }
 
             return true;
         }
 
-        public void Process(HttpClient client, string uri)
+        public void DownloadProcess(HttpClient client, string uri)
         {
             if (this._list.Count > 0)
             {
@@ -79,7 +81,8 @@ namespace EnumRun.ScriptDelivery
         /// <returns></returns>
         private async Task DownloadHttpSearch(HttpClient client, string _uri)
         {
-            _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
+            string logTitle = "DownloadHttpSearch";
+            _logger.Write(LogLevel.Debug, logTitle, "Search, download file from ScriptDelivery server.");
 
             using (var content = new StringContent(
                  JsonSerializer.Serialize(_list, _options), Encoding.UTF8, "application/json"))
@@ -90,7 +93,7 @@ namespace EnumRun.ScriptDelivery
                     string json = await response.Content.ReadAsStringAsync();
                     _list = JsonSerializer.Deserialize<List<DownloadHttp>>(json);
 
-                    _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
+                    _logger.Write(LogLevel.Info, logTitle, "Success, download DownloadFile list object");
                     foreach (var downloadHttp in _list)
                     {
                         _logger.Write(downloadHttp.ToLog());
@@ -98,7 +101,7 @@ namespace EnumRun.ScriptDelivery
                 }
                 else
                 {
-                    _logger.Write(LogLevel.Error, "Failed, download DownloadFile list object");
+                    _logger.Write(LogLevel.Error, logTitle, "Failed, download DownloadFile list object");
                 }
             }
         }
@@ -109,7 +112,8 @@ namespace EnumRun.ScriptDelivery
         /// <returns></returns>
         private async Task DownloadHttpStart(HttpClient client, string _uri)
         {
-            _logger.Write(LogLevel.Debug, "Start, Http download.");
+            string logTitle = "DownloadHttpStart";
+            _logger.Write(LogLevel.Debug, logTitle, "Start, Http download.");
 
             foreach (var dlFile in _list)
             {
@@ -122,7 +126,7 @@ namespace EnumRun.ScriptDelivery
                 if (File.Exists(dstPath) &&
                     (dlFile.CompareFile(dstPath) || !(dlFile.Overwrite ?? false)))
                 {
-                    _logger.Write(LogLevel.Info, null, "Skip Http download, already exist. => [{0}]", dstPath);
+                    _logger.Write(LogLevel.Info, logTitle, "Skip Http download, already exist. => [{0}]", dstPath);
                     continue;
                 }
                 TargetDirectory.CreateParent(dstPath);
@@ -142,11 +146,11 @@ namespace EnumRun.ScriptDelivery
                             stream.CopyTo(fs);
                         }
                         File.SetLastWriteTime(dstPath, dlFile.LastWriteTime);
-                        _logger.Write(LogLevel.Info, null, "Success, file download. [{0}]", dstPath);
+                        _logger.Write(LogLevel.Info, logTitle, "Success, file download. [{0}]", dstPath);
                     }
                     else
                     {
-                        _logger.Write(LogLevel.Info, null, "Failed, file download. [{0}]", dstPath);
+                        _logger.Write(LogLevel.Info, logTitle, "Failed, file download. [{0}]", dstPath);
                     }
                 }
             }

@@ -31,6 +31,8 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
 
         public override bool IsMatch(RuleMatch ruleMatch)
         {
+            string logTitle = "IsMatch";
+
             bool ret = ruleMatch switch
             {
                 RuleMatch.Equal => EqualMatch(),
@@ -39,7 +41,9 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
                 _ => false,
             };
 
-            _logger.Write(ret ? LogLevel.Debug : LogLevel.Attention, $"MatchType => {ruleMatch}, Match => {ret}");
+            _logger.Write(ret ? LogLevel.Debug : LogLevel.Attention, 
+                logTitle,
+                $"MatchType => {ruleMatch}, Match => {ret}");
 
             return ret;
         }
