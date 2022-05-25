@@ -3,7 +3,7 @@ using System.Text;
 using ScriptDelivery;
 using ScriptDelivery.Files;
 
-bool debug = true;
+bool debug = false;
 if (debug)
 {
     var sampleMap = ScriptDelivery.Maps.MappingGenerator.Deserialize("bin\\sample01.txt");

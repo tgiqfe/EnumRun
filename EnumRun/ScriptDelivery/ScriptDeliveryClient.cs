@@ -17,10 +17,6 @@ namespace EnumRun.ScriptDelivery
 {
     internal class ScriptDeliveryClient
     {
-        //public bool Enabled { get; set; }
-
-        //private string _uri = null;
-
         private ScriptDeliverySession _session = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
         private string _filesPath = null;
@@ -33,45 +29,6 @@ namespace EnumRun.ScriptDelivery
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /*
-        public ScriptDeliveryClient(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
-        {
-            if (setting.ScriptDelivery != null &&
-                (setting.ScriptDelivery.Process?.Equals(Item.ProcessName, StringComparison.OrdinalIgnoreCase) ?? false))
-            {
-                //  指定サーバの候補からランダムに選択
-                var random = new Random();
-                string[] array = setting.ScriptDelivery.Server.OrderBy(x => random.Next()).ToArray();
-                foreach (var sv in array)
-                {
-                    var info = new ServerInfo(sv, 5000, "http");
-                    var connect = new TcpConnect(info.Server, info.Port);
-                    if (connect.TcpConnectSuccess)
-                    {
-                        _uri = info.URI;
-                        break;
-                    }
-                }
-
-                _logger = logger;
-                _filesPath = setting.GetFilesPath();
-
-                _logger.Write(LogLevel.Info, null, "Connect server => {0}", _uri);
-
-                if (!string.IsNullOrEmpty(_uri))
-                {
-                    Enabled = true;
-                    _smbDownloader = new SmbDownloader(_logger);
-                    //this._httpDownloader = new ScriptDelivery.HttpDownloader(
-                    //    _uri, _filesPath, _logger);
-                    _httpDownloader = new HttpDownloader(_filesPath, _logger);
-                    _deleteManager = new DeleteManager(
-                        setting.FilesPath, setting.ScriptDelivery.TrashPath, _logger);
-                }
-            }
-        }
-        */
-
         public ScriptDeliveryClient(ScriptDeliverySession session, string filesPath, string logsPath, string trashPath, Logs.ProcessLog.ProcessLogger logger)
         {
             this._session = session;
@@ -90,20 +47,16 @@ namespace EnumRun.ScriptDelivery
 
         public void StartDownload()
         {
-            //if (Enabled)
             if (_session.EnableDelivery && _session.Enabled)
             {
                 DownloadMappingFile(_session.Client).Wait();
                 MapMathcingCheck();
 
                 _smbDownloader.Process();
-                //_httpDownloader.Process(client);
-                //_httpDownloader.Process(client, _uri);
                 _httpDownloader.Process(_session.Client, _session.Uri);
                 _deleteManager.Process();
             }
         }
-
 
         /// <summary>
         /// ScriptDeliveryサーバからMappingファイルをダウンロード
