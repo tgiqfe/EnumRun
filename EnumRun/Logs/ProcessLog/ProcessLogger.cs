@@ -177,7 +177,7 @@ namespace EnumRun.Logs.ProcessLog
 
             using (await _lock.LockAsync())
             {
-                Close();
+                base.Close();
             }
         }
 

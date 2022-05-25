@@ -96,7 +96,7 @@ namespace ScriptDelivery
                 ExpandEnvironment(this.LogsPath);
         }
 
-        public string GetCynamicLogsPath()
+        public string GetDynamicLogsPath()
         {
             return string.IsNullOrEmpty(this.DynamicLogsPath) ?
                 Path.Combine(Item.ExecDirectoryPath, "DynamicLogs") :

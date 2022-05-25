@@ -15,12 +15,11 @@ namespace ScriptDelivery.Logs.DynamicLog
         {
             string logFileName =
                 $"DynamicLog_{DateTime.Now.ToString("yyyyMMdd")}.log";
-            string logPath = Path.Combine(setting.GetCynamicLogsPath(), logFileName);
+            string logPath = Path.Combine(setting.GetDynamicLogsPath(), logFileName);
             TargetDirectory.CreateParent(logPath);
 
-            _logDir = setting.GetCynamicLogsPath();
+            _logDir = setting.GetDynamicLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            //_rwLock = new ReaderWriterLock();
             _lock = new AsyncLock();
 
             _liteDB = GetLiteDB("DynamicLog");
@@ -34,8 +33,6 @@ namespace ScriptDelivery.Logs.DynamicLog
         {
             try
             {
-                //_rwLock.AcquireWriterLock(10000);
-
                 using (await _lock.LockAsync())
                 {
                     if (string.IsNullOrEmpty(table))
@@ -66,47 +63,6 @@ namespace ScriptDelivery.Logs.DynamicLog
                 }
             }
             catch { }
-            finally
-            {
-                //_rwLock.ReleaseWriterLock();
-            }
-        }
-
-        /*
-        /// <summary>
-        /// 定期的にログをファイルに書き込む
-        /// </summary>
-        /// <param name="logPath"></param>
-        private async void WriteInFile(string logPath)
-        {
-            while (true)
-            {
-                await Task.Delay(60 * 1000);
-                if (_writed)
-                {
-                    try
-                    {
-                        _rwLock.AcquireWriterLock(10000);
-                        _writer.Dispose();
-                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-                    }
-                    catch { }
-                    finally
-                    {
-                        _writed = false;
-                        _rwLock.ReleaseWriterLock();
-                    }
-                }
-            }
-        }
-        */
-
-        /// <summary>
-        /// クローズ処理
-        /// </summary>
-        public override void Close()
-        {
-            base.Close();
         }
     }
 }

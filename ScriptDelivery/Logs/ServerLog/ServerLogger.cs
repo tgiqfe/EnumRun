@@ -14,8 +14,6 @@ namespace ScriptDelivery.Logs.ServerLog
         //private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ServerLogBody> _syslogCollection = null;
 
-        //private bool _writed = false;
-
         public ServerLogger(Setting setting)
         {
             string logFileName =
@@ -116,56 +114,19 @@ namespace ScriptDelivery.Logs.ServerLog
             }
         }
 
-        /*
-        /// <summary>
-        /// 定期的にログをファイルに書き込む
-        /// </summary>
-        /// <param name="logPath"></param>
-        private async void WriteInFile(string logPath)
-        {
-            while (true)
-            {
-                await Task.Delay(60 * 1000);
-                if (_writed)
-                {
-                    try
-                    {
-                        _rwLock.AcquireWriterLock(10000);
-                        _writer.Dispose();
-                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-                    }
-                    catch { }
-                    finally
-                    {
-                        _writed = false;
-                        _rwLock.ReleaseWriterLock();
-                    }
-                }
-            }
-        }
-        */
-
         /// <summary>
         /// クローズ処理
         /// </summary>
-        public override void Close()
+        /// <returns></returns>
+        public override async Task CloseAsync()
         {
+            Console.WriteLine("close logger");
             Write("終了");
 
-            /*
-            try
+            using (await _lock.LockAsync())
             {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
+                base.Close();
             }
-            catch { }
-            */
-            base.Close();
-
-
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
         }
     }
 }

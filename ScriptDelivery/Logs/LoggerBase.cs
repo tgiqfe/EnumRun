@@ -57,7 +57,7 @@ namespace ScriptDelivery.Logs
         /// 定期的にログをファイルに書き込む
         /// </summary>
         /// <param name="logPath"></param>
-        protected async void WriteInFile(string logPath)
+        protected virtual async void WriteInFile(string logPath)
         {
             while (true)
             {
@@ -66,7 +66,6 @@ namespace ScriptDelivery.Logs
                 {
                     try
                     {
-                        //_rwLock.AcquireWriterLock(10000);
                         using (await _lock.LockAsync())
                         {
                             _writer.Dispose();
@@ -75,10 +74,6 @@ namespace ScriptDelivery.Logs
                         }
                     }
                     catch { }
-                    finally
-                    {
-                        //_rwLock.ReleaseWriterLock();
-                    }
                 }
             }
         }
