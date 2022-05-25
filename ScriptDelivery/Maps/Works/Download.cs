@@ -3,19 +3,19 @@ namespace ScriptDelivery.Maps.Works
 {
     internal class Download
     {
-        [YamlDotNet.Serialization.YamlMember(Alias = "path")]
+        [System.Text.Json.Serialization.JsonPropertyName("path")]
         public string Path { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "destination")]
+        [System.Text.Json.Serialization.JsonPropertyName("destination")]
         public string Destination { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "keep")]
+        [System.Text.Json.Serialization.JsonPropertyName("keep")]
         public string Keep { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "user")]
+        [System.Text.Json.Serialization.JsonPropertyName("user")]
         public string UserName { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "password")]
+        [System.Text.Json.Serialization.JsonPropertyName("password")]
         public string Password { get; set; }
 
         public bool GetKeep()

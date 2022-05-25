@@ -67,12 +67,6 @@ namespace EnumRun
                 return DeserializeJson(jsonFilePath);
             }
 
-            string ymlFilePath = TargetDirectory.GetFile(Item.CONFIG_YML);
-            if (File.Exists(ymlFilePath))
-            {
-                return DeserializeYml(ymlFilePath);
-            }
-
             string textFilePath = TargetDirectory.GetFile(Item.CONFIG_TXT);
             if (File.Exists(textFilePath))
             {
@@ -106,39 +100,6 @@ namespace EnumRun
                                 //WriteIndented = true,
                                 Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                             });
-                    }
-                }
-                catch { }
-            }
-            if (setting == null)
-            {
-                setting = new EnumRunSetting();
-                setting.SetDefault();
-            }
-
-            return setting;
-        }
-
-        /// <summary>
-        /// Ymlファイルを読み込んでデシリアライズ
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static EnumRunSetting DeserializeYml(string filePath)
-        {
-            EnumRunSetting setting = null;
-            if (filePath != null)
-            {
-                try
-                {
-                    using (var sr = new StreamReader(filePath, Encoding.UTF8))
-                    {
-                        var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().
-                            WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance).
-                            IgnoreUnmatchedProperties().
-                            Build();
-                        var dictionary = deserializer.Deserialize<Dictionary<string, EnumRunSetting>>(sr.ReadToEnd());
-                        setting = dictionary["setting"];
                     }
                 }
                 catch { }
@@ -270,10 +231,6 @@ namespace EnumRun
                 case ".json":
                     SerializeJson(filePath);
                     break;
-                case ".yml":
-                case ".yaml":
-                    SerializeYml(filePath);
-                    break;
                 case ".txt":
                     SerializeText(filePath);
                     break;
@@ -298,34 +255,6 @@ namespace EnumRun
                         Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                     });
                 sw.WriteLine(json);
-            }
-        }
-
-        /// <summary>
-        /// Ymlファイルへシリアライズ
-        /// </summary>
-        /// <param name="filePath"></param>
-        public void SerializeYml(string filePath)
-        {
-            using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
-            {
-                /*  実装方法変更の可能性有り
-                var serializer = new YamlDotNet.Serialization.SerializerBuilder().
-                    WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance).
-                    ConfigureDefaultValuesHandling(YamlDotNet.Serialization.DefaultValuesHandling.OmitEmptyCollections | YamlDotNet.Serialization.DefaultValuesHandling.OmitNull).
-                    Build();
-                */
-                var serializer = new YamlDotNet.Serialization.SerializerBuilder().
-                    WithEmissionPhaseObjectGraphVisitor(x =>
-                        new YamlIEnumerableSkipEmptyObjectGraphVisitor(x.InnerVisitor)).
-                    WithNamingConvention(YamlDotNet.Serialization.NamingConventions.CamelCaseNamingConvention.Instance).
-                    Build();
-
-                var dictionary = new Dictionary<string, EnumRunSetting>()
-                {
-                    { "setting", this}
-                };
-                sw.WriteLine(serializer.Serialize(dictionary));
             }
         }
 

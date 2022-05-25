@@ -11,7 +11,6 @@ if (initial)
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
     setting_def.Serialize(Item.CONFIG_JSON);
     setting_def.Serialize(Item.CONFIG_TXT);
-    setting_def.Serialize(Item.CONFIG_YML);
 
     LanguageCollection collection_def = LanguageCollection.Deserialize();
     collection_def.Save(Item.LANG_JSON);

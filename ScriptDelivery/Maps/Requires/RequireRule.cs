@@ -3,18 +3,18 @@ namespace ScriptDelivery.Maps.Requires
 {
     internal class RequireRule
     {
-        [YamlDotNet.Serialization.YamlMember(Alias = "target")]
+        [System.Text.Json.Serialization.JsonPropertyName("target")]
         [Values("Target")]
         public string Target { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "match")]
+        [System.Text.Json.Serialization.JsonPropertyName("match")]
         [Values("Match")]
         public string Match { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "invert")]
+        [System.Text.Json.Serialization.JsonPropertyName("invert")]
         public string Invert { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "param")]
+        [System.Text.Json.Serialization.JsonPropertyName("param")]
         public Dictionary<string, string> Param { get; set; }
 
         public RuleTarget GetRuleTarget()
