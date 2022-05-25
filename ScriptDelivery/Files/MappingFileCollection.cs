@@ -35,8 +35,8 @@ namespace ScriptDelivery.Files
                 }
             }
 
-            var list = _list.SelectMany(x => x.MappingList.Select(y => y)).ToList();
-            this.Content = JsonSerializer.Serialize(list);
+            var mappingList = _list.SelectMany(x => x.MappingList.Select(y => y)).ToList();
+            this.Content = JsonSerializer.Serialize(mappingList);
 
             Item.Logger.Write(Logs.LogLevel.Info, null, "MapFileList", "MapFiles => [{0}]",
                 string.Join(", ", _list.Select(x => x.Name)));

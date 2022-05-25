@@ -49,11 +49,6 @@ namespace EnumRun
         public const string CONFIG_JSON = "Setting.json";
 
         /// <summary>
-        /// 設定ファイル(Yml)
-        /// </summary>
-        public const string CONFIG_YML = "Setting.yml";
-
-        /// <summary>
         /// 設定ファイル(TXT)
         /// </summary>
         public const string CONFIG_TXT = "Setting.txt";

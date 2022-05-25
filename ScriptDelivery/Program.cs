@@ -3,6 +3,19 @@ using System.Text;
 using ScriptDelivery;
 using ScriptDelivery.Files;
 
+bool debug = true;
+if (debug)
+{
+    var sampleMap = ScriptDelivery.Maps.MappingGenerator.Deserialize("bin\\sample01.txt");
+    ScriptDelivery.Maps.MappingGenerator.Serialize(sampleMap, "bin\\sample01.txt");
+    ScriptDelivery.Maps.MappingGenerator.Serialize(sampleMap, "bin\\sample01.csv");
+    ScriptDelivery.Maps.MappingGenerator.Serialize(sampleMap, "bin\\sample01.json");
+
+    Console.ReadLine();
+    Environment.Exit(0);
+}
+
+
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 

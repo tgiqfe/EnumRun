@@ -3,11 +3,11 @@ namespace ScriptDelivery.Maps.Requires
 {
     internal class Require
     {
-        [YamlDotNet.Serialization.YamlMember(Alias = "mode")]
+        [System.Text.Json.Serialization.JsonPropertyName("mode")]
         [Values("Mode")]
         public string Mode { get; set; }
 
-        [YamlDotNet.Serialization.YamlMember(Alias = "rule")]
+        [System.Text.Json.Serialization.JsonPropertyName("rule")]
         public RequireRule[] Rules { get; set; }
 
         public RequireMode GetRequireMode()
