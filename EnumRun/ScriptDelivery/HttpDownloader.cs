@@ -84,14 +84,18 @@ namespace EnumRun.ScriptDelivery
             string logTitle = "DownloadHttpSearch";
             _logger.Write(LogLevel.Debug, logTitle, "Search, download file from ScriptDelivery server.");
 
-            using (var content = new StringContent(
-                 JsonSerializer.Serialize(_list, _options), Encoding.UTF8, "application/json"))
+            string reqJson = JsonSerializer.Serialize(_list, _options);
+
+            //  デバッグ用
+            //Console.WriteLine(reqJson);
+
+            using (var content = new StringContent(reqJson, Encoding.UTF8, "application/json"))
             using (var response = await client.PostAsync(_uri + "/download/list", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    string json = await response.Content.ReadAsStringAsync();
-                    _list = JsonSerializer.Deserialize<List<DownloadHttp>>(json);
+                    string resJson = await response.Content.ReadAsStringAsync();
+                    _list = JsonSerializer.Deserialize<List<DownloadHttp>>(resJson);
 
                     _logger.Write(LogLevel.Info, logTitle, "Success, download DownloadFile list object");
                     foreach (var downloadHttp in _list)
@@ -145,7 +149,10 @@ namespace EnumRun.ScriptDelivery
                         {
                             stream.CopyTo(fs);
                         }
-                        File.SetLastWriteTime(dstPath, dlFile.LastWriteTime);
+                        if(dlFile.LastWriteTime != null)
+                        {
+                            File.SetLastWriteTime(dstPath, (DateTime)dlFile.LastWriteTime);
+                        }
                         _logger.Write(LogLevel.Info, logTitle, "Success, file download. [{0}]", dstPath);
                     }
                     else
