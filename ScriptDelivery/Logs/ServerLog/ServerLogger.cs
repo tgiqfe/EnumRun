@@ -114,6 +114,31 @@ namespace ScriptDelivery.Logs.ServerLog
         }
 
         /// <summary>
+        /// 定期的にログをファイルに書き込む
+        /// </summary>
+        /// <param name="logPath"></param>
+        private async void WriteInFile(string logPath)
+        {
+            while (true)
+            {
+                await Task.Delay(60 * 1000);
+                if (_writed)
+                {
+                    try
+                    {
+                        using (await _lock.LockAsync())
+                        {
+                            _writer.Dispose();
+                            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
+                            _writed = false;
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        /// <summary>
         /// クローズ処理
         /// </summary>
         /// <returns></returns>
