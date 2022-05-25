@@ -15,6 +15,7 @@ namespace EnumRun.Logs.SessionLog
 
         private ILiteCollection<SessionLogBody> _logstashCollection = null;
         private ILiteCollection<SessionLogBody> _syslogCollection = null;
+        private ILiteCollection<SessionLogBody> _dynamicLogCollection = null;
 
         public SessionLogger(EnumRunSetting setting)
         {
@@ -25,7 +26,7 @@ namespace EnumRun.Logs.SessionLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            _lock = new AsyncLock();
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
             {
@@ -54,52 +55,64 @@ namespace EnumRun.Logs.SessionLog
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-
-                string json = body.GetJson();
-
-                //ファイル書き込み
-                await _writer.WriteLineAsync(json);
-
-                //  Logstash転送
-                if (_logstash != null)
+                using (await _lock.LockAsync())
                 {
-                    bool res = false;
-                    if (_logstash.Enabled)
-                    {
-                        res = await _logstash.SendAsync(json);
-                    }
-                    if (!res)
-                    {
-                        _liteDB ??= GetLiteDB();
-                        _logstashCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_logstash");
-                        _logstashCollection.Upsert(body);
-                    }
-                }
+                    string json = body.GetJson();
 
-                //  Syslog転送
-                if (_syslog != null)
-                {
-                    if (_syslog.Enabled)
+                    //ファイル書き込み
+                    await _writer.WriteLineAsync(json);
+
+                    //  Logstash転送
+                    if (_logstash != null)
                     {
-                        foreach (var pair in body.GetSyslogMessage())
+                        bool res = false;
+                        if (_logstash.Enabled)
                         {
-                            await _syslog.SendAsync(LogLevel.Info, pair.Key, pair.Value);
+                            res = await _logstash.SendAsync(json);
+                        }
+                        if (!res)
+                        {
+                            _liteDB ??= GetLiteDB();
+                            _logstashCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_logstash");
+                            _logstashCollection.Upsert(body);
                         }
                     }
-                    else
+
+                    //  Syslog転送
+                    if (_syslog != null)
                     {
-                        _liteDB ??= GetLiteDB();
-                        _syslogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
-                        _syslogCollection.Upsert(body);
+                        if (_syslog.Enabled)
+                        {
+                            foreach (var pair in body.GetSyslogMessage())
+                            {
+                                await _syslog.SendAsync(LogLevel.Info, pair.Key, pair.Value);
+                            }
+                        }
+                        else
+                        {
+                            _liteDB ??= GetLiteDB();
+                            _syslogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_syslog");
+                            _syslogCollection.Upsert(body);
+                        }
+                    }
+
+                    //  DynamicLog転送
+                    if (_dynamicLog != null)
+                    {
+                        if (_dynamicLog.Enabled)
+                        {
+                            await _dynamicLog.SendAsync("SEssionLog", json);
+                        }
+                        else
+                        {
+                            _liteDB ??= GetLiteDB();
+                            _dynamicLogCollection ??= GetCollection<SessionLogBody>(SessionLogBody.TAG + "_dynamicLog");
+                            _dynamicLogCollection.Upsert(body);
+                        }
                     }
                 }
             }
             catch { }
-            finally
-            {
-                _rwLock.ReleaseWriterLock();
-            }
         }
     }
 }

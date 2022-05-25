@@ -13,24 +13,27 @@ using EnumRun.Logs;
 using EnumRun.Lib.Infos;
 using EnumRun.Lib;
 
-namespace EnumRun
+namespace EnumRun.ScriptDelivery
 {
     internal class ScriptDeliveryClient
     {
-        public bool Enabled { get; set; }
+        //public bool Enabled { get; set; }
 
-        private string _uri = null;
+        //private string _uri = null;
+
+        private ScriptDeliverySession _session = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
         private string _filesPath = null;
 
         private List<Mapping> _mappingList = null;
-        private ScriptDelivery.SmbDownloader _smbDownloader = null;
-        private ScriptDelivery.HttpDownloader _httpDownloader = null;
-        private ScriptDelivery.DeleteManager _deleteManager = null;
+        private SmbDownloader _smbDownloader = null;
+        private HttpDownloader _httpDownloader = null;
+        private DeleteManager _deleteManager = null;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
+        /*
         public ScriptDeliveryClient(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
         {
             if (setting.ScriptDelivery != null &&
@@ -50,36 +53,54 @@ namespace EnumRun
                     }
                 }
 
-                this._logger = logger;
-                this._filesPath = setting.GetFilesPath();
+                _logger = logger;
+                _filesPath = setting.GetFilesPath();
 
                 _logger.Write(LogLevel.Info, null, "Connect server => {0}", _uri);
 
                 if (!string.IsNullOrEmpty(_uri))
                 {
-                    this.Enabled = true;
-                    this._smbDownloader = new ScriptDelivery.SmbDownloader(_logger);
-                    this._httpDownloader = new ScriptDelivery.HttpDownloader(
-                        _uri, _filesPath, _logger);
-                    this._deleteManager = new ScriptDelivery.DeleteManager(
+                    Enabled = true;
+                    _smbDownloader = new SmbDownloader(_logger);
+                    //this._httpDownloader = new ScriptDelivery.HttpDownloader(
+                    //    _uri, _filesPath, _logger);
+                    _httpDownloader = new HttpDownloader(_filesPath, _logger);
+                    _deleteManager = new DeleteManager(
                         setting.FilesPath, setting.ScriptDelivery.TrashPath, _logger);
                 }
+            }
+        }
+        */
+
+        public ScriptDeliveryClient(ScriptDeliverySession session, string filesPath, string logsPath, string trashPath, Logs.ProcessLog.ProcessLogger logger)
+        {
+            this._session = session;
+
+            if (session.EnableDelivery)
+            {
+                _logger = logger;
+                _logger.Write(LogLevel.Info, null, "Connect server => {0}", session.Uri);
+
+                _filesPath = filesPath;
+                _smbDownloader = new SmbDownloader(_logger);
+                _httpDownloader = new HttpDownloader(_filesPath, _logger);
+                _deleteManager = new DeleteManager(filesPath, trashPath, _logger);
             }
         }
 
         public void StartDownload()
         {
-            if (this.Enabled)
+            //if (Enabled)
+            if (_session.EnableDelivery && _session.Enabled)
             {
-                using (var client = new HttpClient())
-                {
-                    DownloadMappingFile(client).Wait();
-                    MapMathcingCheck();
+                DownloadMappingFile(_session.Client).Wait();
+                MapMathcingCheck();
 
-                    _smbDownloader.Process();
-                    _httpDownloader.Process(client);
-                    _deleteManager.Process();
-                }
+                _smbDownloader.Process();
+                //_httpDownloader.Process(client);
+                //_httpDownloader.Process(client, _uri);
+                _httpDownloader.Process(_session.Client, _session.Uri);
+                _deleteManager.Process();
             }
         }
 
@@ -92,14 +113,14 @@ namespace EnumRun
         {
             _logger.Write(LogLevel.Debug, "ScriptDelivery init.");
             using (var content = new StringContent(""))
-            using (var response = await client.PostAsync(_uri + "/map", content))
+            //using (var response = await client.PostAsync(_uri + "/map", content))
+            using (var response = await client.PostAsync(_session.Uri + "/map", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string json = await response.Content.ReadAsStringAsync();
-                    this._mappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
+                    _mappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
                     _logger.Write(LogLevel.Info, "Success, download mapping object.");
-
 
                     var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version").Value.First();
                     var localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -134,7 +155,7 @@ namespace EnumRun
                     MatcherBase matcher = MatcherBase.Activate(y.GetRuleTarget());
                     matcher.SetLogger(_logger);
                     matcher.SetParam(y.Param);
-                    return matcher.CheckParam() && (matcher.IsMatch(y.GetRuleMatch()) ^ y.GetInvert());
+                    return matcher.CheckParam() && matcher.IsMatch(y.GetRuleMatch()) ^ y.GetInvert();
                 });
                 return mode switch
                 {

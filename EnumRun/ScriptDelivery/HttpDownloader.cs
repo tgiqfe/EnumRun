@@ -14,15 +14,14 @@ namespace EnumRun.ScriptDelivery
 {
     internal class HttpDownloader
     {
-        private string _uri = null;
         private string _filesPath = null;
         private ProcessLogger _logger = null;
         private JsonSerializerOptions _options = null;
         private List<DownloadHttp> _list = null;
 
-        public HttpDownloader(string uri, string filesPath, ProcessLogger logger)
+        public HttpDownloader(string filesPath, ProcessLogger logger)
         {
-            this._uri = uri;
+            //this._uri = uri;
             this._filesPath = filesPath;
             this._logger = logger;
             this._options = new System.Text.Json.JsonSerializerOptions()
@@ -36,22 +35,41 @@ namespace EnumRun.ScriptDelivery
             this._list = new List<DownloadHttp>();
         }
 
-        public void Add(string path, string destination, bool? overwrite)
+        public void Add(string path, string destination, bool overwrite)
         {
-            _list.Add(new DownloadHttp()
+            if (CheckParam(path, destination))
             {
-                Path = path,
-                DestinationPath = destination,
-                Overwrite = overwrite,
-            });
+                _list.Add(new DownloadHttp()
+                {
+                    Path = path,
+                    DestinationPath = destination,
+                    Overwrite = overwrite,
+                });
+            }
         }
 
-        public void Process(HttpClient client)
+        private bool CheckParam(string path, string destination)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                _logger.Write(LogLevel.Attention, "Http download parameter is not enough.");
+                return false;
+            }
+            if (Path.IsPathRooted(path))
+            {
+                _logger.Write(LogLevel.Attention, "Http download parameter is incorrect, path is absolute path.");
+                return false;
+            }
+
+            return true;
+        }
+
+        public void Process(HttpClient client, string uri)
         {
             if (this._list.Count > 0)
             {
-                DownloadHttpSearch(client).Wait();
-                DownloadHttpStart(client).Wait();
+                DownloadHttpSearch(client, uri).Wait();
+                DownloadHttpStart(client, uri).Wait();
             }
         }
 
@@ -59,7 +77,7 @@ namespace EnumRun.ScriptDelivery
         /// Httpダウンロードする場合に、ScriptDeliveryサーバにダウンロード可能ファイルを問い合わせ
         /// </summary>
         /// <returns></returns>
-        private async Task DownloadHttpSearch(HttpClient client)
+        private async Task DownloadHttpSearch(HttpClient client, string _uri)
         {
             _logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
 
@@ -73,6 +91,10 @@ namespace EnumRun.ScriptDelivery
                     _list = JsonSerializer.Deserialize<List<DownloadHttp>>(json);
 
                     _logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
+                    foreach (var downloadHttp in _list)
+                    {
+                        _logger.Write(downloadHttp.ToLog());
+                    }
                 }
                 else
                 {
@@ -85,7 +107,7 @@ namespace EnumRun.ScriptDelivery
         /// ScriptDeliveryサーバからファイルダウンロード
         /// </summary>
         /// <returns></returns>
-        private async Task DownloadHttpStart(HttpClient client)
+        private async Task DownloadHttpStart(HttpClient client, string _uri)
         {
             _logger.Write(LogLevel.Debug, "Start, Http download.");
 
@@ -100,7 +122,7 @@ namespace EnumRun.ScriptDelivery
                 if (File.Exists(dstPath) &&
                     (dlFile.CompareFile(dstPath) || !(dlFile.Overwrite ?? false)))
                 {
-                    _logger.Write(LogLevel.Info, null, "Skip download, already exist. => [{0}]", dstPath);
+                    _logger.Write(LogLevel.Info, null, "Skip Http download, already exist. => [{0}]", dstPath);
                     continue;
                 }
                 TargetDirectory.CreateParent(dstPath);

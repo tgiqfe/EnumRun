@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ScriptDelivery.Logs
+namespace ScriptDelivery.Logs.ServerLog
 {
     internal class ServerLogBody : LogBodyBase
     {
@@ -31,10 +31,10 @@ namespace ScriptDelivery.Logs
         {
             if (init)
             {
-                this.ProcessName = Item.ProcessName;
-                this.HostName = Environment.MachineName;
-                this.UserName = Environment.UserName;
-                this.Serial = $"{Item.Serial}_{_index++}";
+                ProcessName = Item.ProcessName;
+                HostName = Environment.MachineName;
+                UserName = Environment.UserName;
+                Serial = $"{Item.Serial}_{_index++}";
             }
         }
 

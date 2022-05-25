@@ -1,4 +1,4 @@
-# ScriptDelivery (サーバ側設定)
+# ScriptDelivery
 
 
 

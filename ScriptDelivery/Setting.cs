@@ -10,10 +10,10 @@ namespace ScriptDelivery
     {
         public string MapsPath { get; set; }
         public string FilesPath { get; set; }
-
         public string LogsPath { get; set; }
         public string MinLogLevel { get; set; }
 
+        public string DynamicLogsPath { get; set; }
         public ParamSyslog Syslog { get; set; }
 
         #region Syslog
@@ -58,6 +58,7 @@ namespace ScriptDelivery
             this.FilesPath = "bin/store/files";
             this.LogsPath = "bin/store/logs";
             this.MinLogLevel = "info";
+            this.DynamicLogsPath = "bin/dynamicLogs";
             this.Syslog = new ParamSyslog()
             {
                 Server = null,
@@ -93,6 +94,13 @@ namespace ScriptDelivery
             return string.IsNullOrEmpty(this.LogsPath) ?
                 Path.Combine(Item.ExecDirectoryPath, "Logs") :
                 ExpandEnvironment(this.LogsPath);
+        }
+
+        public string GetDynamicLogsPath()
+        {
+            return string.IsNullOrEmpty(this.DynamicLogsPath) ?
+                Path.Combine(Item.ExecDirectoryPath, "DynamicLogs") :
+                ExpandEnvironment(this.DynamicLogsPath);
         }
 
         private string ExpandEnvironment(string text)

@@ -3,13 +3,6 @@ using System.Text;
 using ScriptDelivery;
 using ScriptDelivery.Files;
 
-/*
-ScriptDelivery.Misc.samplefile.Sample01.Create();
-
-Console.ReadLine();
-Environment.Exit(0);
-*/
-
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
@@ -71,6 +64,19 @@ app.MapGet("/download/files", async (HttpContext context) =>
 
     context.Response.Headers.Add("Content-Disposition", "attachment; filename=" + System.Web.HttpUtility.UrlEncode(fileName));
     await context.Response.SendFileAsync(filePath);
+});
+
+//  LogReceive—p
+app.MapPost("/logs/{table}", (HttpContext context) =>
+{
+    var syncIOFeature = context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+    if (syncIOFeature != null)
+    {
+        syncIOFeature.AllowSynchronousIO = true;
+    }
+    var table = context.Request.RouteValues["table"]?.ToString();
+    Item.DynamicLogger.Write(table, context.Request.Body);
+    return "";
 });
 
 #endregion

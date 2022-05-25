@@ -74,7 +74,7 @@ namespace EnumRun
 
             public override string ToString()
             {
-                return string.Format("[ Server={0}] ", this.Server);
+                return string.Format("[ Server={0} ] ", this.Server);
             }
         }
 
@@ -121,13 +121,15 @@ namespace EnumRun
             public string[] Server { get; set; }
             public string Process { get; set; }
             public string TrashPath { get; set; }
+            public bool? LogTransport { get; set; }
 
             public override string ToString()
             {
-                return string.Format("[ Server={0} Process={1} TrashPath={2}",
+                return string.Format("[ Server={0} Process={1} TrashPath={2}, LogTransport={3} ]",
                     string.Join(", ", this.Server),
                     this.Process,
-                    this.TrashPath);
+                    this.TrashPath,
+                    this.LogTransport);
             }
         }
 

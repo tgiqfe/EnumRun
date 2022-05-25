@@ -14,9 +14,10 @@ namespace EnumRun.Logs
     {
         protected string _logDir = null;
         protected StreamWriter _writer = null;
-        protected ReaderWriterLock _rwLock = null;
+        protected AsyncLock _lock = null;
         protected LogstashTransport _logstash = null;
         protected SyslogTransport _syslog = null;
+        protected DynamicLogTransport _dynamicLog = null;
         protected LiteDatabase _liteDB = null;
 
         protected virtual bool _logAppend { get; }
@@ -40,18 +41,19 @@ namespace EnumRun.Logs
 
         #endregion
 
+        public virtual async Task CloseAsync()
+        {
+            using (await _lock.LockAsync())
+            {
+                Close();
+            }
+        }
+
         public virtual void Close()
         {
-            try
-            {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
-            }
-            catch { }
-
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
+            if (_writer != null) { _writer.Dispose(); _writer = null; }
+            if (_liteDB != null) { _liteDB.Dispose(); _liteDB = null; }
+            if (_syslog != null) { _syslog.Dispose(); _syslog = null; }
         }
 
         #region Dispose

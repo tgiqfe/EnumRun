@@ -1,11 +1,10 @@
 ﻿using ScriptDelivery.Lib;
 using System.Text;
 using LiteDB;
-using ScriptDelivery.Logs;
 using ScriptDelivery.Lib.Syslog;
 using System.Diagnostics;
 
-namespace ScriptDelivery.Logs
+namespace ScriptDelivery.Logs.ServerLog
 {
     internal class ServerLogger : LoggerBase
     {
@@ -14,8 +13,6 @@ namespace ScriptDelivery.Logs
         private LogLevel _minLogLevel = LogLevel.Info;
         //private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ServerLogBody> _syslogCollection = null;
-
-        private bool writed = false;
 
         public ServerLogger(Setting setting)
         {
@@ -26,7 +23,7 @@ namespace ScriptDelivery.Logs
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             if (!string.IsNullOrEmpty(setting.Syslog?.Server))
@@ -76,86 +73,53 @@ namespace ScriptDelivery.Logs
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-
-                //  コンソール出力
-                Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
-                    body.Date,
-                    body.Level,
-                    body.Client ?? "-",
-                    body.Title ?? "-",
-                    body.Message);
-
-                //  ファイル書き込み
-                string json = body.GetJson();
-                await _writer.WriteLineAsync(json);
-
-                //  Syslog転送
-                if(_syslog != null)
+                using (await _lock.LockAsync())
                 {
-                    if (_syslog.Enabled)
-                    {
-                        await _syslog.SendAsync(body.Level, body.Title, body.Message);
-                    }
-                    else
-                    {
-                        _liteDB ??= GetLiteDB();
-                        _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
-                        _syslogCollection.Upsert(body);
-                    }
-                }
+                    //  コンソール出力
+                    Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
+                        body.Date,
+                        body.Level,
+                        body.Client ?? "-",
+                        body.Title ?? "-",
+                        body.Message);
 
-                writed = true;
+                    //  ファイル書き込み
+                    string json = body.GetJson();
+                    await _writer.WriteLineAsync(json);
+
+                    //  Syslog転送
+                    if (_syslog != null)
+                    {
+                        if (_syslog.Enabled)
+                        {
+                            await _syslog.SendAsync(body.Level, body.Title, body.Message);
+                        }
+                        else
+                        {
+                            _liteDB ??= GetLiteDB("ScriptDelivery");
+                            _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
+                            _syslogCollection.Upsert(body);
+                        }
+                    }
+
+                    _writed = true;
+                }
             }
             catch { }
-            finally
-            {
-                _rwLock.ReleaseWriterLock();
-            }
         }
 
         /// <summary>
-        /// 定期的にログをファイルに書き込む
+        /// クローズ処理
         /// </summary>
-        /// <param name="logPath"></param>
-        private async void WriteInFile(string logPath)
-        {
-            while (true)
-            {
-                await Task.Delay(60 * 1000);
-                if (writed)
-                {
-                    try
-                    {
-                        _rwLock.AcquireWriterLock(10000);
-                        _writer.Dispose();
-                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-                    }
-                    catch { }
-                    finally
-                    {
-                        writed = false;
-                        _rwLock.ReleaseWriterLock();
-                    }
-                }
-            }
-        }
-
-
-        public override void Close()
+        /// <returns></returns>
+        public override async Task CloseAsync()
         {
             Write("終了");
 
-            try
+            using (await _lock.LockAsync())
             {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
+                base.Close();
             }
-            catch { }
-
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
         }
     }
 }
