@@ -51,8 +51,6 @@ namespace EnumRun.ScriptDelivery
 
         public void Close()
         {
-            Console.WriteLine("close session");
-
             if (Client != null)
             {
                 Client.Dispose();

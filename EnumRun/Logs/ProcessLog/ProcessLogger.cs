@@ -172,7 +172,6 @@ namespace EnumRun.Logs.ProcessLog
 
         public override async Task CloseAsync()
         {
-            Console.WriteLine("close logger");
             Write("終了");
 
             using (await _lock.LockAsync())

@@ -14,7 +14,6 @@ namespace ScriptDelivery.Logs
     {
         protected string _logDir = null;
         protected StreamWriter _writer = null;
-        //protected ReaderWriterLock _rwLock = null;
         protected AsyncLock _lock = null;
         //protected LogstashTransport _logstash = null;
         protected SyslogTransport _syslog = null;

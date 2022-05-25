@@ -74,7 +74,8 @@ namespace ScriptDelivery
             {
                 //Item.DynamicLogger.Dispose();
                 //Item.DynamicLogger = null;
-                Item.DynamicLogger.CloseAsync().Wait();
+                //Item.DynamicLogger.CloseAsync().Wait();
+                Item.DynamicLogger.Close();
             }
             if (Item.Logger != null)
             {
