@@ -5,103 +5,99 @@ using System.Text;
 
 namespace ScriptDelivery.Logs.DynamicLog
 {
-    internal class DynamicLogger : LoggerBase
+    internal class DynamicLogger
     {
-        protected override bool _logAppend { get { return true; } }
-
-        private Dictionary<string, ILiteCollection<BsonDocument>> _collections = null;
+        private string _logDir = null;
+        private LiteDatabase _liteDB = null;
+        private Dictionary<string, DynamicLogSession> _sessions = null;
 
         public DynamicLogger(Setting setting)
         {
-            string logFileName =
-                $"DynamicLog_{DateTime.Now.ToString("yyyyMMdd")}.log";
-            string logPath = Path.Combine(setting.GetCynamicLogsPath(), logFileName);
-            TargetDirectory.CreateParent(logPath);
+            _logDir = setting.GetDynamicLogsPath();
 
-            _logDir = setting.GetCynamicLogsPath();
-            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            string today = DateTime.Now.ToString("yyyyMMdd");
+            string dbPath = Path.Combine(
+                _logDir,
+                $"DynamicLog_{today}.db");
+            _liteDB = new LiteDatabase($"Filename={dbPath};Connection=shared");
 
-            _liteDB = GetLiteDB("DynamicLog");
-            _collections = new Dictionary<string, ILiteCollection<BsonDocument>>();
+            _sessions = new Dictionary<string, DynamicLogSession>();
 
-            //  定期的にログファイルを書き込むスレッドを開始
-            WriteInFile(logPath);
+            //  定期的にセッションを閉じる
+            CloseSequenseAsync();
         }
 
         public async void Write(string table, Stream bodyStream)
         {
+            if (string.IsNullOrEmpty(table)) { return; }
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-                
-                if (string.IsNullOrEmpty(table))
+                var session = GetLogSession(table);
+                using (await session.Lock.LockAsync())
                 {
-                    return;
-                }
-
-                ILiteCollection<BsonDocument> collection = null;
-                try
-                {
-                    collection = _collections[table];
-                }
-                catch
-                {
-                    collection = _liteDB.GetCollection(table);
-                    _collections[table] = collection;
-                }
-                using (var sr = new StreamReader(bodyStream))
-                {
-                    var bsonValue = JsonSerializer.Deserialize(sr);
-                    BsonDocument doc = bsonValue as BsonDocument;
-                    collection.Insert(doc);
-
-                    await _writer.WriteLineAsync(doc);
-                    _writed = true;
+                    using (var sr = new StreamReader(bodyStream))
+                    {
+                        var bsonValue = JsonSerializer.Deserialize(sr);
+                        BsonDocument doc = bsonValue as BsonDocument;
+                        session.Collection.Insert(doc);
+                        await session.Writer.WriteLineAsync(doc.ToString());
+                    }
+                    session.WriteTime = DateTime.Now;
                 }
             }
             catch { }
-            finally
+        }
+
+        private DynamicLogSession GetLogSession(string table)
+        {
+            try
             {
-                _rwLock.ReleaseWriterLock();
+                return _sessions[table];
+            }
+            catch
+            {
+                _sessions[table] = new DynamicLogSession(table, _logDir, _liteDB);
+                return _sessions[table];
             }
         }
 
-        /*
         /// <summary>
-        /// 定期的にログをファイルに書き込む
+        /// 定期的にセッションを閉じる
         /// </summary>
-        /// <param name="logPath"></param>
-        private async void WriteInFile(string logPath)
+        private async void CloseSequenseAsync()
         {
             while (true)
             {
                 await Task.Delay(60 * 1000);
-                if (_writed)
+                var keys = _sessions.
+                    Where(x => (DateTime.Now - x.Value.WriteTime).TotalSeconds > 60).
+                    Select(x => x.Key);
+                foreach (string key in keys)
                 {
-                    try
+                    using (await _sessions[key].Lock.LockAsync())
                     {
-                        _rwLock.AcquireWriterLock(10000);
-                        _writer.Dispose();
-                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
+                        _sessions[key].Writer.Dispose();
+                        _sessions[key].Collection = null;
                     }
-                    catch { }
-                    finally
-                    {
-                        _writed = false;
-                        _rwLock.ReleaseWriterLock();
-                    }
+                    Console.WriteLine($"{key} close ########");
+                    _sessions.Remove(key);
                 }
             }
         }
-        */
 
         /// <summary>
         /// クローズ処理
         /// </summary>
-        public override void Close()
+        public async Task CloseAsync()
         {
-            base.Close();
+            foreach (var session in _sessions.Values)
+            {
+                using(await session.Lock.LockAsync())
+                {
+                    session.Writer.Dispose();
+                    session.Collection = null;
+                }
+            }
         }
     }
 }

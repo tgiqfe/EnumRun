@@ -14,7 +14,7 @@ namespace ScriptDelivery.Logs
     {
         protected string _logDir = null;
         protected StreamWriter _writer = null;
-        protected ReaderWriterLock _rwLock = null;
+        protected AsyncLock _lock = null;
         //protected LogstashTransport _logstash = null;
         protected SyslogTransport _syslog = null;
         protected LiteDatabase _liteDB = null;
@@ -23,16 +23,6 @@ namespace ScriptDelivery.Logs
         protected bool _writed = false;
 
         #region LiteDB methods
-
-        /*
-        protected LiteDatabase GetLiteDB()
-        {
-            string dbPath = Path.Combine(
-                _logDir,
-                "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-            return new LiteDatabase($"Filename={dbPath};Connection=shared");
-        }
-        */
 
         protected LiteDatabase GetLiteDB(string preName)
         {
@@ -56,7 +46,7 @@ namespace ScriptDelivery.Logs
         /// 定期的にログをファイルに書き込む
         /// </summary>
         /// <param name="logPath"></param>
-        protected async void WriteInFile(string logPath)
+        protected virtual async void WriteInFile(string logPath)
         {
             while (true)
             {
@@ -65,32 +55,31 @@ namespace ScriptDelivery.Logs
                 {
                     try
                     {
-                        _rwLock.AcquireWriterLock(10000);
-                        _writer.Dispose();
-                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
+                        using (await _lock.LockAsync())
+                        {
+                            _writer.Dispose();
+                            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
+                            _writed = false;
+                        }
                     }
                     catch { }
-                    finally
-                    {
-                        _writed = false;
-                        _rwLock.ReleaseWriterLock();
-                    }
                 }
+            }
+        }
+
+        public virtual async Task CloseAsync()
+        {
+            using (await _lock.LockAsync())
+            {
+                Close();
             }
         }
 
         public virtual void Close()
         {
-            try
-            {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
-            }
-            catch { }
-
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
+            if (_writer != null) { _writer.Dispose(); _writer = null; }
+            if (_liteDB != null) { _liteDB.Dispose(); _liteDB = null; }
+            if (_syslog != null) { _syslog.Dispose(); _syslog = null; }
         }
 
         #region Dispose

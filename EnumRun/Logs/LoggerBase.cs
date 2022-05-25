@@ -41,11 +41,19 @@ namespace EnumRun.Logs
 
         #endregion
 
+        public virtual async Task CloseAsync()
+        {
+            using (await _lock.LockAsync())
+            {
+                Close();
+            }
+        }
+
         public virtual void Close()
         {
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
+            if (_writer != null) { _writer.Dispose(); _writer = null; }
+            if (_liteDB != null) { _liteDB.Dispose(); _liteDB = null; }
+            if (_syslog != null) { _syslog.Dispose(); _syslog = null; }
         }
 
         #region Dispose

@@ -72,13 +72,11 @@ namespace ScriptDelivery
             //  ログ出力終了
             if(Item.DynamicLogger != null)
             {
-                Item.DynamicLogger.Dispose();
-                Item.DynamicLogger = null;
+                Item.DynamicLogger.CloseAsync().Wait();
             }
             if (Item.Logger != null)
             {
-                Item.Logger.Dispose();
-                Item.Logger = null;
+                Item.Logger.CloseAsync().Wait();
             }
         }
 

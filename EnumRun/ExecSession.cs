@@ -109,7 +109,9 @@ namespace EnumRun
         /// </summary>
         public void PostProcess()
         {
-            //  必要に応じて実行結果ログを出力させるなどの処理を予定。
+            //  ScriptDeliverySessionと同時にDisposeした場合、最後の終了ログを出力する前に
+            //  セッションが閉じてしまうことがある為、先に明示的にloggerをクローズ。
+            _logger.CloseAsync().Wait();
         }
 
         /// <summary>

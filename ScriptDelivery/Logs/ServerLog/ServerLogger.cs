@@ -14,8 +14,6 @@ namespace ScriptDelivery.Logs.ServerLog
         //private ILiteCollection<ProcessLogBody> _logstashCollection = null;
         private ILiteCollection<ServerLogBody> _syslogCollection = null;
 
-        //private bool _writed = false;
-
         public ServerLogger(Setting setting)
         {
             string logFileName =
@@ -25,7 +23,7 @@ namespace ScriptDelivery.Logs.ServerLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _rwLock = new ReaderWriterLock();
+            _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             if (!string.IsNullOrEmpty(setting.Syslog?.Server))
@@ -75,90 +73,53 @@ namespace ScriptDelivery.Logs.ServerLog
         {
             try
             {
-                _rwLock.AcquireWriterLock(10000);
-
-                //  コンソール出力
-                Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
-                    body.Date,
-                    body.Level,
-                    body.Client ?? "-",
-                    body.Title ?? "-",
-                    body.Message);
-
-                //  ファイル書き込み
-                string json = body.GetJson();
-                await _writer.WriteLineAsync(json);
-
-                //  Syslog転送
-                if (_syslog != null)
+                using (await _lock.LockAsync())
                 {
-                    if (_syslog.Enabled)
-                    {
-                        await _syslog.SendAsync(body.Level, body.Title, body.Message);
-                    }
-                    else
-                    {
-                        _liteDB ??= GetLiteDB("ScriptDelivery");
-                        _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
-                        _syslogCollection.Upsert(body);
-                    }
-                }
+                    //  コンソール出力
+                    Console.WriteLine("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
+                        body.Date,
+                        body.Level,
+                        body.Client ?? "-",
+                        body.Title ?? "-",
+                        body.Message);
 
-                _writed = true;
+                    //  ファイル書き込み
+                    string json = body.GetJson();
+                    await _writer.WriteLineAsync(json);
+
+                    //  Syslog転送
+                    if (_syslog != null)
+                    {
+                        if (_syslog.Enabled)
+                        {
+                            await _syslog.SendAsync(body.Level, body.Title, body.Message);
+                        }
+                        else
+                        {
+                            _liteDB ??= GetLiteDB("ScriptDelivery");
+                            _syslogCollection ??= GetCollection<ServerLogBody>(ServerLogBody.TAG + "_syslog");
+                            _syslogCollection.Upsert(body);
+                        }
+                    }
+
+                    _writed = true;
+                }
             }
             catch { }
-            finally
-            {
-                _rwLock.ReleaseWriterLock();
-            }
         }
-
-        /*
-        /// <summary>
-        /// 定期的にログをファイルに書き込む
-        /// </summary>
-        /// <param name="logPath"></param>
-        private async void WriteInFile(string logPath)
-        {
-            while (true)
-            {
-                await Task.Delay(60 * 1000);
-                if (_writed)
-                {
-                    try
-                    {
-                        _rwLock.AcquireWriterLock(10000);
-                        _writer.Dispose();
-                        _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-                    }
-                    catch { }
-                    finally
-                    {
-                        _writed = false;
-                        _rwLock.ReleaseWriterLock();
-                    }
-                }
-            }
-        }
-        */
 
         /// <summary>
         /// クローズ処理
         /// </summary>
-        public override void Close()
+        /// <returns></returns>
+        public override async Task CloseAsync()
         {
             Write("終了");
 
-            try
+            using (await _lock.LockAsync())
             {
-                _rwLock.AcquireWriterLock(10000);
-                _rwLock.ReleaseWriterLock();
+                base.Close();
             }
-            catch { }
-
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
         }
     }
 }
