@@ -57,9 +57,14 @@ namespace ScriptDelivery.Logs.ServerLog
             }
         }
 
-        public void Write(LogLevel level, string address, string title, string format, params string[] args)
+        public void Write(LogLevel level, string address, string title, string format, params object[] args)
         {
             Write(level, address, title, string.Format(format, args));
+        }
+
+        public void Write(LogLevel level, string title, string message)
+        {
+            Write(level, null, title, message);
         }
 
         public void Write(string message)
@@ -106,6 +111,31 @@ namespace ScriptDelivery.Logs.ServerLog
                 }
             }
             catch { }
+        }
+
+        /// <summary>
+        /// 定期的にログをファイルに書き込む
+        /// </summary>
+        /// <param name="logPath"></param>
+        private async void WriteInFile(string logPath)
+        {
+            while (true)
+            {
+                await Task.Delay(60 * 1000);
+                if (_writed)
+                {
+                    try
+                    {
+                        using (await _lock.LockAsync())
+                        {
+                            _writer.Dispose();
+                            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
+                            _writed = false;
+                        }
+                    }
+                    catch { }
+                }
+            }
         }
 
         /// <summary>

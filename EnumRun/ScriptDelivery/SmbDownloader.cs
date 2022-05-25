@@ -42,23 +42,27 @@ namespace EnumRun.ScriptDelivery
 
         private bool CheckParam(string targetPath, string destination, string userName, string password)
         {
+            string logTitle = "CheckParam";
+
             if (string.IsNullOrEmpty(targetPath) ||
                 !(string.IsNullOrEmpty(userName) ^ string.IsNullOrEmpty(password)))
             {
-                _logger.Write(LogLevel.Attention, "Smb download parameter is not enough.");
+                _logger.Write(LogLevel.Attention, logTitle, "Smb download parameter is not enough.");
                 return false;
             }
             if (targetPath.Contains("*") || (destination?.Contains("*") ?? false))
             {
-                _logger.Write(LogLevel.Attention, "Smb download parameter is incorrect, * is included.");
+                _logger.Write(LogLevel.Attention, logTitle, "Smb download parameter is incorrect, * is included.");
                 return false;
             }
 
             return true;
         }
 
-        public void Process()
+        public void DownloadProcess()
         {
+            string logTitle = "DownloadProcess";
+
             foreach (var smb in _list)
             {
                 string targetPath = smb.TargetPath;
@@ -79,7 +83,7 @@ namespace EnumRun.ScriptDelivery
                 bool ret = ConnectServer(smb);
                 if (ret)
                 {
-                    _logger.Write(LogLevel.Info, null, "Connect success.");
+                    _logger.Write(LogLevel.Info, logTitle, "Connect success.");
                     if (FileExists(targetPath))
                     {
                         DownloadFile(targetPath, destination, overwrite);
@@ -93,7 +97,7 @@ namespace EnumRun.ScriptDelivery
                 }
                 else
                 {
-                    _logger.Write(LogLevel.Warn, null, "Connect failed.");
+                    _logger.Write(LogLevel.Warn, logTitle, "Connect failed.");
                 }
             }
         }
@@ -112,8 +116,10 @@ namespace EnumRun.ScriptDelivery
 
         public bool ConnectServer(DownloadSmb smb)
         {
+            string logTitle = "ConnectServer";
+
             string shareName = smb.ShareName;
-            _logger.Write(LogLevel.Debug, null, "Connect server => {0}", shareName);
+            _logger.Write(LogLevel.Debug, logTitle, "Connect server => {0}", shareName);
 
             if (_sessions.ContainsKey(shareName))
             {
@@ -127,18 +133,20 @@ namespace EnumRun.ScriptDelivery
 
         private void DownloadFile(string targetPath, string destination, bool overwrite)
         {
-            _logger.Write(LogLevel.Info, null, "File download. => {0}", targetPath);
+            string logTitle = "DownloadFile";
+
+            _logger.Write(LogLevel.Info, logTitle, "File download. => {0}", targetPath);
 
             //  destinationパスの最後が「\」の場合はフォルダーとして扱い、その配下にダウンロード。
             if (destination.EndsWith("\\"))
             {
-                _logger.Write(LogLevel.Debug, null, "Destination path as directory, to => {0}", destination);
+                _logger.Write(LogLevel.Debug, logTitle, "Destination path as directory, to => {0}", destination);
 
                 string destinationFilePath = Path.Combine(destination, Path.GetFileName(targetPath));
                 if (File.Exists(destinationFilePath) && !overwrite)
                 {
                     //  上書き禁止 終了
-                    _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destinationFilePath);
+                    _logger.Write(LogLevel.Info, logTitle, "Skip Smb download, already exist. => {0}", destinationFilePath);
                     return;
                 }
                 if (!Directory.Exists(destination))
@@ -153,13 +161,13 @@ namespace EnumRun.ScriptDelivery
             //  destinationのパスのフォルダーが存在する場合、その配下にダウンロード。
             if (Directory.Exists(destination))
             {
-                _logger.Write(LogLevel.Debug, null, "Destination is in directory, to => {0}", destination);
+                _logger.Write(LogLevel.Debug, logTitle, "Destination is in directory, to => {0}", destination);
 
                 string destinationFilePath = Path.Combine(destination, Path.GetFileName(targetPath));
                 if (File.Exists(destinationFilePath) && !overwrite)
                 {
                     //  上書き禁止 終了
-                    _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destinationFilePath);
+                    _logger.Write(LogLevel.Info, logTitle, "Skip Smb download, already exist. => {0}", destinationFilePath);
                     return;
                 }
                 File.Copy(targetPath, destinationFilePath, overwrite: true);
@@ -171,7 +179,7 @@ namespace EnumRun.ScriptDelivery
             if (File.Exists(destination) && !overwrite)
             {
                 //  上書き禁止 終了
-                _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destination);
+                _logger.Write(LogLevel.Info, logTitle, "Skip Smb download, already exist. => {0}", destination);
                 return;
             }
             string parent = Path.GetDirectoryName(destination);
@@ -179,13 +187,15 @@ namespace EnumRun.ScriptDelivery
             {
                 Directory.CreateDirectory(parent);
             }
-            _logger.Write(LogLevel.Debug, null, "File copy, to => {0}", destination);
+            _logger.Write(LogLevel.Debug, logTitle, "File copy, to => {0}", destination);
             File.Copy(targetPath, destination, overwrite: true);
         }
 
         private void DownloadDirectory(string targetPath, string destination, bool overwrite)
         {
-            _logger.Write(LogLevel.Info, null, "Directory download => {0}", targetPath);
+            string logTitle = "DownloadDirectory";
+
+            _logger.Write(LogLevel.Info, logTitle, "Directory download => {0}", targetPath);
 
             Action<string, string> robocopy = (src, dst) =>
             {
@@ -203,13 +213,13 @@ namespace EnumRun.ScriptDelivery
             //  destinationパスの最後が「\」の場合はフォルダーとして扱い、その配下にダウンロード。
             if (destination.EndsWith("\\"))
             {
-                _logger.Write(LogLevel.Debug, null, "Destination path as directory, to => {0}", destination);
+                _logger.Write(LogLevel.Debug, logTitle, "Destination path as directory, to => {0}", destination);
 
                 string destinationChild = Path.Combine(destination, Path.GetFileName(targetPath));
                 if (Directory.Exists(destinationChild) && !overwrite)
                 {
                     //  上書き禁止 終了
-                    _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destinationChild);
+                    _logger.Write(LogLevel.Info, logTitle, "Skip Smb download, already exist. => {0}", destinationChild);
                     return;
                 }
                 robocopy(targetPath, destinationChild);
@@ -221,10 +231,10 @@ namespace EnumRun.ScriptDelivery
             if (Directory.Exists(destination) && !overwrite)
             {
                 //  上書き禁止 終了
-                _logger.Write(LogLevel.Info, null, "Skip Smb download, already exist. => {0}", destination);
+                _logger.Write(LogLevel.Info, logTitle, "Skip Smb download, already exist. => {0}", destination);
                 return;
             }
-            _logger.Write(LogLevel.Debug, null, "Directory copy, to => {0}", destination);
+            _logger.Write(LogLevel.Debug, logTitle, "Directory copy, to => {0}", destination);
             robocopy(targetPath, destination);
         }
 

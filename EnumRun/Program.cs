@@ -1,5 +1,4 @@
-﻿
-using EnumRun;
+﻿using EnumRun;
 using EnumRun.Lib;
 using EnumRun.Logs;
 using EnumRun.Logs.ProcessLog;

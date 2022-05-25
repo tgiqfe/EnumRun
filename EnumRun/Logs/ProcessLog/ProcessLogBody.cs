@@ -18,7 +18,7 @@ namespace EnumRun.Logs.ProcessLog
         public override string HostName { get; set; }
         public override string UserName { get; set; }
         public LogLevel Level { get; set; }
-        public string ScriptFile { get; set; }
+        public string Title { get; set; }
         public string Message { get; set; }
 
         #endregion

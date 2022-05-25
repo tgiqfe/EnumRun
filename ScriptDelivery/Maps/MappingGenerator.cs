@@ -9,8 +9,6 @@ using System.Text.Json.Serialization;
 
 namespace ScriptDelivery.Maps
 {
-    //  CsvとText用のシリアライズ/デシリアライズ用処理が長くなってきたので、partial classにする予定。
-
     internal class MappingGenerator
     {
         #region Deserialize/Serialize

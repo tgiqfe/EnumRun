@@ -34,8 +34,10 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
 
         public void SetLogger(ProcessLogger logger)
         {
+            string logTitle = "SetLogger";
+
             this._logger = logger;
-            _logger.Write(LogLevel.Debug, null, "Matcher [{0}]", this.GetType().Name);
+            _logger.Write(LogLevel.Debug, logTitle, "Matcher [{0}]", this.GetType().Name);
         }
 
         /// <summary>
@@ -44,6 +46,8 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
         /// <param name="param"></param>
         public void SetParam(Dictionary<string, string> param)
         {
+            string logTitle = "SetParam";
+
             if (param == null) { return; }
 
             //  大文字小文字を無視するDictionaryに変換
@@ -65,37 +69,37 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
 
                     if (type == typeof(string))
                     {
-                        _logger.Write(LogLevel.Debug, null, "Parameter type: string, key={0}, value={1}", matchKey, matchValue);
+                        _logger.Write(LogLevel.Debug, logTitle, "Parameter type: string, key={0}, value={1}", matchKey, matchValue);
                         SetString(prop, matchValue, paramAttr.Expand);
                     }
                     else if (type == typeof(bool?))
                     {
-                        _logger.Write(LogLevel.Debug, null, "Parameter type: nullable bool, key={0}, value={1}", matchKey, matchValue);
+                        _logger.Write(LogLevel.Debug, logTitle, "Parameter type: nullable bool, key={0}, value={1}", matchKey, matchValue);
                         SetBool(prop, matchValue);
                     }
                     else if (type == typeof(int?))
                     {
-                        _logger.Write(LogLevel.Debug, null, "Parameter type: nullable int, key={0}, value={1}", matchKey, matchValue);
+                        _logger.Write(LogLevel.Debug, logTitle, "Parameter type: nullable int, key={0}, value={1}", matchKey, matchValue);
                         SetInt(prop, matchValue, paramAttr.Unsigned);
                     }
                     else if (type == typeof(DateTime?))
                     {
-                        _logger.Write(LogLevel.Debug, null, "Parameter type: nullable DataTime, key={0}, value={1}", matchKey, matchValue);
+                        _logger.Write(LogLevel.Debug, logTitle, "Parameter type: nullable DataTime, key={0}, value={1}", matchKey, matchValue);
                         SetDateTime(prop, matchValue);
                     }
                     else if (type == typeof(string[]))
                     {
-                        _logger.Write(LogLevel.Debug, null, "Parameter type: string array, key={0}, value={1}", matchKey, matchValue);
+                        _logger.Write(LogLevel.Debug, logTitle, "Parameter type: string array, key={0}, value={1}", matchKey, matchValue);
                         SetStrings(prop, matchValue, paramAttr.Delimiter, paramAttr.Expand);
                     }
                     else if (type == typeof(Dictionary<string, string>))
                     {
-                        _logger.Write(LogLevel.Debug, null, "Parameter type: Dictionary<string, string>, key={0}, value={1}", matchKey, matchValue);
+                        _logger.Write(LogLevel.Debug, logTitle, "Parameter type: Dictionary<string, string>, key={0}, value={1}", matchKey, matchValue);
                         SetDictionary(prop, matchValue, paramAttr.Delimiter, paramAttr.EqualSign, paramAttr.Expand);
                     }
                     else if ((type = Nullable.GetUnderlyingType(type)).IsEnum)
                     {
-                        _logger.Write(LogLevel.Debug, null, "Parameter type: nullable enum, key={0}, value={1}", matchKey, matchValue);
+                        _logger.Write(LogLevel.Debug, logTitle, "Parameter type: nullable enum, key={0}, value={1}", matchKey, matchValue);
                         SetEnum(prop, matchValue, type);
                     }
                 }
@@ -190,6 +194,8 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
         /// </summary>
         public bool CheckParam()
         {
+            string logTitle = "CheckParam";
+
             bool ret = true;
 
             var props = this.GetType().GetProperties(
@@ -216,7 +222,8 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
             }
             if (mAny.Count > 0) { ret &= mAny.Any(x => x.Value); }
 
-            _logger.Write(ret ? LogLevel.Debug : LogLevel.Attention, null,
+            _logger.Write(ret ? LogLevel.Debug : LogLevel.Attention,
+                logTitle,
                 "Parameter check => {0}", ret ? "Success" : "Failed");
 
             return ret;

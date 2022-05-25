@@ -15,7 +15,7 @@ namespace ScriptDelivery.Files
         [JsonIgnore]
         public string FullPath { get; set; }        //  サーバ側でのみ使用。対象ファイルへの絶対パス
         public string Path { get; set; }            //  サーバ側の、Setting.FilesPathからの相対パス。大文字/小文字は区別
-        public DateTime LastWriteTime { get; set; } //  サーバ側のファイルの更新日時
+        public DateTime? LastWriteTime { get; set; } //  サーバ側のファイルの更新日時
         public string Hash { get; set; }            //  サーバ側のファイルのMD5ハッシュ値
         public bool? Downloadable { get; set; }     //  サーバ側に対象のファイルが存在し、ダウンロードが可能かどうか
 

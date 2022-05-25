@@ -40,6 +40,8 @@ namespace ScriptDelivery.Files
 
         private async void RecheckResource()
         {
+            string logTitle = "RecheckResource";
+
             //  変更開始後にロック開始。10秒巻待機後に再チェック
             //  ロック中に変更があった場合は終了 (同時最大は2スレッドまで)
             //  IOException発生時、最初に戻る(ループさせる)
@@ -49,16 +51,19 @@ namespace ScriptDelivery.Files
             {
                 try
                 {
-                    Item.Logger.Write(Logs.LogLevel.Info, null, "RecheckSource",
-                        "Recheck => {0}", _collection.GetType().Name);
+                    Item.Logger.Write(Logs.LogLevel.Info,
+                        null,
+                        logTitle,
+                        "Recheck => {0}",
+                            _collection.GetType().Name);
                     await Task.Delay(10000);
                     _collection.CheckSource();
                     _during = false;
                 }
                 catch (IOException e)
                 {
-                    Item.Logger.Write(Logs.LogLevel.Error, null, "RecheckResource", "IOException occurred.");
-                    Item.Logger.Write(Logs.LogLevel.Error, null, "RecheckResource", e.Message);
+                    Item.Logger.Write(Logs.LogLevel.Error, logTitle, "IOException occurred.");
+                    Item.Logger.Write(Logs.LogLevel.Error, logTitle, e.Message);
                 }
             }
         }

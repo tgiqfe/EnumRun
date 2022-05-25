@@ -35,15 +35,19 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
 
         public override bool IsMatch(RuleMatch ruleMatch)
         {
+            string logTitle = "IsMatch";
+
             this.Location ??= EnvLocation.All;
 
-            bool ret =  ruleMatch switch
+            bool ret = ruleMatch switch
             {
                 RuleMatch.Equal => EqualMatch(),
                 _ => false,
             };
 
-            _logger.Write(ret ? LogLevel.Debug : LogLevel.Attention, $"MatchType => {ruleMatch}, Match => {ret}");
+            _logger.Write(ret ? LogLevel.Debug : LogLevel.Attention,
+                logTitle,
+                $"MatchType => {ruleMatch}, Match => {ret}");
 
             return ret;
         }
