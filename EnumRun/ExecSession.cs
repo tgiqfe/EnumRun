@@ -31,6 +31,8 @@ namespace EnumRun
         /// </summary>
         public void PreProcess()
         {
+            string logTitle = "PreProcess";
+
             //  前回セッション
             string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
             Dictionary<string, Logs.SessionLog.LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
@@ -70,7 +72,8 @@ namespace EnumRun
                     Enabled = !bootup && !logon && !id; ;
                 }
             }
-            _logger.Write(Enabled ? LogLevel.Info : LogLevel.Warn, null,
+            _logger.Write(Enabled ? LogLevel.Info : LogLevel.Warn,
+                logTitle,
                 "Runnable => {0}, [{1}]",
                     Enabled ? "Enable" : "Disable",
                     sb.ToString());
@@ -80,7 +83,7 @@ namespace EnumRun
                 Any(x => DateTime.Today == x.ExecTime?.Date);
             if (!isTodayProcessed)
             {
-                _logger.Write(LogLevel.Info, "Today first.");
+                _logger.Write(LogLevel.Info, logTitle, "Today first.");
 
                 //  MachineLogを出力
                 using (var mLogger = new Logs.MachineLog.MachineLogger(_setting))
@@ -120,6 +123,8 @@ namespace EnumRun
         /// <param name="targetDirectory"></param>
         public void DeleteOldFile(string targetDirectory)
         {
+            string logTitle = "DeleteOldFile";
+
             int retention = _setting.RetentionPeriod ?? 0;
 
             if (retention > 0)
@@ -131,7 +136,8 @@ namespace EnumRun
                         Where(x => new FileInfo(x).LastWriteTime < border).ToArray();
                 if (files.Length > 0)
                 {
-                    _logger.Write(LogLevel.Info, null,
+                    _logger.Write(LogLevel.Info,
+                        logTitle,
                         "Old file => [ target={0}, count={1} ]",
                             targetDirectory, files.Length);
                 }
@@ -140,12 +146,12 @@ namespace EnumRun
                     foreach (var target in files)
                     {
                         File.Delete(target);
-                        _logger.Write(LogLevel.Debug, "Delete => {0}", target);
+                        _logger.Write(LogLevel.Debug, logTitle, "Delete => {0}", target);
                     }
                 }
                 catch
                 {
-                    _logger.Write(LogLevel.Warn, "Delete failed.");
+                    _logger.Write(LogLevel.Warn, logTitle, "Delete failed.");
                 }
             }
         }

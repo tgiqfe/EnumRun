@@ -36,8 +36,7 @@ namespace EnumRun.ScriptDelivery
             if (session.EnableDelivery)
             {
                 _logger = logger;
-                _logger.Write(LogLevel.Info, null, "Connect server => {0}", session.Uri);
-
+                
                 _filesPath = filesPath;
                 _smbDownloader = new SmbDownloader(_logger);
                 _httpDownloader = new HttpDownloader(_filesPath, _logger);
@@ -47,13 +46,16 @@ namespace EnumRun.ScriptDelivery
 
         public void StartDownload()
         {
+            string logTitle = "StartDownload";
+            _logger.Write(LogLevel.Info, logTitle, "Select ScriptDelivery server => {0}", _session.Uri);
+
             if (_session.EnableDelivery && _session.Enabled)
             {
                 DownloadMappingFile(_session.Client).Wait();
                 MapMathcingCheck();
 
-                _smbDownloader.Process();
-                _httpDownloader.Process(_session.Client, _session.Uri);
+                _smbDownloader.DownloadProcess();
+                _httpDownloader.DownloadProcess(_session.Client, _session.Uri);
                 _deleteManager.Process();
             }
         }
@@ -64,7 +66,9 @@ namespace EnumRun.ScriptDelivery
         /// <returns></returns>
         private async Task DownloadMappingFile(HttpClient client)
         {
-            _logger.Write(LogLevel.Debug, "ScriptDelivery init.");
+            string logTitle = "DownloadMappingFile";
+
+            _logger.Write(LogLevel.Debug, logTitle, "ScriptDelivery init.");
             using (var content = new StringContent(""))
             //using (var response = await client.PostAsync(_uri + "/map", content))
             using (var response = await client.PostAsync(_session.Uri + "/map", content))
@@ -73,18 +77,18 @@ namespace EnumRun.ScriptDelivery
                 {
                     string json = await response.Content.ReadAsStringAsync();
                     _mappingList = JsonSerializer.Deserialize<List<Mapping>>(json);
-                    _logger.Write(LogLevel.Info, "Success, download mapping object.");
+                    _logger.Write(LogLevel.Info, logTitle, "Success, download mapping object.");
 
                     var appVersion = response.Headers.FirstOrDefault(x => x.Key == "App-Version").Value.First();
                     var localVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
                     if (appVersion != localVersion)
                     {
-                        _logger.Write(LogLevel.Warn, null, "AppVersion mismatch. server=>{0} local=>{1}", appVersion, localVersion);
+                        _logger.Write(LogLevel.Warn, logTitle, "AppVersion mismatch. server=>{0} local=>{1}", appVersion, localVersion);
                     }
                 }
                 else
                 {
-                    _logger.Write(LogLevel.Error, "Failed, download mapping object.");
+                    _logger.Write(LogLevel.Error, logTitle, "Failed, download mapping object.");
                 }
             }
         }
@@ -94,7 +98,9 @@ namespace EnumRun.ScriptDelivery
         /// </summary>
         private void MapMathcingCheck()
         {
-            _logger.Write(LogLevel.Debug, "Check, mapping object.");
+            string logTitle = "MapMathcingCheck";
+
+            _logger.Write(LogLevel.Debug, logTitle, "Check, mapping object.");
 
             _mappingList = _mappingList.Where(x =>
             {
@@ -118,7 +124,7 @@ namespace EnumRun.ScriptDelivery
                 };
             }).ToList();
 
-            _logger.Write(LogLevel.Debug, null, "Finish, require check [Match => {0} count]", _mappingList.Count);
+            _logger.Write(LogLevel.Debug, logTitle, "Finish, require check [Match => {0} count]", _mappingList.Count);
 
             foreach (var mapping in _mappingList)
             {
@@ -126,7 +132,7 @@ namespace EnumRun.ScriptDelivery
                 {
                     if (string.IsNullOrEmpty(download.Path))
                     {
-                        _logger.Write(LogLevel.Attention, null, "Parameter missing, Path parameter.");
+                        _logger.Write(LogLevel.Attention, logTitle, "Parameter missing, Path parameter.");
                     }
                     else if (download.Path.StartsWith("\\\\"))
                     {

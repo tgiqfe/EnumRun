@@ -54,9 +54,9 @@ namespace EnumRun.Logs.ProcessLog
         /// ログ出力
         /// </summary>
         /// <param name="level"></param>
-        /// <param name="scriptFile"></param>
+        /// <param name="title"></param>
         /// <param name="message"></param>
-        public void Write(LogLevel level, string scriptFile, string message)
+        public void Write(LogLevel level, string title, string message)
         {
             if (level >= _minLogLevel)
             {
@@ -64,7 +64,7 @@ namespace EnumRun.Logs.ProcessLog
                 {
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"),
                     Level = level,
-                    ScriptFile = scriptFile ?? "-",
+                    Title = title ?? "-",
                     Message = message,
                 }).ConfigureAwait(false);
             }
@@ -74,14 +74,15 @@ namespace EnumRun.Logs.ProcessLog
         /// ログ出力 (strign.Format対応)
         /// </summary>
         /// <param name="level"></param>
-        /// <param name="scriptFile"></param>
+        /// <param name="title"></param>
         /// <param name="format"></param>
         /// <param name="args"></param>
-        public void Write(LogLevel level, string scriptFile, string format, params object[] args)
+        public void Write(LogLevel level, string title, string format, params object[] args)
         {
-            Write(level, scriptFile, string.Format(format, args));
+            Write(level, title, string.Format(format, args));
         }
 
+        /*
         /// <summary>
         /// ログ出力 (スクリプトファイル:無し)
         /// </summary>
@@ -91,6 +92,7 @@ namespace EnumRun.Logs.ProcessLog
         {
             Write(level, null, message);
         }
+        */
 
         /// <summary>
         /// ログ出力 (レベル:Info, スクリプトファイル:無し)
@@ -141,7 +143,7 @@ namespace EnumRun.Logs.ProcessLog
                     {
                         if (_syslog.Enabled)
                         {
-                            await _syslog.SendAsync(body.Level, body.ScriptFile, body.Message);
+                            await _syslog.SendAsync(body.Level, body.Title, body.Message);
                         }
                         else
                         {

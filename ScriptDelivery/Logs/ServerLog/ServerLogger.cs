@@ -57,9 +57,14 @@ namespace ScriptDelivery.Logs.ServerLog
             }
         }
 
-        public void Write(LogLevel level, string address, string title, string format, params string[] args)
+        public void Write(LogLevel level, string address, string title, string format, params object[] args)
         {
             Write(level, address, title, string.Format(format, args));
+        }
+
+        public void Write(LogLevel level, string title, string message)
+        {
+            Write(level, null, title, message);
         }
 
         public void Write(string message)
