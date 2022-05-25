@@ -24,16 +24,6 @@ namespace ScriptDelivery.Logs
 
         #region LiteDB methods
 
-        /*
-        protected LiteDatabase GetLiteDB()
-        {
-            string dbPath = Path.Combine(
-                _logDir,
-                "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-            return new LiteDatabase($"Filename={dbPath};Connection=shared");
-        }
-        */
-
         protected LiteDatabase GetLiteDB(string preName)
         {
             string today = DateTime.Now.ToString("yyyyMMdd");

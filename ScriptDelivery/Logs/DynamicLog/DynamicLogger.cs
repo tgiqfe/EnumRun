@@ -11,17 +11,6 @@ namespace ScriptDelivery.Logs.DynamicLog
         private LiteDatabase _liteDB = null;
         private Dictionary<string, DynamicLogSession> _sessions = null;
 
-        private StreamWriter _writer = null;
-        private bool _logAppend { get { return true; } }
-        private bool _writed = false;
-        private AsyncLock _lock = null;
-
-
-
-        private Dictionary<string, ILiteCollection<BsonDocument>> _collections = null;
-
-
-
         public DynamicLogger(Setting setting)
         {
             _logDir = setting.GetDynamicLogsPath();
@@ -35,39 +24,8 @@ namespace ScriptDelivery.Logs.DynamicLog
             _sessions = new Dictionary<string, DynamicLogSession>();
 
             //  定期的にセッションを閉じる
-            CloseSessionAsync();
+            CloseSequenseAsync();
         }
-
-        /*
-        public DynamicLogger(Setting setting)
-        {
-            string logFileName =
-                $"DynamicLog_{DateTime.Now.ToString("yyyyMMdd")}.log";
-            string logPath = Path.Combine(setting.GetDynamicLogsPath(), logFileName);
-            TargetDirectory.CreateParent(logPath);
-
-            _logDir = setting.GetDynamicLogsPath();
-            _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            _lock = new AsyncLock();
-
-            _liteDB = GetLiteDB("DynamicLog");
-            _collections = new Dictionary<string, ILiteCollection<BsonDocument>>();
-
-            //  定期的にログファイルを書き込むスレッドを開始
-            WriteInFile(logPath);
-        }
-        */
-
-        /*
-        private LiteDatabase GetLiteDB(string preName)
-        {
-            string today = DateTime.Now.ToString("yyyyMMdd");
-            string dbPath = Path.Combine(
-                _logDir,
-                $"{preName}_{today}.db");
-            return new LiteDatabase($"Filename={dbPath};Connection=shared");
-        }
-        */
 
         public async void Write(string table, Stream bodyStream)
         {
@@ -103,44 +61,10 @@ namespace ScriptDelivery.Logs.DynamicLog
             }
         }
 
-
-        public async void Write2(string table, Stream bodyStream)
-        {
-            try
-            {
-                using (await _lock.LockAsync())
-                {
-                    if (string.IsNullOrEmpty(table))
-                    {
-                        return;
-                    }
-
-                    ILiteCollection<BsonDocument> collection = null;
-                    try
-                    {
-                        collection = _collections[table];
-                    }
-                    catch
-                    {
-                        collection = _liteDB.GetCollection(table);
-                        _collections[table] = collection;
-                    }
-                    using (var sr = new StreamReader(bodyStream))
-                    {
-                        var bsonValue = JsonSerializer.Deserialize(sr);
-                        BsonDocument doc = bsonValue as BsonDocument;
-                        collection.Insert(doc);
-
-                        await _writer.WriteLineAsync(doc.ToString());
-                    }
-
-                    _writed = true;
-                }
-            }
-            catch { }
-        }
-
-        private async void CloseSessionAsync()
+        /// <summary>
+        /// 定期的にセッションを閉じる
+        /// </summary>
+        private async void CloseSequenseAsync()
         {
             while (true)
             {
@@ -155,12 +79,16 @@ namespace ScriptDelivery.Logs.DynamicLog
                         _sessions[key].Writer.Dispose();
                         _sessions[key].Collection = null;
                     }
+                    Console.WriteLine($"{key} close ########");
                     _sessions.Remove(key);
                 }
             }
         }
 
-        public async void Close()
+        /// <summary>
+        /// クローズ処理
+        /// </summary>
+        public async Task CloseAsync()
         {
             foreach (var session in _sessions.Values)
             {

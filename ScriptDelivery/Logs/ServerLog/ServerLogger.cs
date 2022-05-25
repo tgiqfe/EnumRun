@@ -23,7 +23,6 @@ namespace ScriptDelivery.Logs.ServerLog
 
             _logDir = setting.GetLogsPath();
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
-            //_rwLock = new ReaderWriterLock();
             _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
@@ -74,7 +73,6 @@ namespace ScriptDelivery.Logs.ServerLog
         {
             try
             {
-                //_rwLock.AcquireWriterLock(10000);
                 using (await _lock.LockAsync())
                 {
                     //  コンソール出力
@@ -108,10 +106,6 @@ namespace ScriptDelivery.Logs.ServerLog
                 }
             }
             catch { }
-            finally
-            {
-                //_rwLock.ReleaseWriterLock();
-            }
         }
 
         /// <summary>
@@ -120,7 +114,6 @@ namespace ScriptDelivery.Logs.ServerLog
         /// <returns></returns>
         public override async Task CloseAsync()
         {
-            Console.WriteLine("close logger");
             Write("終了");
 
             using (await _lock.LockAsync())

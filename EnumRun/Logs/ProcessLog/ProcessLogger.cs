@@ -179,17 +179,5 @@ namespace EnumRun.Logs.ProcessLog
                 base.Close();
             }
         }
-
-        /*
-        public override void Close()
-        {
-            base.Close();
-            
-            if (_writer != null) { _writer.Dispose(); }
-            if (_liteDB != null) { _liteDB.Dispose(); }
-            if (_syslog != null) { _syslog.Dispose(); }
-            
-        }
-        */
     }
 }
