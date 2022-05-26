@@ -10,6 +10,15 @@
   - ローカルフォルダー
   - Logstash (Elasticsearch + Kibana)
   - Syslog (UDP/TCP/暗号化TCP/クライアント認証暗号化TCP に対応)
+  - DynamicLog (ScriptDeliveryサーバ宛にログを転送)
 - 中央サーバからスクリプトファイルを配信
+
+## EnumRun
+
+
+
+## ScriptDelivery
+
+
 
 
