@@ -13,14 +13,14 @@ namespace EnumRun.Logs
     /// <summary>
     /// Elasticsearch + Kibana + Logstash環境の、Logstashサーバへログを転送する
     /// </summary>
-    internal class LogstashTransport
+    internal class TransportLogstash
     {
         public bool Enabled { get; set; }
 
         private HttpRequestMessage _request = null;
 
-        public LogstashTransport() { }
-        public LogstashTransport(string logstashServer)
+        public TransportLogstash() { }
+        public TransportLogstash(string logstashServer)
         {
             var info = new ServerInfo(logstashServer, 80, "http");
 

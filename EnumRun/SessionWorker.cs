@@ -45,56 +45,7 @@ namespace EnumRun
                 lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null,
                 body.Session);
 
-            /*
-            //  前回セッション
-            string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
-            Dictionary<string, Logs.SessionLog.LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
-
-            //  今回セッション
-            var body = new Logs.SessionLog.SessionLogBody();
-
-            //  前回セッションと比較して、実行可否チェック
-            StringBuilder sb = new StringBuilder();
-            var lastSession = lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null;
-            var currentSession = body.Session;
-            if (lastSession == null)
-            {
-                Enabled = true;
-            }
-            else
-            {
-                bool rest = lastSession.ExecTime == null ?
-                    true :
-                    ((DateTime)currentSession.ExecTime - (DateTime)lastSession.ExecTime).TotalSeconds > (_setting.RestTime ?? 0);
-                bool bootup = lastSession.BootupTime == currentSession.BootupTime;
-                bool logon = lastSession.LogonTime == currentSession.LogonTime;
-                bool id = lastSession.LogonId == currentSession.LogonId;
-
-                if (rest)
-                {
-                    sb.Append("RestTime=Over");
-                    Enabled = true;
-                }
-                else
-                {
-                    sb.Append("RestTime=NotOver");
-                    sb.Append(string.Format(", BootupTime={0}, LogonTime={1}, LogonId={2}",
-                        bootup ? "SameAsLast" : "Changed",
-                        logon ? "SameAsLast" : "Changed",
-                        id ? "SameAsLast" : "Changed"));
-                    Enabled = !bootup && !logon && !id; ;
-                }
-            }
-            _logger.Write(Enabled ? LogLevel.Info : LogLevel.Warn,
-                logTitle,
-                "Runnable => {0}, [{1}]",
-                    Enabled ? "Enable" : "Disable",
-                    sb.ToString());
-            */
-
-
-
-            //  本日初回実行
+            //  本日初回実行 (今回セッションで実行不可としても、本日初実行ならば実行)
             bool isTodayProcessed = lastSessions.Values.Any(x => DateTime.Today == x.ExecTime?.Date);
             if (!isTodayProcessed)
             {
@@ -127,12 +78,19 @@ namespace EnumRun
         /// </summary>
         public void PostProcess()
         {
+            //  [案]ここで外部サーバへログ転送失敗していたログキャッシュを、再転送する処理
+
             //  ScriptDeliverySessionと同時にDisposeした場合、最後の終了ログを出力する前に
             //  セッションが閉じてしまうことがある為、先に明示的にloggerをクローズ。
             _logger.CloseAsync().Wait();
         }
 
-
+        /// <summary>
+        /// 現在セッションについて、実行可否を確認
+        /// </summary>
+        /// <param name="lastSession"></param>
+        /// <param name="currentSession"></param>
+        /// <returns></returns>
         private bool RunnableCheck(Logs.SessionLog.LogonSession lastSession, Logs.SessionLog.LogonSession currentSession)
         {
             string logTitle = "RunnableCheck";
@@ -140,8 +98,6 @@ namespace EnumRun
             bool ret = false;
 
             StringBuilder sb = new StringBuilder();
-            //var lastSession = lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null;
-            //var currentSession = body.Session;
             if (lastSession == null)
             {
                 _logger.Write(LogLevel.Debug, logTitle, "Last session is null.");

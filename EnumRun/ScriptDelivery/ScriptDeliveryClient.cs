@@ -26,27 +26,6 @@ namespace EnumRun.ScriptDelivery
         private HttpDownloader _httpDownloader = null;
         private DeleteManager _deleteManager = null;
 
-        /// <summary>
-        /// コンストラクタ
-        /// </summary>
-        /*
-        public ScriptDeliveryClient(ScriptDeliverySession session, string filesPath, string logsPath, string trashPath, Logs.ProcessLog.ProcessLogger logger)
-        {
-            this._session = session;
-
-            if (session.EnableDelivery)
-            {
-                _logger = logger;
-
-                _filesPath = filesPath;
-                _smbDownloader = new SmbDownloader(_logger);
-                _httpDownloader = new HttpDownloader(_filesPath, _logger);
-                _deleteManager = new DeleteManager(filesPath, trashPath, _logger);
-            }
-        }
-        */
-
-        
         public ScriptDeliveryClient(ScriptDeliverySession session, EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
         {
             this._session = session;
@@ -88,7 +67,6 @@ namespace EnumRun.ScriptDelivery
 
             _logger.Write(LogLevel.Debug, logTitle, "ScriptDelivery init.");
             using (var content = new StringContent(""))
-            //using (var response = await client.PostAsync(_uri + "/map", content))
             using (var response = await client.PostAsync(_session.Uri + "/map", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
