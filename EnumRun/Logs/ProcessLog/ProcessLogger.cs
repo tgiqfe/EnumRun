@@ -31,18 +31,18 @@ namespace EnumRun.Logs.ProcessLog
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
             {
-                _logstash = new LogstashTransport(setting.Logstash.Server);
+                _logstash = new TransportLogstash(setting.Logstash.Server);
             }
             if (!string.IsNullOrEmpty(setting.Syslog?.Server))
             {
-                _syslog = new SyslogTransport(setting);
+                _syslog = new TransportSyslog(setting);
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
                 _syslog.ProcId = ProcessLogBody.TAG;
             }
             if (session.EnableLogTransport)
             {
-                _dynamicLog = new DynamicLogTransport(session);
+                _dynamicLog = new TransportDynamicLog(session);
             }
 
             Write("開始");

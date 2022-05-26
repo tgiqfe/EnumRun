@@ -5,18 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using EnumRun.ScriptDelivery;
 
 namespace EnumRun.Logs
 {
-    internal class DynamicLogTransport
+    /// <summary>
+    /// ScriptDeliveryサーバ宛に型未指定でログ転送
+    /// </summary>
+    internal class TransportDynamicLog
     {
         private ScriptDeliverySession _session = null;
         private JsonSerializerOptions _options = null;
         public bool Enabled { get; set; }
 
-        public DynamicLogTransport(ScriptDeliverySession session)
+        public TransportDynamicLog(ScriptDeliverySession session)
         {
             this._session = session;
             this._options = new System.Text.Json.JsonSerializerOptions()
@@ -42,5 +44,11 @@ namespace EnumRun.Logs
                 return false;
             }
         }
+
+        public async Task<bool> SendAsync(string table, object obj)
+        {
+            return await SendAsync(table, JsonSerializer.Serialize(obj, _options));
+        }
+
     }
 }
