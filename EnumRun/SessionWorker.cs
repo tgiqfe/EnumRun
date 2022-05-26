@@ -7,7 +7,7 @@ using EnumRun.Logs;
 
 namespace EnumRun
 {
-    internal class ExecSession
+    internal class SessionWorker
     {
         public bool Enabled { get; set; }
 
@@ -20,7 +20,7 @@ namespace EnumRun
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="logger"></param>
-        public ExecSession(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
+        public SessionWorker(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
         {
             _setting = setting;
             _logger = logger;
