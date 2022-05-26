@@ -14,7 +14,7 @@ module.exports = {
       ],
       sidebar: [
         {
-          title: '概要',
+          title: 'Guide',
           path: '/Guide/',
           collapsable: true,
           sidebarDepth: 2,
@@ -25,17 +25,27 @@ module.exports = {
           ]
         },
         {
-          title: '実行',
-          path: '/Execute/',
+          title: 'EnumRun',
+          path: '/EnumRun/',
           collapsable: true,
           sidebarDepth: 2,
           children: [
-            '/Execute/execute_01.md',
-            '/Execute/execute_02.md'
+            '/EnumRun/execute_01.md',
+            '/EnumRun/execute_02.md'
           ]
         },
         {
-          title: '設定',
+          title: 'ScriptDelivery',
+          path: '/ScriptDelivery/',
+          collapse: true,
+          sidebarDepth: 2,
+          children: [
+            '/ScriptDelivery/scriptDelivery_01.md',
+            '/ScriptDelivery/scriptDelivery_02.md'
+          ]
+        },
+        {
+          title: 'Setting',
           path: '/Setting/',
           collapsable: true,
           sidebarDepth: 2,
@@ -53,7 +63,7 @@ module.exports = {
           ]
         },
         {
-            title: '補足',
+            title: 'Sample',
             path: '/Sample/',
             collapsable: true,
             sidebarDepth: 2,
@@ -64,6 +74,9 @@ module.exports = {
           }
       ],
       sidebarDepth: 2,
+      header:{
+        background: '#555555'
+      }
     },
     dest: '../docs/'
   }

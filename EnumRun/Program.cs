@@ -1,6 +1,5 @@
 ﻿using EnumRun;
 using EnumRun.Lib;
-using EnumRun.Logs;
 using EnumRun.Logs.ProcessLog;
 using EnumRun.ScriptDelivery;
 
@@ -19,25 +18,24 @@ if (initial)
     Environment.Exit(0);
 }
 
-
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
-using (var sdSession = new ScriptDeliverySession(setting))
-using (var logger = new ProcessLogger(setting, sdSession))
+using (var session = new ScriptDeliverySession(setting))
+using (var logger = new ProcessLogger(setting, session))
 {
     logger.Write(setting.ToLog());
 
     //  セッション開始時処理
-    var exSession = new ExecSession(setting, logger);
-    exSession.PreProcess();
+    var worker = new SessionWorker(setting, logger);
+    worker.PreProcess();
 
     //  ScriptDeliveryサーバからスクリプトをダウンロード
-    //var sdc = new ScriptDeliveryClient(setting, logger);
-    var sdc = new ScriptDeliveryClient(sdSession, setting.FilesPath, setting.LogsPath, setting.ScriptDelivery?.TrashPath, logger);
+    //var sdc = new ScriptDeliveryClient(session, setting.FilesPath, setting.LogsPath, setting.ScriptDelivery?.TrashPath, logger);
+    var sdc = new ScriptDeliveryClient(session, setting, logger);
     sdc.StartDownload();
 
-    if (exSession.Enabled && Directory.Exists(setting.GetFilesPath()))
+    if (worker.Enabled && Directory.Exists(setting.GetFilesPath()))
     {
         var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
@@ -49,7 +47,7 @@ using (var logger = new ProcessLogger(setting, sdSession))
     }
 
     //  セッション終了時処理
-    exSession.PostProcess();
+    worker.PostProcess();
 }
 
 Console.ReadLine();

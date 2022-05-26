@@ -19,8 +19,8 @@ namespace EnumRun.ScriptDelivery
     {
         private ScriptDeliverySession _session = null;
         private Logs.ProcessLog.ProcessLogger _logger = null;
+        
         private string _filesPath = null;
-
         private List<Mapping> _mappingList = null;
         private SmbDownloader _smbDownloader = null;
         private HttpDownloader _httpDownloader = null;
@@ -29,6 +29,7 @@ namespace EnumRun.ScriptDelivery
         /// <summary>
         /// コンストラクタ
         /// </summary>
+        /*
         public ScriptDeliveryClient(ScriptDeliverySession session, string filesPath, string logsPath, string trashPath, Logs.ProcessLog.ProcessLogger logger)
         {
             this._session = session;
@@ -36,21 +37,38 @@ namespace EnumRun.ScriptDelivery
             if (session.EnableDelivery)
             {
                 _logger = logger;
-                
+
                 _filesPath = filesPath;
                 _smbDownloader = new SmbDownloader(_logger);
                 _httpDownloader = new HttpDownloader(_filesPath, _logger);
                 _deleteManager = new DeleteManager(filesPath, trashPath, _logger);
             }
         }
+        */
+
+        
+        public ScriptDeliveryClient(ScriptDeliverySession session, EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
+        {
+            this._session = session;
+            this._logger = logger;
+
+            if (session.EnableDelivery)
+            {
+                _filesPath = setting.FilesPath;
+                _smbDownloader = new SmbDownloader(_logger);
+                _httpDownloader = new HttpDownloader(_filesPath, _logger);
+                _deleteManager = new DeleteManager(setting.FilesPath, setting.ScriptDelivery?.TrashPath, _logger);
+            }
+        }
 
         public void StartDownload()
         {
             string logTitle = "StartDownload";
-            _logger.Write(LogLevel.Info, logTitle, "Select ScriptDelivery server => {0}", _session.Uri);
-
+            
             if (_session.EnableDelivery && _session.Enabled)
             {
+                _logger.Write(LogLevel.Info, logTitle, "Select ScriptDelivery server => {0}", _session.Uri);
+
                 DownloadMappingFile(_session.Client).Wait();
                 MapMathcingCheck();
 

@@ -7,7 +7,7 @@ using EnumRun.Logs;
 
 namespace EnumRun
 {
-    internal class ExecSession
+    internal class SessionWorker
     {
         public bool Enabled { get; set; }
 
@@ -20,7 +20,7 @@ namespace EnumRun
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="logger"></param>
-        public ExecSession(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
+        public SessionWorker(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
         {
             _setting = setting;
             _logger = logger;
@@ -33,6 +33,19 @@ namespace EnumRun
         {
             string logTitle = "PreProcess";
 
+            //  前回セッション
+            string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
+            Dictionary<string, Logs.SessionLog.LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
+
+            //  今回セッション
+            var body = new Logs.SessionLog.SessionLogBody();
+
+            //  前回/今回セッションを比較し、実行可否チェック
+            this.Enabled = RunnableCheck(
+                lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null,
+                body.Session);
+
+            /*
             //  前回セッション
             string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
             Dictionary<string, Logs.SessionLog.LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
@@ -77,10 +90,12 @@ namespace EnumRun
                 "Runnable => {0}, [{1}]",
                     Enabled ? "Enable" : "Disable",
                     sb.ToString());
+            */
+
+
 
             //  本日初回実行
-            bool isTodayProcessed = lastSessions.Values.
-                Any(x => DateTime.Today == x.ExecTime?.Date);
+            bool isTodayProcessed = lastSessions.Values.Any(x => DateTime.Today == x.ExecTime?.Date);
             if (!isTodayProcessed)
             {
                 _logger.Write(LogLevel.Info, logTitle, "Today first.");
@@ -117,11 +132,60 @@ namespace EnumRun
             _logger.CloseAsync().Wait();
         }
 
+
+        private bool RunnableCheck(Logs.SessionLog.LogonSession lastSession, Logs.SessionLog.LogonSession currentSession)
+        {
+            string logTitle = "RunnableCheck";
+
+            bool ret = false;
+
+            StringBuilder sb = new StringBuilder();
+            //var lastSession = lastSessions.ContainsKey(Item.ProcessName) ? lastSessions[Item.ProcessName] : null;
+            //var currentSession = body.Session;
+            if (lastSession == null)
+            {
+                _logger.Write(LogLevel.Debug, logTitle, "Last session is null.");
+                ret = true;
+            }
+            else
+            {
+                bool rest = lastSession.ExecTime == null ?
+                    true :
+                    ((DateTime)currentSession.ExecTime - (DateTime)lastSession.ExecTime).TotalSeconds > (_setting.RestTime ?? 0);
+                bool bootup = lastSession.BootupTime == currentSession.BootupTime;
+                bool logon = lastSession.LogonTime == currentSession.LogonTime;
+                bool id = lastSession.LogonId == currentSession.LogonId;
+
+                if (rest)
+                {
+                    sb.Append("RestTime=Over");
+                    ret = true;
+                }
+                else
+                {
+                    sb.Append("RestTime=NotOver");
+                    sb.Append(string.Format(", BootupTime={0}, LogonTime={1}, LogonId={2}",
+                        bootup ? "SameAsLast" : "Changed",
+                        logon ? "SameAsLast" : "Changed",
+                        id ? "SameAsLast" : "Changed"));
+                    ret = !bootup && !logon && !id; ;
+                }
+            }
+            _logger.Write(ret ? LogLevel.Info : LogLevel.Warn,
+                logTitle,
+                "Runnable => {0}, [{1}]",
+                    ret ? "Enable" : "Disable",
+                    sb.ToString());
+
+            return ret;
+        }
+
+
         /// <summary>
         /// 保持期間以上前のファイルを削除
         /// </summary>
         /// <param name="targetDirectory"></param>
-        public void DeleteOldFile(string targetDirectory)
+        private void DeleteOldFile(string targetDirectory)
         {
             string logTitle = "DeleteOldFile";
 

@@ -4,8 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyVersion>0.7.0.5</AssemblyVersion>
-    <FileVersion>0.7.0.5</FileVersion>
+    <AssemblyVersion>0.7.0.6</AssemblyVersion>
+    <FileVersion>0.7.0.6</FileVersion>
     <DebugType>full</DebugType>
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
