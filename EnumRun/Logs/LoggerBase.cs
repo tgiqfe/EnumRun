@@ -15,9 +15,9 @@ namespace EnumRun.Logs
         protected string _logDir = null;
         protected StreamWriter _writer = null;
         protected AsyncLock _lock = null;
-        protected LogstashTransport _logstash = null;
-        protected SyslogTransport _syslog = null;
-        protected DynamicLogTransport _dynamicLog = null;
+        protected TransportLogstash _logstash = null;
+        protected TransportSyslog _syslog = null;
+        protected TransportDynamicLog _dynamicLog = null;
         protected LiteDatabase _liteDB = null;
 
         protected virtual bool _logAppend { get; }

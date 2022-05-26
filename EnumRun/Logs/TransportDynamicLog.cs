@@ -5,18 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using EnumRun.ScriptDelivery;
 
 namespace EnumRun.Logs
 {
-    internal class DynamicLogTransport
+    /// <summary>
+    /// ScriptDeliveryサーバ宛に型未指定でログ転送
+    /// </summary>
+    internal class TransportDynamicLog
     {
         private ScriptDeliverySession _session = null;
         private JsonSerializerOptions _options = null;
         public bool Enabled { get; set; }
 
-        public DynamicLogTransport(ScriptDeliverySession session)
+        public TransportDynamicLog(ScriptDeliverySession session)
         {
             this._session = session;
             this._options = new System.Text.Json.JsonSerializerOptions()
@@ -32,19 +34,21 @@ namespace EnumRun.Logs
 
         public async Task<bool> SendAsync(string table, string json)
         {
-            //_logger.Write(LogLevel.Debug, "Search, download file from ScriptDelivery server.");
-
             using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
             using (var response = await _session.Client.PostAsync(_session.Uri + $"/logs/{table}", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    //_logger.Write(LogLevel.Info, "Success, download DownloadFile list object");
                     return true;
                 }
-                //_logger.Write(LogLevel.Error, "Failed, download DownloadFile list object");
                 return false;
             }
         }
+
+        public async Task<bool> SendAsync(string table, object obj)
+        {
+            return await SendAsync(table, JsonSerializer.Serialize(obj, _options));
+        }
+
     }
 }

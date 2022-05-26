@@ -63,8 +63,8 @@ namespace EnumRun.ScriptDelivery
 
         public void Process()
         {
-            SearchTarget();
-            DeleteTarget();
+            SearchDeleteTarget();
+            ProcessDeleteTarget();
         }
 
         public void AddTarget(string[] array)
@@ -83,8 +83,13 @@ namespace EnumRun.ScriptDelivery
             }
         }
 
-        private void SearchTarget()
+        /// <summary>
+        /// 削除対象ファイル/フォルダーと、削除除外対象ファイル/フォルダーをサーチ
+        /// </summary>
+        private void SearchDeleteTarget()
         {
+            string logTitle = "SearchDeleteTarget";
+
             if (!Directory.Exists(_targetDir)) { return; }
 
             List<SearchPath> targetList = new List<SearchPath>(_targets.Select(x => new SearchPath(_targetDir, x)));
@@ -97,14 +102,14 @@ namespace EnumRun.ScriptDelivery
                 Where(x => targetList.Any(y => y.IsMatch(x))).
                 ToList();
 
-            _logger.Write(Logs.LogLevel.Debug, null, "Delete [file => {0}, directory => {1}]", _fList.Count, _dList.Count);
+            _logger.Write(Logs.LogLevel.Debug, logTitle, "Delete [file => {0}, directory => {1}]", _fList.Count, _dList.Count);
 
             for (int i = _dList.Count - 1; i >= 0; i--)
             {
                 var matchSearch = excludeList.FirstOrDefault(x => x.IsMatch(_dList[i]));
                 if (matchSearch != null)
                 {
-                    _logger.Write(Logs.LogLevel.Info, null, "Exclude directory, [{0}]", _dList[i]);
+                    _logger.Write(Logs.LogLevel.Info, logTitle, "Exclude directory, [{0}]", _dList[i]);
                     
                     string dirName = _dList[i];
                     _dList.RemoveAt(i);
@@ -113,13 +118,13 @@ namespace EnumRun.ScriptDelivery
                         ToList().
                         ForEach(x =>
                         {
-                            _logger.Write(Logs.LogLevel.Info, null, "Exclude lower path file, [{0}]", x);
+                            _logger.Write(Logs.LogLevel.Info, logTitle, "Exclude lower path file, [{0}]", x);
                         });
                     _dList.Where(x => x.StartsWith(dirName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).
                         ToList().
                         ForEach(x =>
                         {
-                            _logger.Write(Logs.LogLevel.Info, null, "Exclude lower path directory, [{0}]", x);
+                            _logger.Write(Logs.LogLevel.Info, logTitle, "Exclude lower path directory, [{0}]", x);
                         });
                     _fList.RemoveAll(x => x.StartsWith(dirName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
                     _dList.RemoveAll(x => x.StartsWith(dirName + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
@@ -130,13 +135,13 @@ namespace EnumRun.ScriptDelivery
                 var matchSearch = excludeList.FirstOrDefault(x => x.IsMatch(_fList[i]));
                 if (matchSearch != null)
                 {
-                    _logger.Write(Logs.LogLevel.Info, null, "Exclude file, [{0}]", _fList[i]);
+                    _logger.Write(Logs.LogLevel.Info, logTitle, "Exclude file, [{0}]", _fList[i]);
 
                     _dList.Where(x => _fList[i].StartsWith(x + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)).
                         ToList().
                         ForEach(x =>
                         {
-                            _logger.Write(Logs.LogLevel.Info, null, "Exclude upper path directory, [{0}]", x);
+                            _logger.Write(Logs.LogLevel.Info, logTitle, "Exclude upper path directory, [{0}]", x);
                         });
 
                     _dList.RemoveAll(x => _fList[i].StartsWith(x + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
@@ -144,11 +149,16 @@ namespace EnumRun.ScriptDelivery
                 }
             }
 
-            _logger.Write(Logs.LogLevel.Debug, null, "Delete [file => {0}, directory => {1}]", _fList.Count, _dList.Count);
+            _logger.Write(Logs.LogLevel.Debug, logTitle, "Delete [file => {0}, directory => {1}]", _fList.Count, _dList.Count);
         }
 
-        private void DeleteTarget()
+        /// <summary>
+        /// 削除実行
+        /// </summary>
+        private void ProcessDeleteTarget()
         {
+            string logTitle = "ProcessDeleteTarget";
+
             foreach (string delTarget in _dList ?? new List<string>())
             {
                 try
@@ -157,7 +167,7 @@ namespace EnumRun.ScriptDelivery
                     {
                         Directory.Delete(delTarget, true);
 
-                        _logger.Write(Logs.LogLevel.Info, null, "Delete directory, [{0}]", delTarget);
+                        _logger.Write(Logs.LogLevel.Info, logTitle, "Delete directory, [{0}]", delTarget);
                     }
                     else
                     {
@@ -173,7 +183,7 @@ namespace EnumRun.ScriptDelivery
                         }
                         Directory.Move(delTarget, destination);
 
-                        _logger.Write(Logs.LogLevel.Info, null, "ToTrash directory, [{0} -> {1}]", delTarget, destination);
+                        _logger.Write(Logs.LogLevel.Info, logTitle, "ToTrash directory, [{0} -> {1}]", delTarget, destination);
                     }
                 }
                 catch { }
@@ -187,7 +197,7 @@ namespace EnumRun.ScriptDelivery
                         if (string.IsNullOrEmpty(_trashPath))
                         {
                             File.Delete(delTarget);
-                            _logger.Write(Logs.LogLevel.Info, null, "Delete file, [{0}]", delTarget);
+                            _logger.Write(Logs.LogLevel.Info, logTitle, "Delete file, [{0}]", delTarget);
                         }
                         else
                         {
@@ -203,7 +213,7 @@ namespace EnumRun.ScriptDelivery
                             }
                             File.Move(delTarget, destination);
 
-                            _logger.Write(Logs.LogLevel.Info, null, "ToTrash file, [{0} -> {1}]", delTarget, destination);
+                            _logger.Write(Logs.LogLevel.Info, logTitle, "ToTrash file, [{0} -> {1}]", delTarget, destination);
                         }
                     }
                     catch { }

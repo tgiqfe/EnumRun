@@ -20,6 +20,8 @@ namespace ScriptDelivery.Files
 
         public void CheckSource()
         {
+            string logTitle = "CheckSource";
+
             _list = new List<DownloadHttp>();
             if (Directory.Exists(_baseDir))
             {
@@ -29,8 +31,11 @@ namespace ScriptDelivery.Files
                 }
             }
 
-            Item.Logger.Write(ScriptDelivery.Logs.LogLevel.Info, null, "DownloadFileList", "DownloadFiles => [{0}]",
-                string.Join(", ", _list.Select(x => x.Path)));
+            Item.Logger.Write(ScriptDelivery.Logs.LogLevel.Info, 
+                null,
+                logTitle, 
+                "DownloadFiles => [{0}]",
+                    string.Join(", ", _list.Select(x => x.Path)));
         }
 
         /// <summary>
