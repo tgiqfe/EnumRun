@@ -78,6 +78,8 @@ namespace EnumRun
         /// </summary>
         public void PostProcess()
         {
+            //  [案]ここで外部サーバへログ転送失敗していたログキャッシュを、再転送する処理
+
             //  ScriptDeliverySessionと同時にDisposeした場合、最後の終了ログを出力する前に
             //  セッションが閉じてしまうことがある為、先に明示的にloggerをクローズ。
             _logger.CloseAsync().Wait();

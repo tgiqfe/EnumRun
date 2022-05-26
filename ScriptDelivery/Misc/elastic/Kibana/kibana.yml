@@ -1,0 +1,14 @@
+# Kibana config sample
+
+server.host: "0.0.0.0"
+
+# This section was automatically generated during setup.
+elasticsearch.hosts: ['https://192.168.10.100:9200']
+elasticsearch.serviceAccountToken: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+elasticsearch.ssl.certificateAuthorities: ['C:\App\certs\ca.crt']
+xpack.fleet.outputs: [{id: fleet-default-output, name: default, is_default: true, is_default_monitoring: true, type: elasticsearch, hosts: ['https://192.168.10.100:9200'], ca_trusted_fingerprint: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}]
+
+server.ssl.certificate: 'C:\App\certs\cert.crt'
+server.ssl.key: 'C:\App\certs\cert.key'
+server.ssl.enabled: true
+

@@ -16,7 +16,7 @@ namespace EnumRun.Logs
     /// <summary>
     /// Syslogサーバへログを転送する
     /// </summary>
-    internal class SyslogTransport : IDisposable
+    internal class TransportSyslog : IDisposable
     {
         public bool Enabled { get; set; }
 
@@ -28,8 +28,8 @@ namespace EnumRun.Logs
         public string MsgId { get; set; }
         public StructuredData[] StructuredDataParams { get; set; }
 
-        public SyslogTransport() { }
-        public SyslogTransport(EnumRunSetting setting)
+        public TransportSyslog() { }
+        public TransportSyslog(EnumRunSetting setting)
         {
             var info = new ServerInfo(setting.Syslog.Server, defaultPort: 514, defaultProtocol: "udp");
             Format format = FormatMapper.ToFormat(setting.Syslog.Format);
