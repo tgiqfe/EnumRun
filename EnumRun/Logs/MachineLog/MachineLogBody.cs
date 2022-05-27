@@ -25,6 +25,7 @@ namespace EnumRun.Logs.MachineLog
         public override string ProcessName { get; set; }
         public override string HostName { get; set; }
         public override string UserName { get; set; }
+        public override LogLevel Level { get; set; }
         public string DomainName { get; set; }
         public string OS { get; set; }
         public string OSVersion { get; set; }
@@ -41,6 +42,7 @@ namespace EnumRun.Logs.MachineLog
             this.HostName = Environment.MachineName;
             this.UserName = Environment.UserName;
             this.Serial = $"{Item.Serial}_{_index++}";
+            this.Level = LogLevel.Info;
 
             this.Date = DateTime.Now.ToString("yyyy/MM:dd HH:mm:ss");
             ManagementObject mo = new ManagementClass("Win32_OperatingSystem").
@@ -65,7 +67,7 @@ namespace EnumRun.Logs.MachineLog
             return JsonSerializer.Serialize(this, _options);
         }
 
-        public Dictionary<string, string> GetSyslogMessage()
+        public override Dictionary<string, string> SplitForSyslog()
         {
             var ret = new Dictionary<string, string>();
             ret["MachineInfo"] =

@@ -186,72 +186,41 @@ namespace EnumRun
         //  ↓ログサーバへの転送に失敗したキャッシュログを再送信
 
 
-        private async void SendCacheLog()
+        private async Task SendCacheLog()
         {
             if (Directory.Exists(_setting.LogsPath))
             {
-                string todayDbPath = Path.Combine(
-                    _setting.LogsPath,
-                    "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-                var todayCacheDB = new LiteDB.LiteDatabase($"Filename={todayDbPath};Connection=shared");
-
-
                 foreach (string dbPath in Directory.GetFiles(_setting.LogsPath, "Cache_*.db"))
                 {
-                    using (var liteDB = new LiteDB.LiteDatabase($"Filename={dbPath};Connection=shared"))
+                    bool isEmpty = false;
+                    using (var cacheDB = new LiteDB.LiteDatabase($"Filename={dbPath};Connection=shared"))
                     {
-                        foreach (string name in liteDB.GetCollectionNames())
+                        foreach (string name in cacheDB.GetCollectionNames())
                         {
                             if (name.StartsWith(Logs.ProcessLog.ProcessLogBody.TAG))
                             {
-                                if (name.EndsWith("logstash"))
-                                {
-                                    TransportLogstash logstash = new TransportLogstash(_setting.Logstash.Server);
-                                    if (logstash.Enabled)
-                                    {
-                                        var collection = liteDB.GetCollection<Logs.ProcessLog.ProcessLogBody>(name);
-                                        List<Logs.ProcessLog.ProcessLogBody> failedlist = new List<Logs.ProcessLog.ProcessLogBody>();
-
-                                        foreach (var entry in collection.FindAll())
-                                        {
-                                            string json = entry.GetJson();
-                                            bool ret = await logstash.SendAsync(json);
-                                            if (!ret)
-                                            {
-                                                failedlist.Add(entry);
-                                            }
-                                        }
-
-                                        liteDB.DropCollection(name);
-                                        if (failedlist.Count > 0)
-                                        {
-                                            var todayCollection = todayCacheDB.GetCollection<Logs.ProcessLog.ProcessLogBody>(Logs.ProcessLog.ProcessLogBody.TAG + "_logstash");
-                                            foreach (var item in failedlist)
-                                            {
-                                                todayCollection.Upsert(item);
-                                            }
-                                        }
-
-                                    }
-                                }
-                                else if (name.EndsWith("syslog"))
-                                {
-
-                                }
-                                else if (name.EndsWith("dynamicLog"))
-                                {
-
-                                }
+                                await _logger.ResendAsync<Logs.ProcessLog.ProcessLogBody>(cacheDB, name, _setting, _session);
                             }
                             else if (name.StartsWith(Logs.MachineLog.MachineLogBody.TAG))
                             {
-
+                                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting, _session))
+                                {
+                                    await mLogger.ResendAsync<Logs.MachineLog.MachineLogBody>(cacheDB, name, _setting, _session);
+                                }
                             }
                             else if (name.StartsWith(Logs.SessionLog.SessionLogBody.TAG))
                             {
-
+                                using (var sLogger = new Logs.SessionLog.SessionLogger(_setting, _session))
+                                {
+                                    await sLogger.ResendAsync<Logs.SessionLog.SessionLogBody>(cacheDB, name, _setting, _session);
+                                }
                             }
                         }
+                        isEmpty = cacheDB.GetCollectionNames().Count() == 0;
+                    }
+                    if (isEmpty)
+                    {
+                        File.Delete(dbPath);
                     }
                 }
             }

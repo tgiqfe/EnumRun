@@ -42,25 +42,47 @@ namespace EnumRun.Logs
         #endregion
 
 
+        protected async Task Send<T>(T body) where T : LogBodyBase
+        {
+            using (await _lock.LockAsync())
+            {
+                string json = body.GetJson();
+
+                //ファイル書き込み
+                await _writer.WriteLineAsync(json);
 
 
-        /*
-        public async void Resend<T>(LiteDatabase cacheDB, string name) where T : LogBodyBase
+
+
+
+            }
+        }
+
+        /// <summary>
+        /// 一度ログ転送に失敗してローカルキャッシュしたログを、再転送
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheDB"></param>
+        /// <param name="name"></param>
+        /// <param name="setting"></param>
+        /// <param name="session"></param>
+        /// <returns></returns>
+        public async Task ResendAsync<T>(LiteDatabase cacheDB, string name, EnumRunSetting setting, ScriptDelivery.ScriptDeliverySession session) where T : LogBodyBase
         {
             if (!name.Contains("_")) { return; }
 
             string transport = name.Substring(name.IndexOf("_"));
+            var col = cacheDB.GetCollection<T>();
+            col.EnsureIndex(x => x.Serial, true);
+            IEnumerable<T> tempLogs = col.FindAll();
             switch (transport)
             {
                 case "_logstash":
                     _logstash ??= new TransportLogstash(setting.Logstash.Server);
                     if (_logstash.Enabled)
                     {
-                        var col = cacheDB.GetCollection<T>();
-                        IEnumerable<T> logs = col.FindAll();
                         cacheDB.DropCollection(name);
-
-                        foreach (var body in logs)
+                        foreach (var body in tempLogs)
                         {
                             bool res = false;
                             res = await _logstash.SendAsync(body.GetJson());
@@ -77,18 +99,38 @@ namespace EnumRun.Logs
                         _syslog = new TransportSyslog(setting);
                         _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                         _syslog.AppName = Item.ProcessName;
-                        _syslog.ProcId = ProcessLogBody.TAG;
+                        _syslog.ProcId = ProcessLog.ProcessLogBody.TAG;
                     }
-
-
-
+                    if (_syslog.Enabled)
+                    {
+                        cacheDB.DropCollection(name);
+                        foreach (var body in tempLogs)
+                        {
+                            foreach (var pair in body.SplitForSyslog())
+                            {
+                                await _syslog.SendAsync(body.Level, pair.Key, pair.Value);
+                            }
+                        }
+                    }
                     break;
                 case "_dynamicLog":
-                    _dynamicLog ??= new TransportDynamicLog(session, "ProcessLog");
+                    _dynamicLog ??= new TransportDynamicLog(session, "DynamicLog");
+                    if (_dynamicLog.Enabled)
+                    {
+                        cacheDB.DropCollection(name);
+                        foreach (var body in tempLogs)
+                        {
+                            bool res = await _dynamicLog.SendAsync(body.GetJson());
+                            if (!res)
+                            {
+                                col.Upsert(body);
+                            }
+                        }
+                    }
                     break;
             }
         }
-        */
+
 
 
         public virtual async Task CloseAsync()

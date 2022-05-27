@@ -80,7 +80,7 @@ namespace EnumRun.Logs.MachineLog
                     {
                         if (_syslog.Enabled)
                         {
-                            foreach (var pair in body.GetSyslogMessage())
+                            foreach (var pair in body.SplitForSyslog())
                             {
                                 await _syslog.SendAsync(LogLevel.Info, pair.Key, pair.Value);
                             }

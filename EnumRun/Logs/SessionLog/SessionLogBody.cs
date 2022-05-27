@@ -40,7 +40,6 @@ namespace EnumRun.Logs.SessionLog
         public override string Date { get; set; }
         public override string ProcessName { get; set; }
         public override string HostName { get; set; }
-
         public override string UserName { get; set; }
         public string UserDomain { get; set; }
         public bool? SystemAccount { get; set; }
@@ -48,6 +47,9 @@ namespace EnumRun.Logs.SessionLog
         public string AppPath { get; set; }
         public string AppVersion { get; set; }
         public LogonSession Session { get; set; }
+
+        [JsonIgnore]
+        public override LogLevel Level { get; set; }
 
         #endregion
 
@@ -60,6 +62,7 @@ namespace EnumRun.Logs.SessionLog
             this.HostName = Environment.MachineName;
             this.UserName = Environment.UserName;
             this.Serial = $"{Item.Serial}_{_index++}";
+            this.Level = LogLevel.Info;
 
             this.UserDomain = Environment.UserDomainName;
             this.SystemAccount = UserInfo.IsSystemAccount;
@@ -97,7 +100,7 @@ namespace EnumRun.Logs.SessionLog
             return JsonSerializer.Serialize(this, _options);
         }
 
-        public Dictionary<string, string> GetSyslogMessage()
+        public override Dictionary<string, string> SplitForSyslog()
         {
             var ret = new Dictionary<string, string>();
             ret["UserInfo"] =

@@ -24,8 +24,13 @@ namespace EnumRun.Logs
         public virtual string ProcessName { get; set; }
         public virtual string HostName { get; set; }
         public virtual string UserName { get; set; }
+        public virtual LogLevel Level { get; set; }
 
         #endregion
+
+        
+
+        
 
         protected JsonSerializerOptions GetJsonSerializerOption(
             bool escapeDoubleQuote,
@@ -59,6 +64,6 @@ namespace EnumRun.Logs
 
         public virtual string GetJson() { return ""; }
 
-        
+        public virtual Dictionary<string, string> SplitForSyslog() { return null; }
     }
 }
