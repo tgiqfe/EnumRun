@@ -15,7 +15,7 @@ namespace EnumRun.Logs.MachineLog
         private ILiteCollection<MachineLogBody> _syslogCollection = null;
         private ILiteCollection<MachineLogBody> _dynamicLogCollection = null;
 
-        public MachineLogger(EnumRunSetting setting)
+        public MachineLogger(EnumRunSetting setting, EnumRun.ScriptDelivery.ScriptDeliverySession session)
         {
             string logFileName =
                 $"MachineLog_{DateTime.Now.ToString("yyyyMMdd")}.log";
@@ -36,6 +36,10 @@ namespace EnumRun.Logs.MachineLog
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
                 _syslog.ProcId = MachineLogBody.TAG;
+            }
+            if (session.EnableLogTransport)
+            {
+                _dynamicLog = new TransportDynamicLog(session, "MachineLog");
             }
         }
 
@@ -94,7 +98,7 @@ namespace EnumRun.Logs.MachineLog
                     {
                         if (_dynamicLog.Enabled)
                         {
-                            await _dynamicLog.SendAsync("MachineLog", json);
+                            await _dynamicLog.SendAsync(json);
                         }
                         else
                         {

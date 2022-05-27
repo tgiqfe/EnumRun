@@ -15,14 +15,17 @@ namespace EnumRun
 
         private Logs.ProcessLog.ProcessLogger _logger = null;
 
+        private EnumRun.ScriptDelivery.ScriptDeliverySession _session = null;
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="logger"></param>
-        public SessionWorker(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
+        public SessionWorker(EnumRunSetting setting, EnumRun.ScriptDelivery.ScriptDeliverySession session, Logs.ProcessLog.ProcessLogger logger)
         {
             _setting = setting;
+            _session = session;
             _logger = logger;
         }
 
@@ -52,7 +55,7 @@ namespace EnumRun
                 _logger.Write(LogLevel.Info, logTitle, "Today first.");
 
                 //  MachineLogを出力
-                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting))
+                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting, _session))
                 {
                     mLogger.Write();
                 }
@@ -63,7 +66,7 @@ namespace EnumRun
             }
 
             //  SessionLogを出力
-            using (var sLogger = new Logs.SessionLog.SessionLogger(_setting))
+            using (var sLogger = new Logs.SessionLog.SessionLogger(_setting, _session))
             {
                 sLogger.Write(body);
             }
@@ -176,6 +179,12 @@ namespace EnumRun
                 }
             }
         }
+
+
+
+        //  [案]基本的な処理はLoggerクラスに
+        //  ↓ログサーバへの転送に失敗したキャッシュログを再送信
+
 
         private async void SendCacheLog()
         {

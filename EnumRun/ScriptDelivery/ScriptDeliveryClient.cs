@@ -26,7 +26,7 @@ namespace EnumRun.ScriptDelivery
         private HttpDownloader _httpDownloader = null;
         private DeleteManager _deleteManager = null;
 
-        public ScriptDeliveryClient(ScriptDeliverySession session, EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
+        public ScriptDeliveryClient(EnumRunSetting setting, ScriptDeliverySession session, Logs.ProcessLog.ProcessLogger logger)
         {
             this._session = session;
             this._logger = logger;

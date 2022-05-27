@@ -64,6 +64,7 @@ namespace EnumRun.Logs
 
         #region Send
 
+        /*
         public void Send(string message)
         {
             Send(DateTime.Now, this.Facility, this.Severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
@@ -108,6 +109,7 @@ namespace EnumRun.Logs
         {
             Send(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
         }
+        */
 
         public async Task SendAsync(string message)
         {

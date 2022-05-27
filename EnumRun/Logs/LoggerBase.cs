@@ -41,6 +41,56 @@ namespace EnumRun.Logs
 
         #endregion
 
+
+
+
+        /*
+        public async void Resend<T>(LiteDatabase cacheDB, string name) where T : LogBodyBase
+        {
+            if (!name.Contains("_")) { return; }
+
+            string transport = name.Substring(name.IndexOf("_"));
+            switch (transport)
+            {
+                case "_logstash":
+                    _logstash ??= new TransportLogstash(setting.Logstash.Server);
+                    if (_logstash.Enabled)
+                    {
+                        var col = cacheDB.GetCollection<T>();
+                        IEnumerable<T> logs = col.FindAll();
+                        cacheDB.DropCollection(name);
+
+                        foreach (var body in logs)
+                        {
+                            bool res = false;
+                            res = await _logstash.SendAsync(body.GetJson());
+                            if (!res)
+                            {
+                                col.Upsert(body);
+                            }
+                        }
+                    }
+                    break;
+                case "_syslog":
+                    if (_syslog == null)
+                    {
+                        _syslog = new TransportSyslog(setting);
+                        _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
+                        _syslog.AppName = Item.ProcessName;
+                        _syslog.ProcId = ProcessLogBody.TAG;
+                    }
+
+
+
+                    break;
+                case "_dynamicLog":
+                    _dynamicLog ??= new TransportDynamicLog(session, "ProcessLog");
+                    break;
+            }
+        }
+        */
+
+
         public virtual async Task CloseAsync()
         {
             using (await _lock.LockAsync())

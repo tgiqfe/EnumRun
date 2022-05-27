@@ -58,6 +58,7 @@ namespace ScriptDelivery.Logs
 
         #region Send
 
+        /*
         public void Send(string message)
         {
             Send(DateTime.Now, Facility, Severity, Environment.MachineName, AppName, ProcId, MsgId, message, StructuredDataParams);
@@ -102,6 +103,7 @@ namespace ScriptDelivery.Logs
         {
             Send(DateTime.Now, Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, AppName, ProcId, msgId, message, StructuredDataParams);
         }
+        */
 
         public async Task SendAsync(string message)
         {
