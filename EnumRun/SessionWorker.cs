@@ -181,6 +181,12 @@ namespace EnumRun
         {
             if (Directory.Exists(_setting.LogsPath))
             {
+                string todayDbPath = Path.Combine(
+                    _setting.LogsPath,
+                    "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
+                var todayCacheDB = new LiteDB.LiteDatabase($"Filename={todayDbPath};Connection=shared");
+
+
                 foreach (string dbPath in Directory.GetFiles(_setting.LogsPath, "Cache_*.db"))
                 {
                     using (var liteDB = new LiteDB.LiteDatabase($"Filename={dbPath};Connection=shared"))
@@ -195,13 +201,25 @@ namespace EnumRun
                                     if (logstash.Enabled)
                                     {
                                         var collection = liteDB.GetCollection<Logs.ProcessLog.ProcessLogBody>(name);
+                                        List<Logs.ProcessLog.ProcessLogBody> failedlist = new List<Logs.ProcessLog.ProcessLogBody>();
+
                                         foreach (var entry in collection.FindAll())
                                         {
                                             string json = entry.GetJson();
                                             bool ret = await logstash.SendAsync(json);
-                                            if (ret)
+                                            if (!ret)
                                             {
-                                                collection.Delete()
+                                                failedlist.Add(entry);
+                                            }
+                                        }
+
+                                        liteDB.DropCollection(name);
+                                        if (failedlist.Count > 0)
+                                        {
+                                            var todayCollection = todayCacheDB.GetCollection<Logs.ProcessLog.ProcessLogBody>(Logs.ProcessLog.ProcessLogBody.TAG + "_logstash");
+                                            foreach (var item in failedlist)
+                                            {
+                                                todayCollection.Upsert(item);
                                             }
                                         }
 

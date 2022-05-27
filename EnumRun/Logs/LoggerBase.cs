@@ -14,7 +14,7 @@ namespace EnumRun.Logs
     {
         protected string _logDir = null;
         protected StreamWriter _writer = null;
-        protected AsyncLock _lock = null;
+        protected AsyncLock _lock = null;           //  [案] Lockは全体共有化する。今はProcessLog,MachineLog,SessionLogでそれぞれ別管理になっている。
         protected TransportLogstash _logstash = null;
         protected TransportSyslog _syslog = null;
         protected TransportDynamicLog _dynamicLog = null;
