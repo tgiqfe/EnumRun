@@ -28,7 +28,7 @@ namespace EnumRun.Logs
         {
             string dbPath = Path.Combine(
                 _logDir,
-                "LocalDB_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
+                "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
             return new LiteDatabase($"Filename={dbPath};Connection=shared");
         }
 

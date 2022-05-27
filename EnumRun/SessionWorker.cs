@@ -80,6 +80,8 @@ namespace EnumRun
         {
             //  [案]ここで外部サーバへログ転送失敗していたログキャッシュを、再転送する処理
 
+
+
             //  ScriptDeliverySessionと同時にDisposeした場合、最後の終了ログを出力する前に
             //  セッションが閉じてしまうことがある為、先に明示的にloggerをクローズ。
             _logger.CloseAsync().Wait();
@@ -136,7 +138,6 @@ namespace EnumRun
             return ret;
         }
 
-
         /// <summary>
         /// 保持期間以上前のファイルを削除
         /// </summary>
@@ -172,6 +173,59 @@ namespace EnumRun
                 catch
                 {
                     _logger.Write(LogLevel.Warn, logTitle, "Delete failed.");
+                }
+            }
+        }
+
+        private async void SendCacheLog()
+        {
+            if (Directory.Exists(_setting.LogsPath))
+            {
+                foreach (string dbPath in Directory.GetFiles(_setting.LogsPath, "Cache_*.db"))
+                {
+                    using (var liteDB = new LiteDB.LiteDatabase($"Filename={dbPath};Connection=shared"))
+                    {
+                        foreach (string name in liteDB.GetCollectionNames())
+                        {
+                            if (name.StartsWith(Logs.ProcessLog.ProcessLogBody.TAG))
+                            {
+                                if (name.EndsWith("logstash"))
+                                {
+                                    TransportLogstash logstash = new TransportLogstash(_setting.Logstash.Server);
+                                    if (logstash.Enabled)
+                                    {
+                                        var collection = liteDB.GetCollection<Logs.ProcessLog.ProcessLogBody>(name);
+                                        foreach (var entry in collection.FindAll())
+                                        {
+                                            string json = entry.GetJson();
+                                            bool ret = await logstash.SendAsync(json);
+                                            if (ret)
+                                            {
+                                                collection.Delete()
+                                            }
+                                        }
+
+                                    }
+                                }
+                                else if (name.EndsWith("syslog"))
+                                {
+
+                                }
+                                else if (name.EndsWith("dynamicLog"))
+                                {
+
+                                }
+                            }
+                            else if (name.StartsWith(Logs.MachineLog.MachineLogBody.TAG))
+                            {
+
+                            }
+                            else if (name.StartsWith(Logs.SessionLog.SessionLogBody.TAG))
+                            {
+
+                            }
+                        }
+                    }
                 }
             }
         }
