@@ -172,6 +172,56 @@ namespace EnumRun.Logs.ProcessLog
             catch { }
         }
 
+        public async void Resynd(LiteDatabase cacheDB, string name, EnumRunSetting setting, ScriptDeliverySession session)
+        {
+            if (!name.Contains("_")) { return; }
+
+            string transport = name.Substring(name.IndexOf("_"));
+            switch (transport)
+            {
+                case "_logstash":
+                    _logstash ??= new TransportLogstash(setting.Logstash.Server);
+                    if (_logstash.Enabled)
+                    {
+                        var col = cacheDB.GetCollection<ProcessLogBody>();
+                        foreach (var body in col.FindAll())
+                        {
+                            string json = body.GetJson();
+
+                            bool res = false;
+                            if (_logstash.Enabled)
+                            {
+                                res = await _logstash.SendAsync(json);
+                            }
+                            if (!res)
+                            {
+                                _liteDB ??= GetLiteDB();
+                                _logstashCollection ??= GetCollection<ProcessLogBody>(ProcessLogBody.TAG + "_logstash");
+                                _logstashCollection.Upsert(body);
+                            }
+                        }
+                    }
+                    break;
+                case "_syslog":
+                    if (_syslog == null)
+                    {
+                        _syslog = new TransportSyslog(setting);
+                        _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
+                        _syslog.AppName = Item.ProcessName;
+                        _syslog.ProcId = ProcessLogBody.TAG;
+                    }
+
+                    break;
+                case "_dynamicLog":
+                    _dynamicLog ??= new TransportDynamicLog(session);
+                    break;
+            }
+
+
+        }
+
+
+
         public override async Task CloseAsync()
         {
             Write("終了");

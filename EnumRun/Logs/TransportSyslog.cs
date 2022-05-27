@@ -28,7 +28,7 @@ namespace EnumRun.Logs
         public string MsgId { get; set; }
         public StructuredData[] StructuredDataParams { get; set; }
 
-        public TransportSyslog() { }
+        //public TransportSyslog() { }
         public TransportSyslog(EnumRunSetting setting)
         {
             var info = new ServerInfo(setting.Syslog.Server, defaultPort: 514, defaultProtocol: "udp");
