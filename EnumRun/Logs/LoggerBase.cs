@@ -6,73 +6,173 @@ using System.Threading.Tasks;
 using LiteDB;
 using EnumRun.Lib;
 using EnumRun.Lib.Syslog;
+using EnumRun.ScriptDelivery;
 using System.IO;
 
 namespace EnumRun.Logs
 {
-    internal class LoggerBase : IDisposable
+    internal class LoggerBase<T> :
+        IDisposable
+        where T : LogBodyBase
     {
-        protected string _logDir = null;
-        protected StreamWriter _writer = null;
-        protected AsyncLock _lock = null;           //  [案] Lockは全体共有化する。今はProcessLog,MachineLog,SessionLogでそれぞれ別管理になっている。
-        protected TransportLogstash _logstash = null;
-        protected TransportSyslog _syslog = null;
-        protected TransportDynamicLog _dynamicLog = null;
-        protected LiteDatabase _liteDB = null;
+        /// <summary>
+        /// ログ記述用ロック。静的パラメータ
+        /// </summary>
+        private static AsyncLock _lock = null;
+
+        private string _logFilePath = null;
+        private StreamWriter _writer = null;
+        private LiteDatabase _liteDB = null;
+        private string _liteDBPath = null;
+        private TransportLogstash _logstash = null;
+        private TransportSyslog _syslog = null;
+        private TransportDynamicLog _dynamicLog = null;
+
+        private ILiteCollection<T> _colLogstash = null;
+        private ILiteCollection<T> _colSyslog = null;
+        private ILiteCollection<T> _colDynamicLog = null;
 
         protected virtual bool _logAppend { get; }
+        protected virtual string _tag { get; set; }
 
-        #region LiteDB methods
-
-        protected LiteDatabase GetLiteDB()
+        public void Init(string logPreName, EnumRunSetting setting, ScriptDeliverySession session)
         {
-            string dbPath = Path.Combine(
-                _logDir,
-                "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-            return new LiteDatabase($"Filename={dbPath};Connection=shared");
+            _lock ??= new AsyncLock();
+
+            string logDir = setting.GetLogsPath();
+            string today = DateTime.Now.ToString("yyyyMMdd");
+
+            _logFilePath = Path.Combine(logDir, $"{logPreName}_{today}.log");
+            TargetDirectory.CreateParent(_logFilePath);
+            _writer = new StreamWriter(_logFilePath, _logAppend, Encoding.UTF8);
+            _liteDBPath = Path.Combine(logDir, $"Cache_{today}.db");
+
+            if (!string.IsNullOrEmpty(setting.Logstash?.Server))
+            {
+                _logstash = new TransportLogstash(setting.Logstash.Server);
+            }
+            if (!string.IsNullOrEmpty(setting.Syslog?.Server))
+            {
+                _syslog = new TransportSyslog(setting);
+                _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
+                _syslog.AppName = Item.ProcessName;
+                _syslog.ProcId = _tag;
+            }
+            if (session.EnableLogTransport)
+            {
+                _dynamicLog = new TransportDynamicLog(session, _tag);
+            }
         }
 
-        protected ILiteCollection<T> GetCollection<T>(string tableName) where T : LogBodyBase
+        private ILiteCollection<T> GetCollection(string tableName)
         {
             var collection = _liteDB.GetCollection<T>(tableName);
             collection.EnsureIndex(x => x.Serial, true);
             return collection;
         }
 
-        #endregion
-
+        #region Send/Resend
 
         /// <summary>
-        /// 一度ログ転送に失敗してローカルキャッシュしたログを、再転送
+        /// 通常ログ出力、ログ転送。
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="body"></param>
+        /// <returns></returns>
+        public async Task SendAsync(T body)
+        {
+            using (await _lock.LockAsync())
+            {
+                string json = body.GetJson();
+
+                //  ファイル書き込み
+                await _writer.WriteLineAsync(json);
+
+                //  Logstash転送
+                if (_logstash != null)
+                {
+                    bool res = false;
+                    if (_logstash.Enabled)
+                    {
+                        res = await _logstash.SendAsync(json);
+                    }
+                    if (!res)
+                    {
+                        _liteDB ??= new LiteDatabase($"Filename={_liteDBPath};Connection=shared");
+                        _colLogstash ??= GetCollection($"{_tag}_logstash");
+                        _colLogstash.Upsert(body);
+                    }
+                }
+
+                //  Syslog転送
+                if (_syslog != null)
+                {
+                    if (_syslog.Enabled)
+                    {
+                        foreach (var pair in body.SplitForSyslog())
+                        {
+                            await _syslog.SendAsync(LogLevel.Info, pair.Key, pair.Value);
+                        }
+                    }
+                    else
+                    {
+                        _liteDB ??= new LiteDatabase($"Filename={_liteDBPath};Connection=shared");
+                        _colSyslog ??= GetCollection($"{_tag}_syslog");
+                        _colSyslog.Upsert(body);
+                    }
+                }
+
+                //  DynamicLog転送
+                if (_dynamicLog != null)
+                {
+                    if (_dynamicLog.Enabled)
+                    {
+                        await _dynamicLog.SendAsync(json);
+                    }
+                    else
+                    {
+                        _liteDB ??= new LiteDatabase($"Filename={_liteDBPath};Connection=shared");
+                        _colDynamicLog ??= GetCollection($"{_tag}_dynamicLog");
+                        _colDynamicLog.Upsert(body);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// ログ転送失敗時キャッシュの再転送
+        /// </summary>
         /// <param name="cacheDB"></param>
         /// <param name="name"></param>
         /// <param name="setting"></param>
         /// <param name="session"></param>
         /// <returns></returns>
-        public async Task ResendAsync<T>(LiteDatabase cacheDB, string name, EnumRunSetting setting, ScriptDelivery.ScriptDeliverySession session) where T : LogBodyBase
+        public async Task ResendAsync(LiteDatabase cacheDB, string name, EnumRunSetting setting, ScriptDelivery.ScriptDeliverySession session)
         {
             if (!name.Contains("_")) { return; }
 
-            string transport = name.Substring(name.IndexOf("_"));
             var col = cacheDB.GetCollection<T>();
             col.EnsureIndex(x => x.Serial, true);
-            IEnumerable<T> tempLogs = col.FindAll();
-            switch (transport)
+            IEnumerable<T> bodies = col.FindAll();
+
+            switch (name.Substring(name.IndexOf("_")))
             {
                 case "_logstash":
                     _logstash ??= new TransportLogstash(setting.Logstash.Server);
                     if (_logstash.Enabled)
                     {
                         cacheDB.DropCollection(name);
-                        foreach (var body in tempLogs)
+                        bool connected = true;
+                        foreach (var body in bodies)
                         {
                             bool res = false;
-                            res = await _logstash.SendAsync(body.GetJson());
-                            if (!res)
+                            if (connected)
+                            {
+                                res = await _logstash.SendAsync(body.GetJson());
+                            }
+                            if (!connected || !res)
                             {
                                 col.Upsert(body);
+                                connected = false;
                             }
                         }
                     }
@@ -83,12 +183,12 @@ namespace EnumRun.Logs
                         _syslog = new TransportSyslog(setting);
                         _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                         _syslog.AppName = Item.ProcessName;
-                        _syslog.ProcId = ProcessLog.ProcessLogBody.TAG;
+                        _syslog.ProcId = _tag;
                     }
                     if (_syslog.Enabled)
                     {
                         cacheDB.DropCollection(name);
-                        foreach (var body in tempLogs)
+                        foreach (var body in bodies)
                         {
                             foreach (var pair in body.SplitForSyslog())
                             {
@@ -98,16 +198,22 @@ namespace EnumRun.Logs
                     }
                     break;
                 case "_dynamicLog":
-                    _dynamicLog ??= new TransportDynamicLog(session, "DynamicLog");
+                    _dynamicLog ??= new TransportDynamicLog(session, _tag);
                     if (_dynamicLog.Enabled)
                     {
                         cacheDB.DropCollection(name);
-                        foreach (var body in tempLogs)
+                        bool connected = true;
+                        foreach (var body in bodies)
                         {
-                            bool res = await _dynamicLog.SendAsync(body.GetJson());
-                            if (!res)
+                            bool res = false;
+                            if (connected)
+                            {
+                                res = await _dynamicLog.SendAsync(body.GetJson());
+                            }
+                            if (!connected || !res)
                             {
                                 col.Upsert(body);
+                                connected = false;
                             }
                         }
                     }
@@ -115,7 +221,8 @@ namespace EnumRun.Logs
             }
         }
 
-
+        #endregion
+        #region Close method
 
         public virtual async Task CloseAsync()
         {
@@ -132,6 +239,7 @@ namespace EnumRun.Logs
             if (_syslog != null) { _syslog.Dispose(); _syslog = null; }
         }
 
+        #endregion
         #region Dispose
 
         private bool disposedValue;

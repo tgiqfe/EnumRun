@@ -15,9 +15,9 @@ namespace EnumRun.ScriptDelivery
 
         private Dictionary<string, SmbSession> _sessions = null;
         private List<DownloadSmb> _list = null;
-        private ProcessLogger2 _logger = null;
+        private ProcessLogger _logger = null;
 
-        public SmbDownloader(ProcessLogger2 logger)
+        public SmbDownloader(ProcessLogger logger)
         {
             _logger = logger;
             this._sessions = new Dictionary<string, SmbSession>(StringComparer.OrdinalIgnoreCase);

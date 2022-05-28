@@ -69,7 +69,7 @@ namespace ScriptDelivery
         /// <summary>
         /// ログ出力用
         /// </summary>
-        public static ServerLogger2 Logger { get; set; }
+        public static ServerLogger Logger { get; set; }
 
         /// <summary>
         /// DynamicLog受信/出力用

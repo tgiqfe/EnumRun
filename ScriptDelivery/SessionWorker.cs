@@ -42,7 +42,7 @@ namespace ScriptDelivery
             Item.Setting.ChangePath();
 
             //  ログ出力開始
-            Item.Logger = new Logs.ServerLog.ServerLogger2(Item.Setting);
+            Item.Logger = new Logs.ServerLog.ServerLogger(Item.Setting);
 
             //  DynamicLog受信/出力開始
             Item.Receiver = new Logs.DynamicLog.DynamicLogReceiver(Item.Setting);

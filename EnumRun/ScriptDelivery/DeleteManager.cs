@@ -45,14 +45,14 @@ namespace EnumRun.ScriptDelivery
 
         private string _targetDir = null;
         private string _trashPath = null;
-        private EnumRun.Logs.ProcessLog.ProcessLogger2 _logger = null;
+        private EnumRun.Logs.ProcessLog.ProcessLogger _logger = null;
         private List<string> _targets { get; set; }
         private List<string> _excludes { get; set; }
 
         private List<string> _fList = null;
         private List<string> _dList = null;
 
-        public DeleteManager(string targetDir, string trashPath, EnumRun.Logs.ProcessLog.ProcessLogger2 logger)
+        public DeleteManager(string targetDir, string trashPath, EnumRun.Logs.ProcessLog.ProcessLogger logger)
         {
             this._targetDir = Path.GetFullPath(targetDir);
             this._trashPath = trashPath;

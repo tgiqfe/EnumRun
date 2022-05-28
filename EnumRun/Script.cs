@@ -12,7 +12,7 @@ namespace EnumRun
     {
         public string FilePath { get; set; }
         public string FileName { get; set; }
-        private ProcessLogger2 _logger { get; set; }
+        private ProcessLogger _logger { get; set; }
         private string _logTitle { get; set; }
         public int FileNumber { get; set; }
         
@@ -24,7 +24,7 @@ namespace EnumRun
         private static readonly Regex _pat_fileNum = new Regex(@"^\d+(?=_)");
         
         public Script() { }
-        public Script(string filePath, EnumRunSetting setting, LanguageCollection collection, ProcessLogger2 logger)
+        public Script(string filePath, EnumRunSetting setting, LanguageCollection collection, ProcessLogger logger)
         {
             this.FilePath = filePath;
             this.FileName = Path.GetFileName(filePath);
