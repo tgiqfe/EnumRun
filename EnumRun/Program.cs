@@ -27,12 +27,12 @@ using (var logger = new ProcessLogger(setting, session))
     logger.Write(setting.ToLog());
 
     //  セッション開始時処理
-    var worker = new SessionWorker(setting, logger);
+    var worker = new SessionWorker(setting, session, logger);
     worker.PreProcess();
 
     //  ScriptDeliveryサーバからスクリプトをダウンロード
     //var sdc = new ScriptDeliveryClient(session, setting.FilesPath, setting.LogsPath, setting.ScriptDelivery?.TrashPath, logger);
-    var sdc = new ScriptDeliveryClient(session, setting, logger);
+    var sdc = new ScriptDeliveryClient(setting, session, logger);
     sdc.StartDownload();
 
     if (worker.Enabled && Directory.Exists(setting.GetFilesPath()))

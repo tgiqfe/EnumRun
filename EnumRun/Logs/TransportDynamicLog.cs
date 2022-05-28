@@ -16,9 +16,10 @@ namespace EnumRun.Logs
     {
         private ScriptDeliverySession _session = null;
         private JsonSerializerOptions _options = null;
+        private string _tableName = null;
         public bool Enabled { get; set; }
 
-        public TransportDynamicLog(ScriptDeliverySession session)
+        public TransportDynamicLog(ScriptDeliverySession session, string tableName)
         {
             this._session = session;
             this._options = new System.Text.Json.JsonSerializerOptions()
@@ -29,13 +30,15 @@ namespace EnumRun.Logs
                 //WriteIndented = true,
                 //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
+            this._tableName = tableName;
             this.Enabled = session.EnableLogTransport && session.Enabled;
+            _tableName = tableName;
         }
 
-        public async Task<bool> SendAsync(string table, string json)
+        public async Task<bool> SendAsync(string json)
         {
             using (var content = new StringContent(json, Encoding.UTF8, "application/json"))
-            using (var response = await _session.Client.PostAsync(_session.Uri + $"/logs/{table}", content))
+            using (var response = await _session.Client.PostAsync(_session.Uri + $"/logs/{_tableName}", content))
             {
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -44,11 +47,5 @@ namespace EnumRun.Logs
                 return false;
             }
         }
-
-        public async Task<bool> SendAsync(string table, object obj)
-        {
-            return await SendAsync(table, JsonSerializer.Serialize(obj, _options));
-        }
-
     }
 }

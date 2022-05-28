@@ -17,7 +17,7 @@ namespace EnumRun.Logs.ProcessLog
         public override string ProcessName { get; set; }
         public override string HostName { get; set; }
         public override string UserName { get; set; }
-        public LogLevel Level { get; set; }
+        public override LogLevel Level { get; set; }
         public string Title { get; set; }
         public string Message { get; set; }
 
@@ -39,11 +39,19 @@ namespace EnumRun.Logs.ProcessLog
         {
             _options ??= GetJsonSerializerOption(
                 escapeDoubleQuote: true,
-                false, 
-                false, 
-                false, 
+                false,
+                false,
+                false,
                 convertEnumCamel: true);
             return JsonSerializer.Serialize(this, _options);
+        }
+
+        public override Dictionary<string, string> SplitForSyslog()
+        {
+            return new Dictionary<string, string>()
+            {
+                { Title, Message }
+            };
         }
     }
 }

@@ -10,7 +10,7 @@ using ScriptDelivery.Lib;
 
 namespace ScriptDelivery.Logs
 {
-    internal class SyslogTransport : IDisposable
+    internal class TransportSyslog : IDisposable
     {
         public bool Enabled { get; set; }
 
@@ -22,8 +22,8 @@ namespace ScriptDelivery.Logs
         public string MsgId { get; set; }
         public StructuredData[] StructuredDataParams { get; set; }
 
-        public SyslogTransport() { }
-        public SyslogTransport(Setting setting)
+        public TransportSyslog() { }
+        public TransportSyslog(Setting setting)
         {
             var info = new ServerInfo(setting.Syslog.Server, defaultPort: 514, defaultProtocol: "udp");
             Format format = FormatMapper.ToFormat(setting.Syslog.Format);
@@ -58,6 +58,7 @@ namespace ScriptDelivery.Logs
 
         #region Send
 
+        /*
         public void Send(string message)
         {
             Send(DateTime.Now, Facility, Severity, Environment.MachineName, AppName, ProcId, MsgId, message, StructuredDataParams);
@@ -102,6 +103,7 @@ namespace ScriptDelivery.Logs
         {
             Send(DateTime.Now, Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, AppName, ProcId, msgId, message, StructuredDataParams);
         }
+        */
 
         public async Task SendAsync(string message)
         {

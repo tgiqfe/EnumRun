@@ -45,15 +45,15 @@ namespace ScriptDelivery
             Item.Logger = new Logs.ServerLog.ServerLogger(Item.Setting);
 
             //  DynamicLog受信/出力開始
-            Item.DynamicLogger = new Logs.DynamicLog.DynamicLogger(Item.Setting);
+            Item.Receiver = new Logs.DynamicLog.DynamicLogReceiver(Item.Setting);
 
             //  Mappingリストを取得
-            var mappingFileCollection = new MappingFileCollection(Item.Setting.MapsPath);
+            var mappingFileCollection = new MappingFileCollection(Item.Setting.MapsPath, Item.Setting.LogsPath);
             _mappingFileWatcher = new DirectoryWatcher(Item.Setting.MapsPath, mappingFileCollection);
             Item.MappingFileCollection = mappingFileCollection;
 
             //  ダウンロードリストを取得
-            var downloadFileCollection = new DownloadHttpCollection(Item.Setting.FilesPath);
+            var downloadFileCollection = new DownloadHttpCollection(Item.Setting.FilesPath, Item.Setting.LogsPath);
             _downloadFileWatcher = new DirectoryWatcher(Item.Setting.FilesPath, downloadFileCollection);
             Item.DownloadFileCollection = downloadFileCollection;
 
@@ -70,9 +70,9 @@ namespace ScriptDelivery
             _downloadFileWatcher.Dispose();
 
             //  ログ出力終了
-            if(Item.DynamicLogger != null)
+            if(Item.Receiver != null)
             {
-                Item.DynamicLogger.CloseAsync().Wait();
+                Item.Receiver.CloseAsync().Wait();
             }
             if (Item.Logger != null)
             {

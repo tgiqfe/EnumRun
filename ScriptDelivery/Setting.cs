@@ -89,6 +89,7 @@ namespace ScriptDelivery
             }
         }
 
+        /*
         public string GetLogsPath()
         {
             return string.IsNullOrEmpty(this.LogsPath) ?
@@ -112,6 +113,7 @@ namespace ScriptDelivery
             }
             return text;
         }
+        */
 
         #region Serialize/Deserialize
 

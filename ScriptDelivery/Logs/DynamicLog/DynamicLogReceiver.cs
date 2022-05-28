@@ -5,15 +5,15 @@ using System.Text;
 
 namespace ScriptDelivery.Logs.DynamicLog
 {
-    internal class DynamicLogger
+    internal class DynamicLogReceiver
     {
         private string _logDir = null;
         private LiteDatabase _liteDB = null;
         private Dictionary<string, DynamicLogSession> _sessions = null;
 
-        public DynamicLogger(Setting setting)
+        public DynamicLogReceiver(Setting setting)
         {
-            _logDir = setting.GetDynamicLogsPath();
+            _logDir = setting.DynamicLogsPath;
 
             string today = DateTime.Now.ToString("yyyyMMdd");
             string dbPath = Path.Combine(

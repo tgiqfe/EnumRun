@@ -123,7 +123,7 @@ namespace EnumRun.ScriptDelivery
             {
                 string dstPath = string.IsNullOrEmpty(dlFile.DestinationPath) ?
                     Path.Combine(_filesPath, Path.GetFileName(dlFile.Path)) :
-                    Path.Combine(dlFile.DestinationPath, Path.GetFileName(dlFile.Path));
+                    ExpandEnvironment(dlFile.DestinationPath);
 
                 //  ローカル側のファイルとの一致チェック
                 if (!(dlFile.Downloadable ?? false)) { continue; }
@@ -161,6 +161,16 @@ namespace EnumRun.ScriptDelivery
                     }
                 }
             }
+        }
+
+        private string ExpandEnvironment(string text)
+        {
+            for (int i = 0; i < 5 && text.Contains("%"); i++)
+            {
+
+                text = Environment.ExpandEnvironmentVariables(text);
+            }
+            return text;
         }
     }
 }

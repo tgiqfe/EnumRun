@@ -314,7 +314,7 @@ namespace ScriptDelivery.Maps
                             mapping.Work.Delete = new DeleteFile();
                             foreach (string field in delFields)
                             {
-                                if (string.IsNullOrEmpty(field)) { continue; }
+                                if (string.IsNullOrEmpty(field) || !field.Contains("=")) { continue; }
 
                                 string key = field.Substring(0, field.IndexOf("=")).Trim().ToLower();
                                 string val = field.Substring(field.IndexOf("=") + 1).Trim();

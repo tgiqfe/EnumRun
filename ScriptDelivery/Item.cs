@@ -74,7 +74,7 @@ namespace ScriptDelivery
         /// <summary>
         /// DynamicLog受信/出力用
         /// </summary>
-        public static DynamicLogger DynamicLogger { get; set; }
+        public static DynamicLogReceiver Receiver { get; set; }
 
         /// <summary>
         /// Mappingのリストとそれらの操作

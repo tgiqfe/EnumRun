@@ -15,14 +15,17 @@ namespace EnumRun
 
         private Logs.ProcessLog.ProcessLogger _logger = null;
 
+        private EnumRun.ScriptDelivery.ScriptDeliverySession _session = null;
+
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="logger"></param>
-        public SessionWorker(EnumRunSetting setting, Logs.ProcessLog.ProcessLogger logger)
+        public SessionWorker(EnumRunSetting setting, EnumRun.ScriptDelivery.ScriptDeliverySession session, Logs.ProcessLog.ProcessLogger logger)
         {
             _setting = setting;
+            _session = session;
             _logger = logger;
         }
 
@@ -52,7 +55,7 @@ namespace EnumRun
                 _logger.Write(LogLevel.Info, logTitle, "Today first.");
 
                 //  MachineLogを出力
-                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting))
+                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting, _session))
                 {
                     mLogger.Write();
                 }
@@ -63,7 +66,7 @@ namespace EnumRun
             }
 
             //  SessionLogを出力
-            using (var sLogger = new Logs.SessionLog.SessionLogger(_setting))
+            using (var sLogger = new Logs.SessionLog.SessionLogger(_setting, _session))
             {
                 sLogger.Write(body);
             }
@@ -71,6 +74,8 @@ namespace EnumRun
             //  セッション管理情報を出力
             lastSessions[Item.ProcessName] = body.Session;
             SerializeLogonSession(lastSessions, filePath);
+
+            //  [案]↑セッション管理情報の出力先は、logsパス配下にする。
         }
 
         /// <summary>
@@ -78,7 +83,8 @@ namespace EnumRun
         /// </summary>
         public void PostProcess()
         {
-            //  [案]ここで外部サーバへログ転送失敗していたログキャッシュを、再転送する処理
+            //  ログ転送失敗したログを再転送
+            ResendCacheLog().Wait();
 
             //  ScriptDeliverySessionと同時にDisposeした場合、最後の終了ログを出力する前に
             //  セッションが閉じてしまうことがある為、先に明示的にloggerをクローズ。
@@ -136,7 +142,6 @@ namespace EnumRun
             return ret;
         }
 
-
         /// <summary>
         /// 保持期間以上前のファイルを削除
         /// </summary>
@@ -172,6 +177,60 @@ namespace EnumRun
                 catch
                 {
                     _logger.Write(LogLevel.Warn, logTitle, "Delete failed.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// ログ転送失敗したログを再転送。
+        /// </summary>
+        /// <returns></returns>
+        private async Task ResendCacheLog()
+        {
+            string logTitle = "ResendCacheLog";
+
+            //  [案]再転送のテストは不十分の為、後日確認すること。
+
+            if (Directory.Exists(_setting.LogsPath))
+            {
+                _logger.Write(LogLevel.Info, logTitle, "Resend cache logs.");
+                foreach (string dbPath in Directory.GetFiles(_setting.LogsPath, "Cache_*.db"))
+                {
+                    bool isEmpty = false;
+                    using (var cacheDB = new LiteDB.LiteDatabase($"Filename={dbPath};Connection=shared"))
+                    {
+                        _logger.Write(LogLevel.Info, logTitle, "Resend File => [{0}]", dbPath);
+                        foreach (string name in cacheDB.GetCollectionNames())
+                        {
+                            if (name.StartsWith(Logs.ProcessLog.ProcessLogBody.TAG))
+                            {
+                                _logger.Write(LogLevel.Info, logTitle, "Resend ProcessLog, Table => [{0}]", name);
+                                await _logger.ResendAsync(cacheDB, name, _setting, _session);
+                            }
+                            else if (name.StartsWith(Logs.MachineLog.MachineLogBody.TAG))
+                            {
+                                _logger.Write(LogLevel.Info, logTitle, "Resend MachineLog, Table => [{0}]", name);
+                                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting, _session))
+                                {
+                                    await mLogger.ResendAsync(cacheDB, name, _setting, _session);
+                                }
+                            }
+                            else if (name.StartsWith(Logs.SessionLog.SessionLogBody.TAG))
+                            {
+                                _logger.Write(LogLevel.Info, logTitle, "Resend SessionLog, Table => [{0}]", name);
+                                using (var sLogger = new Logs.SessionLog.SessionLogger(_setting, _session))
+                                {
+                                    await sLogger.ResendAsync(cacheDB, name, _setting, _session);
+                                }
+                            }
+                        }
+                        isEmpty = cacheDB.GetCollectionNames().Count() == 0;
+                    }
+                    if (isEmpty)
+                    {
+                        _logger.Write(LogLevel.Info, logTitle, "Delete empty db file => [{0}]", dbPath);
+                        File.Delete(dbPath);
+                    }
                 }
             }
         }
