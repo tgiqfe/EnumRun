@@ -30,8 +30,6 @@ namespace EnumRun.Logs
 
         
 
-        
-
         protected JsonSerializerOptions GetJsonSerializerOption(
             bool escapeDoubleQuote,
             bool ignoreReadOnly,

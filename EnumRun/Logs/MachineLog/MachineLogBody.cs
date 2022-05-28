@@ -25,11 +25,13 @@ namespace EnumRun.Logs.MachineLog
         public override string ProcessName { get; set; }
         public override string HostName { get; set; }
         public override string UserName { get; set; }
-        public override LogLevel Level { get; set; }
         public string DomainName { get; set; }
         public string OS { get; set; }
         public string OSVersion { get; set; }
         public NetworkConf Network { get; set; }
+
+        [JsonIgnore]
+        public override LogLevel Level { get; set; }
 
         #endregion
 

@@ -51,8 +51,7 @@ namespace EnumRun.Logs
                 //ファイル書き込み
                 await _writer.WriteLineAsync(json);
 
-
-
+ 
 
 
             }
