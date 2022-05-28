@@ -17,6 +17,7 @@ namespace EnumRun.Logs.ProcessLog
         private ILiteCollection<ProcessLogBody> _syslogCollection = null;
         private ILiteCollection<ProcessLogBody> _dynamicLogCollection = null;
 
+
         public ProcessLogger(EnumRunSetting setting, EnumRun.ScriptDelivery.ScriptDeliverySession session)
         {
             string logFileName =

@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using LiteDB;
 using EnumRun.Lib;
 using EnumRun.Lib.Syslog;
+using EnumRun.ScriptDelivery;
 using System.IO;
 
 namespace EnumRun.Logs
 {
-    internal class LoggerBase2<T> where T : LogBodyBase, IDisposable
+    internal class LoggerBase2<T> :
+        IDisposable
+        where T : LogBodyBase
     {
         /// <summary>
         /// ログ記述用ロック。静的パラメータ
@@ -19,6 +22,7 @@ namespace EnumRun.Logs
 
         private StreamWriter _writer = null;
         private LiteDatabase _liteDB = null;
+        private string _logDBPath = null;
         private TransportLogstash _logstash = null;
         private TransportSyslog _syslog = null;
         private TransportDynamicLog _dynamicLog = null;
@@ -27,18 +31,53 @@ namespace EnumRun.Logs
         private ILiteCollection<T> _colSyslog = null;
         private ILiteCollection<T> _colDynamicLog = null;
 
-        protected string _logDir = null;
+        //protected string _logDir = null;
         protected virtual bool _logAppend { get; }
         protected virtual string _tag { get; set; }
+        
+
+        public void Init(string logFileName, EnumRunSetting setting, ScriptDeliverySession session)
+        {
+            _lock ??= new AsyncLock();
+
+            string logDir = setting.GetLogsPath();
+            string logFilePath = Path.Combine(logDir, logFileName);
+            TargetDirectory.CreateParent(logFilePath);
+            _writer = new StreamWriter(logFilePath, _logAppend, Encoding.UTF8);
+            _logDBPath = Path.Combine(
+                logDir,
+                "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
+
+
+
+            if (!string.IsNullOrEmpty(setting.Logstash?.Server))
+            {
+                _logstash = new TransportLogstash(setting.Logstash.Server);
+            }
+            if (!string.IsNullOrEmpty(setting.Syslog?.Server))
+            {
+                _syslog = new TransportSyslog(setting);
+                _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
+                _syslog.AppName = Item.ProcessName;
+                _syslog.ProcId = _tag;
+            }
+            if (session.EnableLogTransport)
+            {
+                _dynamicLog = new TransportDynamicLog(session, "ProcessLog");
+            }
+        }
 
         #region LiteDB methods
 
         protected LiteDatabase GetLiteDB()
         {
+            /*
             string dbPath = Path.Combine(
                 _logDir,
                 "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
             return new LiteDatabase($"Filename={dbPath};Connection=shared");
+            */
+            return new LiteDatabase($"Filename={_logDBPath};Connection=shared");
         }
 
         protected ILiteCollection<T> GetCollection(string tableName)
