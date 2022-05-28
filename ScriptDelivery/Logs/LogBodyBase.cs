@@ -58,5 +58,9 @@ namespace ScriptDelivery.Logs
         }
 
         public virtual string GetJson() { return ""; }
+
+        public virtual Dictionary<string, string> SplitForSyslog() { return null; }
+
+        public virtual string ToConsoleMessage() { return ""; }
     }
 }

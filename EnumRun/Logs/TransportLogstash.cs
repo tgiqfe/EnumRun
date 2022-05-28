@@ -19,7 +19,7 @@ namespace EnumRun.Logs
 
         private HttpRequestMessage _request = null;
 
-        public TransportLogstash() { }
+        //public TransportLogstash() { }
         public TransportLogstash(string logstashServer)
         {
             var info = new ServerInfo(logstashServer, 80, "http");
