@@ -31,7 +31,6 @@ using (var logger = new ProcessLogger(setting, session))
     worker.PreProcess();
 
     //  ScriptDeliveryサーバからスクリプトをダウンロード
-    //var sdc = new ScriptDeliveryClient(session, setting.FilesPath, setting.LogsPath, setting.ScriptDelivery?.TrashPath, logger);
     var sdc = new ScriptDeliveryClient(setting, session, logger);
     sdc.StartDownload();
 
@@ -50,6 +49,6 @@ using (var logger = new ProcessLogger(setting, session))
     worker.PostProcess();
 }
 
+#if DEBUG
 Console.ReadLine();
-
-
+#endif
