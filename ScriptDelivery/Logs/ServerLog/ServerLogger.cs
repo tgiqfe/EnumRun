@@ -28,7 +28,7 @@ namespace ScriptDelivery.Logs.ServerLog
 
             if (!string.IsNullOrEmpty(setting.Syslog?.Server))
             {
-                _syslog = new SyslogTransport(setting);
+                _syslog = new TransportSyslog(setting);
                 _syslog.Facility = FacilityMapper.ToFacility(setting.Syslog.Facility);
                 _syslog.AppName = Item.ProcessName;
                 _syslog.ProcId = ServerLogBody.TAG;

@@ -10,7 +10,7 @@ using ScriptDelivery.Lib;
 
 namespace ScriptDelivery.Logs
 {
-    internal class SyslogTransport : IDisposable
+    internal class TransportSyslog : IDisposable
     {
         public bool Enabled { get; set; }
 
@@ -22,8 +22,8 @@ namespace ScriptDelivery.Logs
         public string MsgId { get; set; }
         public StructuredData[] StructuredDataParams { get; set; }
 
-        public SyslogTransport() { }
-        public SyslogTransport(Setting setting)
+        public TransportSyslog() { }
+        public TransportSyslog(Setting setting)
         {
             var info = new ServerInfo(setting.Syslog.Server, defaultPort: 514, defaultProtocol: "udp");
             Format format = FormatMapper.ToFormat(setting.Syslog.Format);

@@ -48,5 +48,23 @@ namespace ScriptDelivery.Logs.ServerLog
                 convertEnumCamel: true);
             return JsonSerializer.Serialize(this, _options);
         }
+
+        public override Dictionary<string, string> SplitForSyslog()
+        {
+            return new Dictionary<string, string>()
+            {
+                { Title, Message }
+            };
+        }
+
+        public override string ToConsoleMessage()
+        {
+            return string.Format("[{0}][{1}] Client:{2} Title:{3} Message:{4}",
+                this.Date,
+                this.Level,
+                this.Client ?? "-",
+                this.Title ?? "-",
+                this.Message);
+        }
     }
 }

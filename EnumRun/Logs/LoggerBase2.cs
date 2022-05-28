@@ -34,7 +34,6 @@ namespace EnumRun.Logs
         protected virtual bool _logAppend { get; }
         protected virtual string _tag { get; set; }
 
-
         public void Init(string logPreName, EnumRunSetting setting, ScriptDeliverySession session)
         {
             _lock ??= new AsyncLock();
