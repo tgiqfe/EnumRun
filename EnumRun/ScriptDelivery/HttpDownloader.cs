@@ -15,11 +15,11 @@ namespace EnumRun.ScriptDelivery
     internal class HttpDownloader
     {
         private string _filesPath = null;
-        private ProcessLogger _logger = null;
+        private ProcessLogger2 _logger = null;
         private JsonSerializerOptions _options = null;
         private List<DownloadHttp> _list = null;
 
-        public HttpDownloader(string filesPath, ProcessLogger logger)
+        public HttpDownloader(string filesPath, ProcessLogger2 logger)
         {
             //this._uri = uri;
             this._filesPath = filesPath;
@@ -123,7 +123,7 @@ namespace EnumRun.ScriptDelivery
             {
                 string dstPath = string.IsNullOrEmpty(dlFile.DestinationPath) ?
                     Path.Combine(_filesPath, Path.GetFileName(dlFile.Path)) :
-                    Path.Combine(dlFile.DestinationPath, Path.GetFileName(dlFile.Path));
+                    ExpandEnvironment(dlFile.DestinationPath);
 
                 //  ローカル側のファイルとの一致チェック
                 if (!(dlFile.Downloadable ?? false)) { continue; }
@@ -161,6 +161,16 @@ namespace EnumRun.ScriptDelivery
                     }
                 }
             }
+        }
+
+        private string ExpandEnvironment(string text)
+        {
+            for (int i = 0; i < 5 && text.Contains("%"); i++)
+            {
+
+                text = Environment.ExpandEnvironmentVariables(text);
+            }
+            return text;
         }
     }
 }

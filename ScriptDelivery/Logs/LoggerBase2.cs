@@ -19,6 +19,7 @@ namespace ScriptDelivery.Logs
         /// </summary>
         private static AsyncLock _lock = null;
 
+        private string _logFilePath = null;
         private StreamWriter _writer = null;
         private LiteDatabase _liteDB = null;
         private string _liteDBPath = null;
@@ -28,8 +29,9 @@ namespace ScriptDelivery.Logs
 
         protected virtual bool _logAppend { get; }
         protected virtual string _tag { get; set; }
-        protected bool _writed = false;
 
+        protected bool _writed = false;
+        
         public void Init(string logPreName, Setting setting)
         {
             _lock ??= new AsyncLock();
@@ -37,9 +39,9 @@ namespace ScriptDelivery.Logs
             string logDir = setting.GetLogsPath();
             string today = DateTime.Now.ToString("yyyyMMdd");
 
-            string logFilePath = Path.Combine(logDir, $"{logPreName}_{today}.log");
-            TargetDirectory.CreateParent(logFilePath);
-            _writer = new StreamWriter(logFilePath, _logAppend, Encoding.UTF8);
+            _logFilePath = Path.Combine(logDir, $"{logPreName}_{today}.log");
+            TargetDirectory.CreateParent(_logFilePath);
+            _writer = new StreamWriter(_logFilePath, _logAppend, Encoding.UTF8);
             _liteDBPath = Path.Combine(logDir, $"Cache_{today}.db");
 
             if (!string.IsNullOrEmpty(setting.Syslog?.Server))
@@ -98,6 +100,32 @@ namespace ScriptDelivery.Logs
 
 
         #region Close method
+
+        /// <summary>
+        /// 定期的にログをファイルに書き込む
+        /// </summary>
+        protected async void WriteInFile()
+        {
+            while (true)
+            {
+                await Task.Delay(60 * 1000);
+                if (_writed)
+                {
+                    try
+                    {
+                        using (await _lock.LockAsync())
+                        {
+                            _writer.Dispose();
+                            _writer = new StreamWriter(_logFilePath, _logAppend, Encoding.UTF8);
+                            _writed = false;
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        //  [案]定期的にSyslog送信失敗していたログを再転送する処理
 
         public virtual async Task CloseAsync()
         {

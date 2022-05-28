@@ -45,6 +45,8 @@ namespace ScriptDelivery.Files
                 logTitle,
                 "MapFiles => [{0}]",
                 string.Join(", ", _list.Select(x => x.Name)));
+
+            //  [案]mappinfファイル配布用に格納している情報を、外部から確認できるようにファイルに出力しておくことを検討
         }
     }
 }

@@ -20,6 +20,7 @@ namespace EnumRun.Logs
         /// </summary>
         private static AsyncLock _lock = null;
 
+        private string _logFilePath = null;
         private StreamWriter _writer = null;
         private LiteDatabase _liteDB = null;
         private string _liteDBPath = null;
@@ -41,9 +42,9 @@ namespace EnumRun.Logs
             string logDir = setting.GetLogsPath();
             string today = DateTime.Now.ToString("yyyyMMdd");
 
-            string logFilePath = Path.Combine(logDir, $"{logPreName}_{today}.log");
-            TargetDirectory.CreateParent(logFilePath);
-            _writer = new StreamWriter(logFilePath, _logAppend, Encoding.UTF8);
+            _logFilePath = Path.Combine(logDir, $"{logPreName}_{today}.log");
+            TargetDirectory.CreateParent(_logFilePath);
+            _writer = new StreamWriter(_logFilePath, _logAppend, Encoding.UTF8);
             _liteDBPath = Path.Combine(logDir, $"Cache_{today}.db");
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))

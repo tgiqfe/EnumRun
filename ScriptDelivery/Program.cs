@@ -88,7 +88,7 @@ app.MapPost("/logs/{table}", (HttpContext context) =>
         syncIOFeature.AllowSynchronousIO = true;
     }
     var table = context.Request.RouteValues["table"]?.ToString();
-    Item.DynamicLogger.Write(table, context.Request.Body);
+    Item.Receiver.Write(table, context.Request.Body);
     return "";
 });
 

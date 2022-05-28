@@ -64,6 +64,7 @@ namespace ScriptDelivery.Files
                 {
                     Item.Logger.Write(Logs.LogLevel.Error, logTitle, "IOException occurred.");
                     Item.Logger.Write(Logs.LogLevel.Error, logTitle, e.Message);
+                    await Task.Delay(10000);
                 }
             }
         }

@@ -30,9 +30,9 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
             };
         }
 
-        protected ProcessLogger _logger = null;
+        protected ProcessLogger2 _logger = null;
 
-        public void SetLogger(ProcessLogger logger)
+        public void SetLogger(ProcessLogger2 logger)
         {
             string logTitle = "SetLogger";
 

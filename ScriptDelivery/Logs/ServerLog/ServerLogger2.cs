@@ -17,6 +17,11 @@ namespace ScriptDelivery.Logs.ServerLog
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
             Init(Item.ProcessName, setting);
+
+            //  定期的にログファイルを書き込むスレッドを開始
+            WriteInFile();
+
+            Write("開始");
         }
 
         #region Log output

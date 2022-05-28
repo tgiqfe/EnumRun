@@ -15,9 +15,9 @@ namespace EnumRun.ScriptDelivery
 
         private Dictionary<string, SmbSession> _sessions = null;
         private List<DownloadSmb> _list = null;
-        private ProcessLogger _logger = null;
+        private ProcessLogger2 _logger = null;
 
-        public SmbDownloader(ProcessLogger logger)
+        public SmbDownloader(ProcessLogger2 logger)
         {
             _logger = logger;
             this._sessions = new Dictionary<string, SmbSession>(StringComparer.OrdinalIgnoreCase);
@@ -210,6 +210,8 @@ namespace EnumRun.ScriptDelivery
                 }
             };
 
+            destination = ExpandEnvironment(destination);
+
             //  destinationパスの最後が「\」の場合はフォルダーとして扱い、その配下にダウンロード。
             if (destination.EndsWith("\\"))
             {
@@ -237,6 +239,18 @@ namespace EnumRun.ScriptDelivery
             _logger.Write(LogLevel.Debug, logTitle, "Directory copy, to => {0}", destination);
             robocopy(targetPath, destination);
         }
+
+        private string ExpandEnvironment(string text)
+        {
+            for (int i = 0; i < 5 && text.Contains("%"); i++)
+            {
+
+                text = Environment.ExpandEnvironmentVariables(text);
+            }
+            return text;
+        }
+
+        //  [案]後で確認。Smbで接続した後の切断処理が実装されているかどうか
 
         public void Close()
         {

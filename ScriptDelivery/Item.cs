@@ -69,12 +69,12 @@ namespace ScriptDelivery
         /// <summary>
         /// ログ出力用
         /// </summary>
-        public static ServerLogger Logger { get; set; }
+        public static ServerLogger2 Logger { get; set; }
 
         /// <summary>
         /// DynamicLog受信/出力用
         /// </summary>
-        public static DynamicLogger DynamicLogger { get; set; }
+        public static DynamicLogReceiver Receiver { get; set; }
 
         /// <summary>
         /// Mappingのリストとそれらの操作

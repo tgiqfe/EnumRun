@@ -36,6 +36,8 @@ namespace ScriptDelivery.Files
                 logTitle, 
                 "DownloadFiles => [{0}]",
                     string.Join(", ", _list.Select(x => x.Path)));
+
+            //  [案]HTTPダウンロード候補として格納しているリストを、外部から確認可能にする為に、ファイル出力も検討
         }
 
         /// <summary>

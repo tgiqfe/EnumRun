@@ -13,7 +13,7 @@ namespace EnumRun
 
         private EnumRunSetting _setting = null;
 
-        private Logs.ProcessLog.ProcessLogger _logger = null;
+        private Logs.ProcessLog.ProcessLogger2 _logger = null;
 
         private EnumRun.ScriptDelivery.ScriptDeliverySession _session = null;
 
@@ -22,7 +22,7 @@ namespace EnumRun
         /// </summary>
         /// <param name="setting"></param>
         /// <param name="logger"></param>
-        public SessionWorker(EnumRunSetting setting, EnumRun.ScriptDelivery.ScriptDeliverySession session, Logs.ProcessLog.ProcessLogger logger)
+        public SessionWorker(EnumRunSetting setting, EnumRun.ScriptDelivery.ScriptDeliverySession session, Logs.ProcessLog.ProcessLogger2 logger)
         {
             _setting = setting;
             _session = session;
@@ -55,7 +55,7 @@ namespace EnumRun
                 _logger.Write(LogLevel.Info, logTitle, "Today first.");
 
                 //  MachineLogを出力
-                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting, _session))
+                using (var mLogger = new Logs.MachineLog.MachineLogger2(_setting, _session))
                 {
                     mLogger.Write();
                 }
@@ -66,7 +66,7 @@ namespace EnumRun
             }
 
             //  SessionLogを出力
-            using (var sLogger = new Logs.SessionLog.SessionLogger(_setting, _session))
+            using (var sLogger = new Logs.SessionLog.SessionLogger2(_setting, _session))
             {
                 sLogger.Write(body);
             }
@@ -199,20 +199,20 @@ namespace EnumRun
                         {
                             if (name.StartsWith(Logs.ProcessLog.ProcessLogBody.TAG))
                             {
-                                await _logger.ResendAsync<Logs.ProcessLog.ProcessLogBody>(cacheDB, name, _setting, _session);
+                                await _logger.ResendAsync(cacheDB, name, _setting, _session);
                             }
                             else if (name.StartsWith(Logs.MachineLog.MachineLogBody.TAG))
                             {
-                                using (var mLogger = new Logs.MachineLog.MachineLogger(_setting, _session))
+                                using (var mLogger = new Logs.MachineLog.MachineLogger2(_setting, _session))
                                 {
-                                    await mLogger.ResendAsync<Logs.MachineLog.MachineLogBody>(cacheDB, name, _setting, _session);
+                                    await mLogger.ResendAsync(cacheDB, name, _setting, _session);
                                 }
                             }
                             else if (name.StartsWith(Logs.SessionLog.SessionLogBody.TAG))
                             {
-                                using (var sLogger = new Logs.SessionLog.SessionLogger(_setting, _session))
+                                using (var sLogger = new Logs.SessionLog.SessionLogger2(_setting, _session))
                                 {
-                                    await sLogger.ResendAsync<Logs.SessionLog.SessionLogBody>(cacheDB, name, _setting, _session);
+                                    await sLogger.ResendAsync(cacheDB, name, _setting, _session);
                                 }
                             }
                         }

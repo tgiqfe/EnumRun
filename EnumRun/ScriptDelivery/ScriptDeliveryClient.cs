@@ -18,7 +18,7 @@ namespace EnumRun.ScriptDelivery
     internal class ScriptDeliveryClient
     {
         private ScriptDeliverySession _session = null;
-        private Logs.ProcessLog.ProcessLogger _logger = null;
+        private Logs.ProcessLog.ProcessLogger2 _logger = null;
         
         private string _filesPath = null;
         private List<Mapping> _mappingList = null;
@@ -26,7 +26,7 @@ namespace EnumRun.ScriptDelivery
         private HttpDownloader _httpDownloader = null;
         private DeleteManager _deleteManager = null;
 
-        public ScriptDeliveryClient(EnumRunSetting setting, ScriptDeliverySession session, Logs.ProcessLog.ProcessLogger logger)
+        public ScriptDeliveryClient(EnumRunSetting setting, ScriptDeliverySession session, Logs.ProcessLog.ProcessLogger2 logger)
         {
             this._session = session;
             this._logger = logger;

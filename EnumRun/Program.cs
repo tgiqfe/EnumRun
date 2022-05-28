@@ -22,7 +22,7 @@ LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
 
 using (var session = new ScriptDeliverySession(setting))
-using (var logger = new ProcessLogger(setting, session))
+using (var logger = new ProcessLogger2(setting, session))
 {
     logger.Write(setting.ToLog());
 
