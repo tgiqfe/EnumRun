@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System.Text;
+using System.IO;
 using ScriptDelivery.Logs;
 using ScriptDelivery.Lib;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ScriptDelivery.Files
 {
@@ -10,11 +13,23 @@ namespace ScriptDelivery.Files
 
         private string _baseDir = null;
 
-        public DownloadHttpCollection() { }
+        private string _storedFile = null;
+        private JsonSerializerOptions _options = null;
 
-        public DownloadHttpCollection(string filesPath)
+        //public DownloadHttpCollection() { }
+
+        public DownloadHttpCollection(string filesPath, string logsPath)
         {
             _baseDir = filesPath;
+            _storedFile = Path.Combine(logsPath, "StoredDownloadHttp.json");
+            _options = new JsonSerializerOptions()
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                //IgnoreReadOnlyProperties = true,
+                //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = true,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            };
             CheckSource();
         }
 
@@ -37,7 +52,12 @@ namespace ScriptDelivery.Files
                 "DownloadFiles => [{0}]",
                     string.Join(", ", _list.Select(x => x.Path)));
 
-            //  [案]HTTPダウンロード候補として格納しているリストを、外部から確認可能にする為に、ファイル出力も検討
+            //  格納済みデータを外部確認用に出力
+            using(var sw = new StreamWriter(_storedFile, false, Encoding.UTF8))
+            {
+                string json = JsonSerializer.Serialize(_list, _options);
+                sw.WriteLine(json);
+            }
         }
 
         /// <summary>

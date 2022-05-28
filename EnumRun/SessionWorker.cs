@@ -74,6 +74,8 @@ namespace EnumRun
             //  セッション管理情報を出力
             lastSessions[Item.ProcessName] = body.Session;
             SerializeLogonSession(lastSessions, filePath);
+
+            //  [案]↑セッション管理情報の出力先は、logsパス配下にする。
         }
 
         /// <summary>

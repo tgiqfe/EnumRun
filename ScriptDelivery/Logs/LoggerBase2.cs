@@ -36,7 +36,8 @@ namespace ScriptDelivery.Logs
         {
             _lock ??= new AsyncLock();
 
-            string logDir = setting.GetLogsPath();
+            //string logDir = setting.GetLogsPath();
+            string logDir = setting.LogsPath;
             string today = DateTime.Now.ToString("yyyyMMdd");
 
             _logFilePath = Path.Combine(logDir, $"{logPreName}_{today}.log");

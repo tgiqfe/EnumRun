@@ -18,10 +18,10 @@ namespace ScriptDelivery.Logs.ServerLog
         {
             string logFileName =
                 $"ScriptDelivery_{DateTime.Now.ToString("yyyyMMdd")}.log";
-            string logPath = Path.Combine(setting.GetLogsPath(), logFileName);
+            string logPath = Path.Combine(setting.LogsPath, logFileName);
             TargetDirectory.CreateParent(logPath);
 
-            _logDir = setting.GetLogsPath();
+            _logDir = setting.LogsPath;
             _writer = new StreamWriter(logPath, _logAppend, Encoding.UTF8);
             _lock = new AsyncLock();
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);

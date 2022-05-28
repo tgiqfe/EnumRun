@@ -48,12 +48,12 @@ namespace ScriptDelivery
             Item.Receiver = new Logs.DynamicLog.DynamicLogReceiver(Item.Setting);
 
             //  Mappingリストを取得
-            var mappingFileCollection = new MappingFileCollection(Item.Setting.MapsPath);
+            var mappingFileCollection = new MappingFileCollection(Item.Setting.MapsPath, Item.Setting.LogsPath);
             _mappingFileWatcher = new DirectoryWatcher(Item.Setting.MapsPath, mappingFileCollection);
             Item.MappingFileCollection = mappingFileCollection;
 
             //  ダウンロードリストを取得
-            var downloadFileCollection = new DownloadHttpCollection(Item.Setting.FilesPath);
+            var downloadFileCollection = new DownloadHttpCollection(Item.Setting.FilesPath, Item.Setting.LogsPath);
             _downloadFileWatcher = new DirectoryWatcher(Item.Setting.FilesPath, downloadFileCollection);
             Item.DownloadFileCollection = downloadFileCollection;
 

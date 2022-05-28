@@ -13,7 +13,7 @@ namespace ScriptDelivery.Logs.DynamicLog
 
         public DynamicLogReceiver(Setting setting)
         {
-            _logDir = setting.GetDynamicLogsPath();
+            _logDir = setting.DynamicLogsPath;
 
             string today = DateTime.Now.ToString("yyyyMMdd");
             string dbPath = Path.Combine(
