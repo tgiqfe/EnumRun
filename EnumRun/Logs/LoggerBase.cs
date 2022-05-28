@@ -42,21 +42,6 @@ namespace EnumRun.Logs
         #endregion
 
 
-        protected async Task Send<T>(T body) where T : LogBodyBase
-        {
-            using (await _lock.LockAsync())
-            {
-                string json = body.GetJson();
-
-                //ファイル書き込み
-                await _writer.WriteLineAsync(json);
-
- 
-
-
-            }
-        }
-
         /// <summary>
         /// 一度ログ転送に失敗してローカルキャッシュしたログを、再転送
         /// </summary>

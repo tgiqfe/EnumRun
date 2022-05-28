@@ -12,6 +12,9 @@ using EnumRun.ScriptDelivery;
 
 namespace EnumRun.Logs.ProcessLog
 {
+    /// <summary>
+    /// ProcessLog送信用クラス
+    /// </summary>
     internal class ProcessLogger2 : LoggerBase2<ProcessLogBody>
     {
         protected override bool _logAppend { get { return true; } }
@@ -23,9 +26,8 @@ namespace EnumRun.Logs.ProcessLog
         {
             _minLogLevel = LogLevelMapper.ToLogLevel(setting.MinLogLevel);
 
-            string today = DateTime.Now.ToString("yyyyMMdd");
-            Init($"{Item.ProcessName}_{today}.log", setting, session);
-         
+            Init(Item.ProcessName, setting, session);
+
             Write("開始");
         }
 

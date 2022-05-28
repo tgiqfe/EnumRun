@@ -22,7 +22,7 @@ namespace EnumRun.Logs
 
         private StreamWriter _writer = null;
         private LiteDatabase _liteDB = null;
-        private string _logDBPath = null;
+        private string _liteDBPath = null;
         private TransportLogstash _logstash = null;
         private TransportSyslog _syslog = null;
         private TransportDynamicLog _dynamicLog = null;
@@ -31,24 +31,21 @@ namespace EnumRun.Logs
         private ILiteCollection<T> _colSyslog = null;
         private ILiteCollection<T> _colDynamicLog = null;
 
-        //protected string _logDir = null;
         protected virtual bool _logAppend { get; }
         protected virtual string _tag { get; set; }
-        
 
-        public void Init(string logFileName, EnumRunSetting setting, ScriptDeliverySession session)
+
+        public void Init(string logPreName, EnumRunSetting setting, ScriptDeliverySession session)
         {
             _lock ??= new AsyncLock();
 
             string logDir = setting.GetLogsPath();
-            string logFilePath = Path.Combine(logDir, logFileName);
+            string today = DateTime.Now.ToString("yyyyMMdd");
+
+            string logFilePath = Path.Combine(logDir, $"{logPreName}_{today}.log");
             TargetDirectory.CreateParent(logFilePath);
             _writer = new StreamWriter(logFilePath, _logAppend, Encoding.UTF8);
-            _logDBPath = Path.Combine(
-                logDir,
-                "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-
-
+            _liteDBPath = Path.Combine(logDir, $"Cache_{today}.db");
 
             if (!string.IsNullOrEmpty(setting.Logstash?.Server))
             {
@@ -63,32 +60,24 @@ namespace EnumRun.Logs
             }
             if (session.EnableLogTransport)
             {
-                _dynamicLog = new TransportDynamicLog(session, "ProcessLog");
+                _dynamicLog = new TransportDynamicLog(session, _tag);
             }
         }
 
-        #region LiteDB methods
-
-        protected LiteDatabase GetLiteDB()
-        {
-            /*
-            string dbPath = Path.Combine(
-                _logDir,
-                "Cache_" + DateTime.Now.ToString("yyyyMMdd") + ".db");
-            return new LiteDatabase($"Filename={dbPath};Connection=shared");
-            */
-            return new LiteDatabase($"Filename={_logDBPath};Connection=shared");
-        }
-
-        protected ILiteCollection<T> GetCollection(string tableName)
+        private ILiteCollection<T> GetCollection(string tableName)
         {
             var collection = _liteDB.GetCollection<T>(tableName);
             collection.EnsureIndex(x => x.Serial, true);
             return collection;
         }
 
-        #endregion
+        #region Send/Resend
 
+        /// <summary>
+        /// 通常ログ出力、ログ転送。
+        /// </summary>
+        /// <param name="body"></param>
+        /// <returns></returns>
         public async Task SendAsync(T body)
         {
             using (await _lock.LockAsync())
@@ -108,8 +97,8 @@ namespace EnumRun.Logs
                     }
                     if (!res)
                     {
-                        _liteDB ??= GetLiteDB();
-                        _colLogstash ??= GetCollection(_tag + "_logstash");
+                        _liteDB ??= new LiteDatabase($"Filename={_liteDBPath};Connection=shared");
+                        _colLogstash ??= GetCollection($"{_tag}_logstash");
                         _colLogstash.Upsert(body);
                     }
                 }
@@ -126,8 +115,8 @@ namespace EnumRun.Logs
                     }
                     else
                     {
-                        _liteDB ??= GetLiteDB();
-                        _colSyslog ??= GetCollection(_tag + "_syslog");
+                        _liteDB ??= new LiteDatabase($"Filename={_liteDBPath};Connection=shared");
+                        _colSyslog ??= GetCollection($"{_tag}_syslog");
                         _colSyslog.Upsert(body);
                     }
                 }
@@ -141,16 +130,22 @@ namespace EnumRun.Logs
                     }
                     else
                     {
-                        _liteDB ??= GetLiteDB();
-                        _colDynamicLog ??= GetCollection(_tag + "_dynamicLog");
+                        _liteDB ??= new LiteDatabase($"Filename={_liteDBPath};Connection=shared");
+                        _colDynamicLog ??= GetCollection($"{_tag}_dynamicLog");
                         _colDynamicLog.Upsert(body);
                     }
                 }
             }
         }
 
-        #region Resend
-
+        /// <summary>
+        /// ログ転送失敗時キャッシュの再転送
+        /// </summary>
+        /// <param name="cacheDB"></param>
+        /// <param name="name"></param>
+        /// <param name="setting"></param>
+        /// <param name="session"></param>
+        /// <returns></returns>
         public async Task ResendAsync(LiteDatabase cacheDB, string name, EnumRunSetting setting, ScriptDelivery.ScriptDeliverySession session)
         {
             if (!name.Contains("_")) { return; }
@@ -227,7 +222,7 @@ namespace EnumRun.Logs
         }
 
         #endregion
-
+        #region Close method
 
         public virtual async Task CloseAsync()
         {
@@ -244,6 +239,7 @@ namespace EnumRun.Logs
             if (_syslog != null) { _syslog.Dispose(); _syslog = null; }
         }
 
+        #endregion
         #region Dispose
 
         private bool disposedValue;
