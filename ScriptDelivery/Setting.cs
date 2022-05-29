@@ -89,32 +89,6 @@ namespace ScriptDelivery
             }
         }
 
-        /*
-        public string GetLogsPath()
-        {
-            return string.IsNullOrEmpty(this.LogsPath) ?
-                Path.Combine(Item.ExecDirectoryPath, "Logs") :
-                ExpandEnvironment(this.LogsPath);
-        }
-
-        public string GetDynamicLogsPath()
-        {
-            return string.IsNullOrEmpty(this.DynamicLogsPath) ?
-                Path.Combine(Item.ExecDirectoryPath, "DynamicLogs") :
-                ExpandEnvironment(this.DynamicLogsPath);
-        }
-
-        private string ExpandEnvironment(string text)
-        {
-            for (int i = 0; i < 5 && text.Contains("%"); i++)
-            {
-
-                text = Environment.ExpandEnvironmentVariables(text);
-            }
-            return text;
-        }
-        */
-
         #region Serialize/Deserialize
 
         public static Setting Deserialize(string filePath)

@@ -307,6 +307,7 @@ namespace EnumRun
                     sw.WriteLine($"  Server: {string.Join(", ", this.ScriptDelivery.Server)}");
                     sw.WriteLine($"  Process: {this.ScriptDelivery.Process}");
                     sw.WriteLine($"  TrashPath: {this.ScriptDelivery.TrashPath}");
+                    sw.WriteLine($"  LogTransport: {this.ScriptDelivery.LogTransport}");
                 }
             }
         }
