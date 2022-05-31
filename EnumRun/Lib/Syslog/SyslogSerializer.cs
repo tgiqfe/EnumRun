@@ -22,7 +22,7 @@ namespace EnumRun.Lib.Syslog
         /// </summary>
         /// <param name="msg"></param>
         /// <returns></returns>
-        public static byte[] GetRfc3624(SyslogMessage msg)
+        public static byte[] GetRfc3164(SyslogMessage msg)
         {
             int priValue = ((int)msg.Facility * 8) + (int)msg.Severity;
 
