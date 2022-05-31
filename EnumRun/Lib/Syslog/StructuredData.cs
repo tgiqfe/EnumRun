@@ -9,7 +9,7 @@ namespace EnumRun.Lib.Syslog
     /// <summary>
     /// RFC5424用 構造化データ(Strctured-Data)
     /// </summary>
-    internal class StructuredData
+    public class StructuredData
     {
         public const int DefaultPrivateEnterpriseNumber = 32473;
 

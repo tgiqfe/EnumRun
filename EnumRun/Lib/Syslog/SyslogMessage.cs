@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal class SyslogMessage
+    public class SyslogMessage
     {
         public DateTime DateTime { get; set; }
         public Facility Facility { get; set; }

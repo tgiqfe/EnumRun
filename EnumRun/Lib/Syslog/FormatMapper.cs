@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal class FormatMapper
+    public class FormatMapper
     {
         private static Dictionary<Format, string[]> _map = null;
 

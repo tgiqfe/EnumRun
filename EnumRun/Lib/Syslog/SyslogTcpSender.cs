@@ -8,7 +8,7 @@ using System.IO;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal class SyslogTcpSender : SyslogSender
+    public class SyslogTcpSender : SyslogSender
     {
         private enum MessageTransfer
         {
