@@ -11,6 +11,9 @@ namespace EnumRun.ScriptDelivery
 {
     internal class SmbDownloader
     {
+        /// <summary>
+        /// SMB接続可否確認完了までのタイムアウト(ミリ秒)
+        /// </summary>
         const int _timeout = 3000;
 
         private Dictionary<string, SmbSession> _sessions = null;
@@ -19,7 +22,7 @@ namespace EnumRun.ScriptDelivery
 
         public SmbDownloader(ProcessLogger logger)
         {
-            _logger = logger;
+            this._logger = logger;
             this._sessions = new Dictionary<string, SmbSession>(StringComparer.OrdinalIgnoreCase);
             this._list = new List<DownloadSmb>();
         }
@@ -102,12 +105,24 @@ namespace EnumRun.ScriptDelivery
             }
         }
 
+        /// <summary>
+        /// ファイルが存在するかどうかをチェック
+        /// リモートパス前提の為、タイムアウト設定
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         private bool FileExists(string path)
         {
             var task = Task.Factory.StartNew(() => File.Exists(path));
             return task.Wait(_timeout) && task.Result;
         }
 
+        /// <summary>
+        /// ディレクトリが存在するかどうかをチェック
+        /// リモートパス前提の為、タイムアウト設定
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         private bool DirectoryExists(string path)
         {
             var task = Task.Factory.StartNew(() => Directory.Exists(path));

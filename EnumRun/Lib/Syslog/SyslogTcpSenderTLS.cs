@@ -159,7 +159,7 @@ namespace EnumRun.Lib.Syslog
                 byte[] datagram = format switch
                 {
                     Format.RFC3164 => SyslogSerializer.GetRfc3164(message),
-                    Format.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
+                    Format.RFC5424 => SyslogSerializer.GetRfc5424(message),
                     _ => null,
                 };
 
@@ -197,7 +197,7 @@ namespace EnumRun.Lib.Syslog
                 byte[] datagram = format switch
                 {
                     Format.RFC3164 => SyslogSerializer.GetRfc3164(message),
-                    Format.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
+                    Format.RFC5424 => SyslogSerializer.GetRfc5424(message),
                     _ => null,
                 };
 

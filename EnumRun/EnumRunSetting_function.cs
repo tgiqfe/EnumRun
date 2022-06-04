@@ -50,6 +50,7 @@ namespace EnumRun
                 Server = new string[] { "http://localhost:5000" },
                 Process = "StartupScript",
                 TrashPath = null,
+                LogTransport = true,
             };
         }
 
@@ -61,12 +62,14 @@ namespace EnumRun
         /// <returns></returns>
         public static EnumRunSetting Deserialize()
         {
+            //  Setting.json
             string jsonFilePath = TargetDirectory.GetFile(Item.CONFIG_JSON);
             if (File.Exists(jsonFilePath))
             {
                 return DeserializeJson(jsonFilePath);
             }
 
+            //  Setting.txt
             string textFilePath = TargetDirectory.GetFile(Item.CONFIG_TXT);
             if (File.Exists(textFilePath))
             {
@@ -131,14 +134,14 @@ namespace EnumRun
                     while ((readLine = sr.ReadLine()) != null) { lineList.Add(readLine); }
 
                     int index = 0;
-                    setting = GetProperty(new EnumRunSetting(), lineList, ref index);
+                    setting = GetPropertyForText(new EnumRunSetting(), lineList, ref index);
                 }
             }
 
             return setting;
         }
 
-        private static T GetProperty<T>(T obj, List<string> list, ref int index, bool isRoot = true) where T : class
+        private static T GetPropertyForText<T>(T obj, List<string> list, ref int index, bool isRoot = true) where T : class
         {
             Regex pat_indent = new Regex(@"^(\s{2})+");
             PropertyInfo[] props = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -192,19 +195,19 @@ namespace EnumRun
                         else if (type == typeof(ParamLogstash))
                         {
                             index++;
-                            (obj as EnumRunSetting).Logstash = GetProperty(new ParamLogstash(), list, ref index, false);
+                            (obj as EnumRunSetting).Logstash = GetPropertyForText(new ParamLogstash(), list, ref index, false);
                             i = --index;
                         }
                         else if (type == typeof(ParamSyslog))
                         {
                             index++;
-                            (obj as EnumRunSetting).Syslog = GetProperty(new ParamSyslog(), list, ref index, false);
+                            (obj as EnumRunSetting).Syslog = GetPropertyForText(new ParamSyslog(), list, ref index, false);
                             i = --index;
                         }
                         else if (type == typeof(ParamScriptDelivery))
                         {
                             index++;
-                            (obj as EnumRunSetting).ScriptDelivery = GetProperty(new ParamScriptDelivery(), list, ref index, false);
+                            (obj as EnumRunSetting).ScriptDelivery = GetPropertyForText(new ParamScriptDelivery(), list, ref index, false);
                             i = --index;
                         }
                     }

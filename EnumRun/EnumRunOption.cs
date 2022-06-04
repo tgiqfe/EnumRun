@@ -2,6 +2,9 @@
 
 namespace EnumRun
 {
+    /// <summary>
+    /// EnumRun用オプションを格納
+    /// </summary>
     internal class EnumRunOption
     {
         /// <summary>
@@ -29,9 +32,9 @@ namespace EnumRun
         public EnumRunOption() { }
 
         /// <summary>
-        /// コンストラクタ (ファイル名を指定)
+        /// コンストラクタ
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="filePath">スクリプトファイルのパス</param>
         public EnumRunOption(string filePath)
         {
             string fileName = Path.GetFileName(filePath).ToLower();

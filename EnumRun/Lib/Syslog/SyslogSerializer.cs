@@ -41,6 +41,7 @@ namespace EnumRun.Lib.Syslog
             string content = string.Format("<{0}>{1} {2} {3}:{4}",
                 priValue, timestamp, msg.HostName, appName, msg.Message);
 
+            //  ASCIIの場合、文字化けする為UTF8。
             //return Encoding.ASCII.GetBytes(content);
             return Encoding.UTF8.GetBytes(content);
         }
@@ -154,9 +155,6 @@ namespace EnumRun.Lib.Syslog
 
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
-
-
-
 
         private static string ToAsciiField(string text, int maxLength, bool sdName = false)
         {
