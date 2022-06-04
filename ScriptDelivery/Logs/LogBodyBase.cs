@@ -27,38 +27,6 @@ namespace ScriptDelivery.Logs
 
         #endregion
 
-        /*
-        protected JsonSerializerOptions GetJsonSerializerOption(
-            bool escapeDoubleQuote,
-            bool ignoreReadOnly,
-            bool ignoreNull,
-            bool writeIndented,
-            bool convertEnumCamel)
-        {
-            var options = convertEnumCamel ?
-                new JsonSerializerOptions() { Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } } :
-                new JsonSerializerOptions();
-            if (escapeDoubleQuote)
-            {
-                options.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-            }
-            if (ignoreReadOnly)
-            {
-                options.IgnoreReadOnlyProperties = true;
-            }
-            if (ignoreNull)
-            {
-                options.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-            }
-            if (writeIndented)
-            {
-                options.WriteIndented = true;
-            }
-
-            return options;
-        }
-        */
-
         public virtual string GetJson() { return ""; }
 
         public virtual Dictionary<string, string> SplitForSyslog() { return null; }

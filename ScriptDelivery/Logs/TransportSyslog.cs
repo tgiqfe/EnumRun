@@ -58,53 +58,6 @@ namespace ScriptDelivery.Logs
 
         #region Send
 
-        /*
-        public void Send(string message)
-        {
-            Send(DateTime.Now, Facility, Severity, Environment.MachineName, AppName, ProcId, MsgId, message, StructuredDataParams);
-        }
-
-        public void Send(Severity severity, string message)
-        {
-            Send(DateTime.Now, Facility, severity, Environment.MachineName, AppName, ProcId, MsgId, message, StructuredDataParams);
-        }
-
-        public void Send(DateTime dt, Facility facility, Severity severity, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
-        {
-            Sender.Send(
-                new SyslogMessage(
-                    dt,
-                    facility,
-                    severity,
-                    hostName,
-                    appName,
-                    procId,
-                    msgId,
-                    message,
-                    structuredDataParams));
-        }
-
-        public void Send(DateTime dt, Facility facility, LogLevel level, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
-        {
-            Sender.Send(
-                new SyslogMessage(
-                    dt,
-                    facility,
-                    LogLevelMapper.ToSeverity(level),
-                    hostName,
-                    appName,
-                    procId,
-                    msgId,
-                    message,
-                    structuredDataParams));
-        }
-
-        public void Send(LogLevel level, string msgId, string message)
-        {
-            Send(DateTime.Now, Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, AppName, ProcId, msgId, message, StructuredDataParams);
-        }
-        */
-
         public async Task SendAsync(string message)
         {
             await SendAsync(DateTime.Now, Facility, Severity, Environment.MachineName, AppName, ProcId, MsgId, message, StructuredDataParams);

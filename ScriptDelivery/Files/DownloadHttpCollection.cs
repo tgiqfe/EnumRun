@@ -10,29 +10,15 @@ namespace ScriptDelivery.Files
     public class DownloadHttpCollection : IStoredFileCollection
     {
         private List<DownloadHttp> _list = null;
-
         private string _baseDir = null;
-
         private string _storedFile = null;
         private JsonSerializerOptions _options = null;
 
-        //public DownloadHttpCollection() { }
-
         public DownloadHttpCollection(string filesPath, string logsPath)
         {
-            _baseDir = filesPath;
-            _storedFile = Path.Combine(logsPath, "StoredDownloadHttp.json");
-            /*
-            _options = new JsonSerializerOptions()
-            {
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                //IgnoreReadOnlyProperties = true,
-                //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                WriteIndented = true,
-                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-            };
-            */
-            _options = Item.GetJsonSerializerOption(
+            this._baseDir = filesPath;
+            this._storedFile = Path.Combine(logsPath, "StoredDownloadHttp.json");
+            this._options = Item.GetJsonSerializerOption(
                 escapeDoubleQuote: true,
                 ignoreReadOnly: false,
                 ignoreNull: false,

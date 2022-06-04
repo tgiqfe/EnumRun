@@ -48,7 +48,6 @@ namespace EnumRun.Logs.SessionLog
                         ignoreNull: false,
                         writeIndented: true,
                         convertEnumCamel: false));
-                //new JsonSerializerOptions() { WriteIndented = true });
                 sw.WriteLine(json);
             }
         }

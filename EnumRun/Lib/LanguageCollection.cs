@@ -40,7 +40,6 @@ namespace EnumRun.Lib
 
             this.Clear();
             this.AddRange(list);
-            //this.Save(path);
         }
 
         public void Save(string path)
@@ -57,14 +56,6 @@ namespace EnumRun.Lib
                         ignoreNull: true,
                         writeIndented: true,
                         convertEnumCamel: false));
-                    /* 
-                    new JsonSerializerOptions()
-                    {
-                        WriteIndented = true,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    });
-                    */
                     sw.WriteLine(json);
                 }
             }

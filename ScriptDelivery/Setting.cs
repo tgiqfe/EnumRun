@@ -104,17 +104,6 @@ namespace ScriptDelivery
                         ignoreNull: false,
                         writeIndented: false,
                         convertEnumCamel: true));
-
-                    /*
-                    new JsonSerializerOptions()
-                    {
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                        //IgnoreReadOnlyProperties = true,
-                        //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                        //WriteIndented = true,
-                        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                    });
-                    */
                 }
             }
             catch { }
@@ -147,16 +136,6 @@ namespace ScriptDelivery
                         ignoreNull: false,
                         writeIndented: true,
                         convertEnumCamel: true));
-                    /*
-                         new JsonSerializerOptions()
-                         {
-                             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                             //IgnoreReadOnlyProperties = true,
-                             //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                             WriteIndented = true,
-                             Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                         });
-                    */
                     sw.WriteLine(json);
                 }
             }

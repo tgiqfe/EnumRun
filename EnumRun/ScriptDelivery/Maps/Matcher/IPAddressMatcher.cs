@@ -172,10 +172,6 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
 
             var _nics = GetNICsFromInterface();
 
-
-            //startNum = int.TryParse(this.StartAddress, out int tempStart) ? tempStart : 0;
-            //endNum = int.TryParse(this.EndAddress, out int tempEnd) ? tempEnd : 0;
-
             foreach (var nic in _nics)
             {
                 foreach (var addressSet in nic.AddressSets)
@@ -188,12 +184,6 @@ namespace EnumRun.ScriptDelivery.Maps.Matcher
                         {
                             return true;
                         }
-                        /*
-                        if (bytes[3] >= startNum && bytes[3] <= endNum)
-                        {
-                            return true;
-                        }
-                        */
                     }
                 }
             }
