@@ -27,6 +27,7 @@ namespace ScriptDelivery.Logs
 
         #endregion
 
+        /*
         protected JsonSerializerOptions GetJsonSerializerOption(
             bool escapeDoubleQuote,
             bool ignoreReadOnly,
@@ -56,6 +57,7 @@ namespace ScriptDelivery.Logs
 
             return options;
         }
+        */
 
         public virtual string GetJson() { return ""; }
 

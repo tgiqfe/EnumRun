@@ -92,14 +92,23 @@ namespace EnumRun
                     {
                         setting = JsonSerializer.Deserialize<EnumRunSetting>(
                             sr.ReadToEnd(),
-                            new JsonSerializerOptions()
-                            {
-                                //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                                //IgnoreReadOnlyProperties = true,
-                                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                                //WriteIndented = true,
-                                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                            });
+                            Item.GetJsonSerializerOption(
+                                escapeDoubleQuote: false,
+                                ignoreReadOnly: true,
+                                ignoreNull: true,
+                                writeIndented: false,
+                                convertEnumCamel: true));
+
+                        /*
+                        new JsonSerializerOptions()
+                        {
+                            //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                            IgnoreReadOnlyProperties = true,
+                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                            //WriteIndented = true,
+                            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+                        });
+                        */
                     }
                 }
                 catch { }
@@ -246,14 +255,22 @@ namespace EnumRun
             using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
             {
                 string json = JsonSerializer.Serialize(this,
-                    new JsonSerializerOptions()
-                    {
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                        IgnoreReadOnlyProperties = true,
-                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                        WriteIndented = true,
-                        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                    });
+                    Item.GetJsonSerializerOption(
+                        escapeDoubleQuote: true,
+                        ignoreReadOnly: true,
+                        ignoreNull: true,
+                        writeIndented: true,
+                        convertEnumCamel: true));
+                /*
+                new JsonSerializerOptions()
+                {
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    IgnoreReadOnlyProperties = true,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                    WriteIndented = true,
+                    Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+                });
+                */
                 sw.WriteLine(json);
             }
         }

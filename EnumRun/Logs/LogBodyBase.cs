@@ -29,7 +29,7 @@ namespace EnumRun.Logs
         #endregion
 
         
-
+        /*
         protected JsonSerializerOptions GetJsonSerializerOption(
             bool escapeDoubleQuote,
             bool ignoreReadOnly,
@@ -59,6 +59,7 @@ namespace EnumRun.Logs
 
             return options;
         }
+        */
 
         public virtual string GetJson() { return ""; }
 

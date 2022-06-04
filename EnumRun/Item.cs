@@ -80,5 +80,44 @@ namespace EnumRun
         }
 
         #endregion
+
+        /// <summary>
+        /// Jsonシリアライズ/デシリアライズ用JsonSerialzierOptions
+        /// </summary>
+        /// <param name="escapeDoubleQuote"></param>
+        /// <param name="ignoreReadOnly"></param>
+        /// <param name="ignoreNull"></param>
+        /// <param name="writeIndented"></param>
+        /// <param name="convertEnumCamel"></param>
+        /// <returns></returns>
+        public static System.Text.Json.JsonSerializerOptions GetJsonSerializerOption(
+            bool escapeDoubleQuote,
+            bool ignoreReadOnly,
+            bool ignoreNull,
+            bool writeIndented,
+            bool convertEnumCamel)
+        {
+            var options = convertEnumCamel ?
+                new System.Text.Json.JsonSerializerOptions() { Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase) } } :
+                new System.Text.Json.JsonSerializerOptions();
+            if (escapeDoubleQuote)
+            {
+                options.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+            }
+            if (ignoreReadOnly)
+            {
+                options.IgnoreReadOnlyProperties = true;
+            }
+            if (ignoreNull)
+            {
+                options.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            }
+            if (writeIndented)
+            {
+                options.WriteIndented = true;
+            }
+
+            return options;
+        }
     }
 }
