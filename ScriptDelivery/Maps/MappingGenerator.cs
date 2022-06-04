@@ -81,28 +81,43 @@ namespace ScriptDelivery.Maps
         {
             List<Mapping> list = JsonSerializer.Deserialize<List<Mapping>>(
                 tr.ReadToEnd(),
-                new JsonSerializerOptions()
-                {
-                    //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    //IgnoreReadOnlyProperties = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                    //WriteIndented = true,
-                    Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                });
+                Item.GetJsonSerializerOption(
+                    escapeDoubleQuote: false,
+                    ignoreReadOnly: false,
+                    ignoreNull: true,
+                    writeIndented: false,
+                    convertEnumCamel: true));
+            /*
+            new JsonSerializerOptions()
+            {
+                //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                //IgnoreReadOnlyProperties = true,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                //WriteIndented = true,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            });
+            */
             return list ?? new List<Mapping>();
         }
 
         public static void SerializeJson(List<Mapping> list, TextWriter tw)
         {
-            string json = JsonSerializer.Serialize(list,
-                new JsonSerializerOptions()
-                {
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    IgnoreReadOnlyProperties = true,
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                    WriteIndented = true,
-                    Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                });
+            string json = JsonSerializer.Serialize(list, Item.GetJsonSerializerOption(
+                escapeDoubleQuote: true,
+                ignoreReadOnly: true,
+                ignoreNull: true,
+                writeIndented: true,
+                convertEnumCamel: true));
+            /*
+            new JsonSerializerOptions()
+            {
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                IgnoreReadOnlyProperties = true,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = true,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+            });
+            */
             tw.WriteLine(json);
         }
 

@@ -42,7 +42,13 @@ namespace EnumRun.Logs.SessionLog
             {
                 string json = JsonSerializer.Serialize(
                     sessions,
-                    new JsonSerializerOptions() { WriteIndented = true });
+                    Item.GetJsonSerializerOption(
+                        escapeDoubleQuote: false,
+                        ignoreReadOnly: false,
+                        ignoreNull: false,
+                        writeIndented: true,
+                        convertEnumCamel: false));
+                //new JsonSerializerOptions() { WriteIndented = true });
                 sw.WriteLine(json);
             }
         }

@@ -98,15 +98,23 @@ namespace ScriptDelivery
             {
                 using (var sr = new StreamReader(filePath, Encoding.UTF8))
                 {
-                    setting = JsonSerializer.Deserialize<Setting>(sr.ReadToEnd(),
-                        new JsonSerializerOptions()
-                        {
-                            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                            //IgnoreReadOnlyProperties = true,
-                            //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                            //WriteIndented = true,
-                            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-                        });
+                    setting = JsonSerializer.Deserialize<Setting>(sr.ReadToEnd(), Item.GetJsonSerializerOption(
+                        escapeDoubleQuote: true,
+                        ignoreReadOnly: false,
+                        ignoreNull: false,
+                        writeIndented: false,
+                        convertEnumCamel: true));
+
+                    /*
+                    new JsonSerializerOptions()
+                    {
+                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                        //IgnoreReadOnlyProperties = true,
+                        //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                        //WriteIndented = true,
+                        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+                    });
+                    */
                 }
             }
             catch { }
@@ -133,7 +141,13 @@ namespace ScriptDelivery
             {
                 using (var sw = new StreamWriter(filePath, false, Encoding.UTF8))
                 {
-                    string json = JsonSerializer.Serialize(this,
+                    string json = JsonSerializer.Serialize(this, Item.GetJsonSerializerOption(
+                        escapeDoubleQuote: true,
+                        ignoreReadOnly: false,
+                        ignoreNull: false,
+                        writeIndented: true,
+                        convertEnumCamel: true));
+                    /*
                          new JsonSerializerOptions()
                          {
                              Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -142,6 +156,7 @@ namespace ScriptDelivery
                              WriteIndented = true,
                              Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                          });
+                    */
                     sw.WriteLine(json);
                 }
             }

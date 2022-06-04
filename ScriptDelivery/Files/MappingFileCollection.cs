@@ -26,6 +26,13 @@ namespace ScriptDelivery.Files
         {
             _baseDir = mapsPath;
             _storedFile = Path.Combine(logsPath, "StoredMapping.json");
+            _options = Item.GetJsonSerializerOption(
+                escapeDoubleQuote: true,
+                ignoreReadOnly: false,
+                ignoreNull: false,
+                writeIndented: true,
+                convertEnumCamel: true);
+            /*
             _options = new JsonSerializerOptions()
             {
                 Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -34,6 +41,7 @@ namespace ScriptDelivery.Files
                 WriteIndented = true,
                 Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
             };
+            */
             CheckSource();
         }
 
