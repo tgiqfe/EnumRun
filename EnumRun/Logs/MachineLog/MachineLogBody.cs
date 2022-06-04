@@ -60,7 +60,7 @@ namespace EnumRun.Logs.MachineLog
 
         public override string GetJson()
         {
-            _options ??= GetJsonSerializerOption(
+            _options ??= Item.GetJsonSerializerOption(
                 escapeDoubleQuote: true,
                 false,
                 false,

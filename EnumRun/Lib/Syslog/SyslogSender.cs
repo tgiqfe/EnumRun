@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal class SyslogSender : IDisposable
+    public class SyslogSender : IDisposable
     {
         protected const int _defaultPort = 514;
         protected static readonly Format _defaultFormat = Format.RFC3164;

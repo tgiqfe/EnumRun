@@ -7,7 +7,7 @@ using System.Net.Sockets;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal class SyslogUdpSender : SyslogSender
+    public class SyslogUdpSender : SyslogSender
     {
         private UdpClient _client = null;
 
@@ -27,7 +27,7 @@ namespace EnumRun.Lib.Syslog
 
             byte[] datagram = format switch
             {
-                Format.RFC3164 => SyslogSerializer.GetRfc3624(message),
+                Format.RFC3164 => SyslogSerializer.GetRfc3164(message),
                 Format.RFC5424 => SyslogSerializer.GetRfc5424(message),
                 _ => null,
             };
@@ -43,7 +43,7 @@ namespace EnumRun.Lib.Syslog
 
             byte[] datagram = format switch
             {
-                Format.RFC3164 => SyslogSerializer.GetRfc3624(message),
+                Format.RFC3164 => SyslogSerializer.GetRfc3164(message),
                 Format.RFC5424 => SyslogSerializer.GetRfc5424(message),
                 _ => null,
             };

@@ -10,26 +10,20 @@ namespace ScriptDelivery.Files
     public class DownloadHttpCollection : IStoredFileCollection
     {
         private List<DownloadHttp> _list = null;
-
         private string _baseDir = null;
-
         private string _storedFile = null;
         private JsonSerializerOptions _options = null;
 
-        //public DownloadHttpCollection() { }
-
         public DownloadHttpCollection(string filesPath, string logsPath)
         {
-            _baseDir = filesPath;
-            _storedFile = Path.Combine(logsPath, "StoredDownloadHttp.json");
-            _options = new JsonSerializerOptions()
-            {
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                //IgnoreReadOnlyProperties = true,
-                //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                WriteIndented = true,
-                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-            };
+            this._baseDir = filesPath;
+            this._storedFile = Path.Combine(logsPath, "StoredDownloadHttp.json");
+            this._options = Item.GetJsonSerializerOption(
+                escapeDoubleQuote: true,
+                ignoreReadOnly: false,
+                ignoreNull: false,
+                writeIndented: true,
+                convertEnumCamel: true);
             CheckSource();
         }
 
@@ -46,14 +40,14 @@ namespace ScriptDelivery.Files
                 }
             }
 
-            Item.Logger.Write(ScriptDelivery.Logs.LogLevel.Info, 
+            Item.Logger.Write(ScriptDelivery.Logs.LogLevel.Info,
                 null,
-                logTitle, 
+                logTitle,
                 "DownloadFiles => [{0}]",
                     string.Join(", ", _list.Select(x => x.Path)));
 
             //  格納済みデータを外部確認用に出力
-            using(var sw = new StreamWriter(_storedFile, false, Encoding.UTF8))
+            using (var sw = new StreamWriter(_storedFile, false, Encoding.UTF8))
             {
                 string json = JsonSerializer.Serialize(_list, _options);
                 sw.WriteLine(json);

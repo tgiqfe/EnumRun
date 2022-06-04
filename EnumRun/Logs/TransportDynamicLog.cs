@@ -22,14 +22,12 @@ namespace EnumRun.Logs
         public TransportDynamicLog(ScriptDeliverySession session, string tableName)
         {
             this._session = session;
-            this._options = new System.Text.Json.JsonSerializerOptions()
-            {
-                //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                IgnoreReadOnlyProperties = true,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                //WriteIndented = true,
-                //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-            };
+            this._options = Item.GetJsonSerializerOption(
+                escapeDoubleQuote: false,
+                ignoreReadOnly: true,
+                ignoreNull: true,
+                writeIndented: false,
+                convertEnumCamel: false);
             this._tableName = tableName;
             this.Enabled = session.EnableLogTransport && session.Enabled;
             _tableName = tableName;

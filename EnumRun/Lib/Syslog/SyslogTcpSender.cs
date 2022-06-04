@@ -8,7 +8,7 @@ using System.IO;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal class SyslogTcpSender : SyslogSender
+    public class SyslogTcpSender : SyslogSender
     {
         private enum MessageTransfer
         {
@@ -66,7 +66,7 @@ namespace EnumRun.Lib.Syslog
             {
                 byte[] datagram = format switch
                 {
-                    Format.RFC3164 => SyslogSerializer.GetRfc3624(message),
+                    Format.RFC3164 => SyslogSerializer.GetRfc3164(message),
                     Format.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
                     _ => null,
                 };
@@ -102,7 +102,7 @@ namespace EnumRun.Lib.Syslog
             {
                 byte[] datagram = format switch
                 {
-                    Format.RFC3164 => SyslogSerializer.GetRfc3624(message),
+                    Format.RFC3164 => SyslogSerializer.GetRfc3164(message),
                     Format.RFC5424 => SyslogSerializer.GetRfc5424_ascii(message),
                     _ => null,
                 };

@@ -40,7 +40,7 @@ namespace ScriptDelivery.Logs.ServerLog
 
         public override string GetJson()
         {
-            _options ??= GetJsonSerializerOption(
+            _options ??= Item.GetJsonSerializerOption(
                 escapeDoubleQuote: true,
                 false,
                 false,

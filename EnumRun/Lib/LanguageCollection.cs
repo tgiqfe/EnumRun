@@ -40,7 +40,6 @@ namespace EnumRun.Lib
 
             this.Clear();
             this.AddRange(list);
-            //this.Save(path);
         }
 
         public void Save(string path)
@@ -51,12 +50,12 @@ namespace EnumRun.Lib
             {
                 using (var sw = new StreamWriter(path, false, Encoding.UTF8))
                 {
-                    string json = JsonSerializer.Serialize(this, new JsonSerializerOptions()
-                    {
-                        WriteIndented = true,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    });
+                    string json = JsonSerializer.Serialize(this, Item.GetJsonSerializerOption(
+                        escapeDoubleQuote: true,
+                        ignoreReadOnly: true,
+                        ignoreNull: true,
+                        writeIndented: true,
+                        convertEnumCamel: false));
                     sw.WriteLine(json);
                 }
             }
