@@ -21,17 +21,14 @@ namespace EnumRun.ScriptDelivery
 
         public HttpDownloader(string filesPath, ProcessLogger logger)
         {
-            //this._uri = uri;
             this._filesPath = filesPath;
             this._logger = logger;
-            this._options = new System.Text.Json.JsonSerializerOptions()
-            {
-                //Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                IgnoreReadOnlyProperties = true,
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                //WriteIndented = true,
-                //Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-            };
+            this._options = Item.GetJsonSerializerOption(
+                escapeDoubleQuote: false,
+                ignoreReadOnly: true,
+                ignoreNull: true,
+                writeIndented: false,
+                convertEnumCamel: false);
             this._list = new List<DownloadHttp>();
         }
 

@@ -20,20 +20,16 @@ namespace ScriptDelivery.Files
         private string _storedFile = null;
         private JsonSerializerOptions _options = null;
 
-        //public MappingFileCollection() { }
-
         public MappingFileCollection(string mapsPath, string logsPath)
         {
-            _baseDir = mapsPath;
-            _storedFile = Path.Combine(logsPath, "StoredMapping.json");
-            _options = new JsonSerializerOptions()
-            {
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                //IgnoreReadOnlyProperties = true,
-                //DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-                WriteIndented = true,
-                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-            };
+            this._baseDir = mapsPath;
+            this._storedFile = Path.Combine(logsPath, "StoredMapping.json");
+            this._options = Item.GetJsonSerializerOption(
+                escapeDoubleQuote: true,
+                ignoreReadOnly: false,
+                ignoreNull: false,
+                writeIndented: true,
+                convertEnumCamel: true);
             CheckSource();
         }
 
@@ -53,7 +49,7 @@ namespace ScriptDelivery.Files
             var mappingList = _list.SelectMany(x => x.MappingList.Select(y => y)).ToList();
             this.Content = JsonSerializer.Serialize(mappingList);
 
-            Item.Logger.Write(Logs.LogLevel.Info, 
+            Item.Logger.Write(Logs.LogLevel.Info,
                 null,
                 logTitle,
                 "MapFiles => [{0}]",

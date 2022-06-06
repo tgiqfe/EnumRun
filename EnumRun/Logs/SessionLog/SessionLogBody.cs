@@ -91,7 +91,7 @@ namespace EnumRun.Logs.SessionLog
 
         public override string GetJson()
         {
-            _options ??= GetJsonSerializerOption(
+            _options ??= Item.GetJsonSerializerOption(
                 false,
                 false,
                 false,

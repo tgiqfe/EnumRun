@@ -28,7 +28,6 @@ namespace EnumRun.Logs
         public string MsgId { get; set; }
         public StructuredData[] StructuredDataParams { get; set; }
 
-        //public TransportSyslog() { }
         public TransportSyslog(EnumRunSetting setting)
         {
             var info = new ServerInfo(setting.Syslog.Server, defaultPort: 514, defaultProtocol: "udp");
@@ -63,53 +62,6 @@ namespace EnumRun.Logs
         }
 
         #region Send
-
-        /*
-        public void Send(string message)
-        {
-            Send(DateTime.Now, this.Facility, this.Severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
-        }
-
-        public void Send(Severity severity, string message)
-        {
-            Send(DateTime.Now, this.Facility, severity, Environment.MachineName, this.AppName, this.ProcId, this.MsgId, message, this.StructuredDataParams);
-        }
-
-        public void Send(DateTime dt, Facility facility, Severity severity, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
-        {
-            Sender.Send(
-                new SyslogMessage(
-                    dt,
-                    facility,
-                    severity,
-                    hostName,
-                    appName,
-                    procId,
-                    msgId,
-                    message,
-                    structuredDataParams));
-        }
-
-        public void Send(DateTime dt, Facility facility, LogLevel level, string hostName, string appName, string procId, string msgId, string message, StructuredData[] structuredDataParams)
-        {
-            Sender.Send(
-                new SyslogMessage(
-                    dt,
-                    facility,
-                    LogLevelMapper.ToSeverity(level),
-                    hostName,
-                    appName,
-                    procId,
-                    msgId,
-                    message,
-                    structuredDataParams));
-        }
-
-        public void Send(LogLevel level, string msgId, string message)
-        {
-            Send(DateTime.Now, this.Facility, LogLevelMapper.ToSeverity(level), Environment.MachineName, this.AppName, this.ProcId, msgId, message, this.StructuredDataParams);
-        }
-        */
 
         public async Task SendAsync(string message)
         {

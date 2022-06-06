@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal class FacilityMapper
+    public class FacilityMapper
     {
         private static Dictionary<Facility, string[]> _map = null;
 

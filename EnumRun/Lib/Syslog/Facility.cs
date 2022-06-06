@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnumRun.Lib.Syslog
 {
-    internal enum Facility
+    public enum Facility
     {
         KernelMessages = 0,
         UserLevelMessages = 1,

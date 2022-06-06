@@ -37,8 +37,9 @@ namespace EnumRun
             string logTitle = "PreProcess";
 
             //  前回セッション
-            string filePath = TargetDirectory.GetFile(Item.SESSION_FILE);
-            Dictionary<string, Logs.SessionLog.LogonSession> lastSessions = DeserializeLastLogonSession(filePath);
+            //string sessionFile = TargetDirectory.GetFile(Item.SESSION_FILE);
+            string sessionFile = Path.Combine(_setting.LogsPath, Item.SESSION_FILE);
+            Dictionary<string, Logs.SessionLog.LogonSession> lastSessions = DeserializeLastLogonSession(sessionFile);
 
             //  今回セッション
             var body = new Logs.SessionLog.SessionLogBody();
@@ -73,9 +74,7 @@ namespace EnumRun
 
             //  セッション管理情報を出力
             lastSessions[Item.ProcessName] = body.Session;
-            SerializeLogonSession(lastSessions, filePath);
-
-            //  [案]↑セッション管理情報の出力先は、logsパス配下にする。
+            SerializeLogonSession(lastSessions, sessionFile);
         }
 
         /// <summary>
@@ -269,7 +268,13 @@ namespace EnumRun
             {
                 string json = JsonSerializer.Serialize(
                     sessions,
-                    new JsonSerializerOptions() { WriteIndented = true });
+                    Item.GetJsonSerializerOption(
+                        escapeDoubleQuote: false,
+                        ignoreReadOnly: false,
+                        ignoreNull: false,
+                        writeIndented: true,
+                        convertEnumCamel: false));
+                    //new JsonSerializerOptions() { WriteIndented = true });
                 sw.WriteLine(json);
             }
         }
