@@ -40,9 +40,10 @@ using (var logger = new ProcessLogger(setting, session))
             Select(x => new Script(x, setting, collection, logger)).
             ToArray().
             Where(x => x.Enabled).
-            Select(x => x.Process());
+            Select(x => x.Process()).
+            ToArray();
 
-        Task.WhenAll(processes);
+        Task.WaitAll(processes);
     }
 
     //  セッション終了時処理
