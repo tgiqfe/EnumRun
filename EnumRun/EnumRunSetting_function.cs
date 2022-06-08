@@ -50,6 +50,7 @@ namespace EnumRun
                 Server = new string[] { "http://localhost:5000" },
                 Process = "StartupScript",
                 TrashPath = null,
+                LogTransport = true,
             };
         }
 
