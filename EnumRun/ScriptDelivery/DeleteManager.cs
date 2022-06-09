@@ -102,8 +102,6 @@ namespace EnumRun.ScriptDelivery
                 Where(x => targetList.Any(y => y.IsMatch(x))).
                 ToList();
 
-            _logger.Write(Logs.LogLevel.Debug, logTitle, "Delete [file => {0}, directory => {1}]", _fList.Count, _dList.Count);
-
             for (int i = _dList.Count - 1; i >= 0; i--)
             {
                 var matchSearch = excludeList.FirstOrDefault(x => x.IsMatch(_dList[i]));
