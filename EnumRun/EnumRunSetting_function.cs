@@ -310,6 +310,47 @@ namespace EnumRun
             }
         }
 
+        //  [案]textへ各プロパティを自動的に
+        public void SerializeText_auto(string filePath)
+        {
+            PropertyInfo[] props = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+            using (var sw = new StreamWriter(filePath, false, FileType.UTF8N.GetEncoding()))
+            {
+                foreach (var prop in props)
+                {
+                    Type type = prop.GetType();
+                    if (type == typeof(string) ||
+                        type == typeof(int?) ||
+                        type == typeof(long?) ||
+                        type == typeof(double?) ||
+                        type == typeof(bool?))
+                    {
+                        sw.WriteLine($"{prop.Name}: {prop.GetValue(this)}");
+                    }
+                    else if (type == typeof(ParamRanges))
+                    {
+                        var subProp = prop.GetValue(this) as ParamRanges;
+                        if(subProp != null)
+                        {
+                            sw.WriteLine($"{prop.Name}:");
+                            foreach(var pair in subProp)
+                            {
+                                sw.WriteLine($"  {pair.Key}: {pair.Value}");
+                            }
+                        }
+                    }
+                    else if (type == typeof(ParamLogstash) || type == typeof(ParamSyslog) || type == typeof(ParamScriptDelivery))
+                    {
+
+
+                        //  [案]プロパティ名を動的にセットする
+
+
+                    }
+                }
+            }
+        }
+
         #endregion
 
         /// <summary>
