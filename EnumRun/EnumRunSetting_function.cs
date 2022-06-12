@@ -327,25 +327,45 @@ namespace EnumRun
                     {
                         sw.WriteLine($"{prop.Name}: {prop.GetValue(this)}");
                     }
-                    else if (type == typeof(ParamRanges))
+                    else if (type == typeof(string[]))
                     {
-                        var subProp = prop.GetValue(this) as ParamRanges;
-                        if(subProp != null)
+                        string valText = string.Join(", ", prop.GetValue(this));
+                        sw.WriteLine($"{prop.Name}: {valText}");
+                    }
+                    else if (type.IsSubclassOf(typeof(Dictionary<string, string>)))
+                    {
+                        var subVal = prop.GetValue(this) as Dictionary<string, string>;
+                        if (subVal != null)
                         {
                             sw.WriteLine($"{prop.Name}:");
-                            foreach(var pair in subProp)
+                            foreach (var pair in subVal)
                             {
                                 sw.WriteLine($"  {pair.Key}: {pair.Value}");
                             }
                         }
                     }
-                    else if (type == typeof(ParamLogstash) || type == typeof(ParamSyslog) || type == typeof(ParamScriptDelivery))
+                    else if (type.IsAssignableTo(typeof(IEnumRunSettingSubclass)))
                     {
-
-
-                        //  [案]プロパティ名を動的にセットする
-
-
+                        var val = prop.GetValue(this);
+                        var subProps = type.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+                        
+                        foreach (var subProp in subProps)
+                        {
+                            Type subType = subProp.GetType();
+                            if (subType == typeof(string) ||
+                               subType == typeof(int?) ||
+                               subType == typeof(long?) ||
+                               subType == typeof(double?) ||
+                               subType == typeof(bool?))
+                            {
+                                sw.WriteLine($"{subProp.Name}: {subProp.GetValue(val)}");
+                            }
+                            else if (subType == typeof(string[]))
+                            {
+                                string subValText = string.Join(", ", subProp.GetValue(val));
+                                sw.WriteLine($"{subProp.Name}: {subValText}");
+                            }
+                        }
                     }
                 }
             }

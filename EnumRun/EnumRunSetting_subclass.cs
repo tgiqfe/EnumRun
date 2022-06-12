@@ -64,13 +64,16 @@ namespace EnumRun
         }
 
         #endregion
+
+        public interface IEnumRunSettingSubclass { }
+
         #region Logstash
 
         /// <summary>
         /// ログ転送先サーバ(Logstash)のサーバ
         /// 記述例⇒http://192.168.10.100:8080/
         /// </summary>
-        public class ParamLogstash
+        public class ParamLogstash : IEnumRunSettingSubclass
         {
             public string Server { get; set; }      //  Elasticsearch+Kibana+Logstash環境の、Logstashサーバアドレス
 
@@ -87,7 +90,7 @@ namespace EnumRun
         /// ログ転送先サーバ(Syslog)のサーバ
         /// 記述例⇒udp://192.168.10.100:514
         /// </summary>
-        public class ParamSyslog
+        public class ParamSyslog : IEnumRunSettingSubclass
         {
             public string Server { get; set; }              //  Syslogサーバのアドレス
             public string Facility { get; set; }            //  ファシリティ名
@@ -118,7 +121,7 @@ namespace EnumRun
         #endregion
         #region ScriptDelivery
 
-        public class ParamScriptDelivery
+        public class ParamScriptDelivery : IEnumRunSettingSubclass
         {
             public string[] Server { get; set; }
             public string Process { get; set; }
