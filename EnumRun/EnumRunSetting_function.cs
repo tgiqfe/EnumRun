@@ -256,6 +256,7 @@ namespace EnumRun
             }
         }
 
+        /*
         /// <summary>
         /// Textファイルへシリアライズ
         /// </summary>
@@ -309,6 +310,7 @@ namespace EnumRun
                 }
             }
         }
+        */
 
         /// <summary>
         /// Textファイルへシリアライズ
