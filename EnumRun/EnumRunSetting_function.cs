@@ -260,7 +260,7 @@ namespace EnumRun
         /// Textファイルへシリアライズ
         /// </summary>
         /// <param name="filePath"></param>
-        public void SerializeText(string filePath)
+        public void SerializeText_trash(string filePath)
         {
             //  BOM無しUTF-8は、new System.Text.UTF8Encoding(false)でも可。
             //  今回は、デシリアライズ時の自動エンコードチェックの為に使用したReadJEncを使用。
@@ -310,64 +310,56 @@ namespace EnumRun
             }
         }
 
-        //  [案]textへ各プロパティを自動的に
-        public void SerializeText_auto(string filePath)
+        /// <summary>
+        /// Textファイルへシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        public void SerializeText(string filePath)
         {
-            PropertyInfo[] props = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-            using (var sw = new StreamWriter(filePath, false, FileType.UTF8N.GetEncoding()))
+            Action<object, Type, StreamWriter, string> serializeToText = null;
+            serializeToText = (targetObj, targetType, sw, indent) =>
             {
+                PropertyInfo[] props = targetType.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
                 foreach (var prop in props)
                 {
-                    Type type = prop.GetType();
-                    if (type == typeof(string) ||
-                        type == typeof(int?) ||
-                        type == typeof(long?) ||
-                        type == typeof(double?) ||
-                        type == typeof(bool?))
+                    Type type = prop.PropertyType;
+                    object val = prop.GetValue(targetObj);
+                    if (val != null)
                     {
-                        sw.WriteLine($"{prop.Name}: {prop.GetValue(this)}");
-                    }
-                    else if (type == typeof(string[]))
-                    {
-                        string valText = string.Join(", ", prop.GetValue(this));
-                        sw.WriteLine($"{prop.Name}: {valText}");
-                    }
-                    else if (type.IsSubclassOf(typeof(Dictionary<string, string>)))
-                    {
-                        var subVal = prop.GetValue(this) as Dictionary<string, string>;
-                        if (subVal != null)
+                        if (type == typeof(string) ||
+                            type == typeof(int?) ||
+                            type == typeof(long?) ||
+                            type == typeof(double?) ||
+                            type == typeof(bool?))
+                        {
+                            sw.WriteLine($"{indent}{prop.Name}: {val}");
+                        }
+                        else if (type == typeof(string[]))
+                        {
+                            sw.WriteLine($"{indent}{prop.Name}: {string.Join(", ", val)}");
+                        }
+                        else if (type.IsSubclassOf(typeof(Dictionary<string, string>)))
                         {
                             sw.WriteLine($"{prop.Name}:");
-                            foreach (var pair in subVal)
+                            foreach (var pair in val as Dictionary<string, string>)
                             {
-                                sw.WriteLine($"  {pair.Key}: {pair.Value}");
+                                sw.WriteLine($"  {indent}{pair.Key}: {pair.Value}");
                             }
                         }
-                    }
-                    else if (type.IsAssignableTo(typeof(IEnumRunSettingSubclass)))
-                    {
-                        var val = prop.GetValue(this);
-                        var subProps = type.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-                        
-                        foreach (var subProp in subProps)
+                        else if (type.IsAssignableTo(typeof(IEnumRunSettingSubclass)))
                         {
-                            Type subType = subProp.GetType();
-                            if (subType == typeof(string) ||
-                               subType == typeof(int?) ||
-                               subType == typeof(long?) ||
-                               subType == typeof(double?) ||
-                               subType == typeof(bool?))
-                            {
-                                sw.WriteLine($"{subProp.Name}: {subProp.GetValue(val)}");
-                            }
-                            else if (subType == typeof(string[]))
-                            {
-                                string subValText = string.Join(", ", subProp.GetValue(val));
-                                sw.WriteLine($"{subProp.Name}: {subValText}");
-                            }
+                            sw.WriteLine($"{prop.Name}:");
+                            serializeToText(val, type, sw, "  ");
                         }
                     }
                 }
+            };
+
+            //  BOM無しUTF-8は、new System.Text.UTF8Encoding(false)でも可。
+            //  今回は、デシリアライズ時の自動エンコードチェックの為に使用したReadJEncを使用。
+            using (var sw = new StreamWriter(filePath, false, FileType.UTF8N.GetEncoding()))
+            {
+                serializeToText(this, typeof(EnumRunSetting), sw, "");
             }
         }
 
