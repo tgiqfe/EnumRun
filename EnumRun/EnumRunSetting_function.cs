@@ -62,12 +62,14 @@ namespace EnumRun
         /// <returns></returns>
         public static EnumRunSetting Deserialize()
         {
+            //  Setting.json
             string jsonFilePath = TargetDirectory.GetFile(Item.CONFIG_JSON);
             if (File.Exists(jsonFilePath))
             {
                 return DeserializeJson(jsonFilePath);
             }
 
+            //  Setting.txt
             string textFilePath = TargetDirectory.GetFile(Item.CONFIG_TXT);
             if (File.Exists(textFilePath))
             {
@@ -132,14 +134,14 @@ namespace EnumRun
                     while ((readLine = sr.ReadLine()) != null) { lineList.Add(readLine); }
 
                     int index = 0;
-                    setting = GetProperty(new EnumRunSetting(), lineList, ref index);
+                    setting = GetPropertyForText(new EnumRunSetting(), lineList, ref index);
                 }
             }
 
             return setting;
         }
 
-        private static T GetProperty<T>(T obj, List<string> list, ref int index, bool isRoot = true) where T : class
+        private static T GetPropertyForText<T>(T obj, List<string> list, ref int index, bool isRoot = true) where T : class
         {
             Regex pat_indent = new Regex(@"^(\s{2})+");
             PropertyInfo[] props = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -193,19 +195,19 @@ namespace EnumRun
                         else if (type == typeof(ParamLogstash))
                         {
                             index++;
-                            (obj as EnumRunSetting).Logstash = GetProperty(new ParamLogstash(), list, ref index, false);
+                            (obj as EnumRunSetting).Logstash = GetPropertyForText(new ParamLogstash(), list, ref index, false);
                             i = --index;
                         }
                         else if (type == typeof(ParamSyslog))
                         {
                             index++;
-                            (obj as EnumRunSetting).Syslog = GetProperty(new ParamSyslog(), list, ref index, false);
+                            (obj as EnumRunSetting).Syslog = GetPropertyForText(new ParamSyslog(), list, ref index, false);
                             i = --index;
                         }
                         else if (type == typeof(ParamScriptDelivery))
                         {
                             index++;
-                            (obj as EnumRunSetting).ScriptDelivery = GetProperty(new ParamScriptDelivery(), list, ref index, false);
+                            (obj as EnumRunSetting).ScriptDelivery = GetPropertyForText(new ParamScriptDelivery(), list, ref index, false);
                             i = --index;
                         }
                     }
@@ -258,7 +260,7 @@ namespace EnumRun
         /// Textファイルへシリアライズ
         /// </summary>
         /// <param name="filePath"></param>
-        public void SerializeText(string filePath)
+        public void SerializeText_trash(string filePath)
         {
             //  BOM無しUTF-8は、new System.Text.UTF8Encoding(false)でも可。
             //  今回は、デシリアライズ時の自動エンコードチェックの為に使用したReadJEncを使用。
@@ -305,6 +307,59 @@ namespace EnumRun
                     sw.WriteLine($"  TrashPath: {this.ScriptDelivery.TrashPath}");
                     sw.WriteLine($"  LogTransport: {this.ScriptDelivery.LogTransport}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Textファイルへシリアライズ
+        /// </summary>
+        /// <param name="filePath"></param>
+        public void SerializeText(string filePath)
+        {
+            Action<object, Type, StreamWriter, string> serializeToText = null;
+            serializeToText = (targetObj, targetType, sw, indent) =>
+            {
+                PropertyInfo[] props = targetType.GetProperties(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+                foreach (var prop in props)
+                {
+                    Type type = prop.PropertyType;
+                    object val = prop.GetValue(targetObj);
+                    if (val != null)
+                    {
+                        if (type == typeof(string) ||
+                            type == typeof(int?) ||
+                            type == typeof(long?) ||
+                            type == typeof(double?) ||
+                            type == typeof(bool?))
+                        {
+                            sw.WriteLine($"{indent}{prop.Name}: {val}");
+                        }
+                        else if (type == typeof(string[]))
+                        {
+                            sw.WriteLine($"{indent}{prop.Name}: {string.Join(", ", val)}");
+                        }
+                        else if (type.IsSubclassOf(typeof(Dictionary<string, string>)))
+                        {
+                            sw.WriteLine($"{prop.Name}:");
+                            foreach (var pair in val as Dictionary<string, string>)
+                            {
+                                sw.WriteLine($"  {indent}{pair.Key}: {pair.Value}");
+                            }
+                        }
+                        else if (type.IsAssignableTo(typeof(IEnumRunSettingSubclass)))
+                        {
+                            sw.WriteLine($"{prop.Name}:");
+                            serializeToText(val, type, sw, "  ");
+                        }
+                    }
+                }
+            };
+
+            //  BOM無しUTF-8は、new System.Text.UTF8Encoding(false)でも可。
+            //  今回は、デシリアライズ時の自動エンコードチェックの為に使用したReadJEncを使用。
+            using (var sw = new StreamWriter(filePath, false, FileType.UTF8N.GetEncoding()))
+            {
+                serializeToText(this, typeof(EnumRunSetting), sw, "");
             }
         }
 
