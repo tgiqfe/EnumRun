@@ -338,7 +338,7 @@ namespace EnumRun
                         }
                         else if (type == typeof(string[]))
                         {
-                            sw.WriteLine($"{indent}{prop.Name}: {string.Join(", ", val)}");
+                            sw.WriteLine($"{indent}{prop.Name}: {string.Join(", ", val as string[])}");
                         }
                         else if (type.IsSubclassOf(typeof(Dictionary<string, string>)))
                         {
