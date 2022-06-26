@@ -2,14 +2,6 @@
 
 ## システム要件
 
-### OS
-
-以下のOSで動作確認をしています。
-- Windows 10 (Ver. 1809以上)
-- Windows 11
-- Windows Server 2019
-- Windows Server 2022
-
 ### 推奨環境(諸注意)
 
 1. 実行するユーザーは、管理者権限(Administratorsグループに所属)であること。
