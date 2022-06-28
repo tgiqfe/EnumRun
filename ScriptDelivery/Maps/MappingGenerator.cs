@@ -179,7 +179,7 @@ namespace ScriptDelivery.Maps
                     deleteTarget = mapping.Work.Delete.DeleteTarget?.Length > 0 ?
                         string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteTarget) : "";
                     deleteExclude = mapping.Work.Delete.DeleteExclude?.Length > 0 ?
-                        String.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteExclude) : "";
+                        string.Join(System.IO.Path.PathSeparator, mapping.Work.Delete.DeleteExclude) : "";
                 }
 
                 return new string[]

@@ -3,7 +3,7 @@ using EnumRun.Lib;
 using EnumRun.Logs.ProcessLog;
 using EnumRun.ScriptDelivery;
 
-bool initial = true;
+bool initial = false;
 if (initial)
 {
     EnumRunSetting setting_def = EnumRunSetting.Deserialize();
