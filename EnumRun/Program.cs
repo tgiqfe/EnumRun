@@ -3,6 +3,7 @@ using EnumRun.Lib;
 using EnumRun.Logs.ProcessLog;
 using EnumRun.ScriptDelivery;
 
+/*
 bool initial = false;
 if (initial)
 {
@@ -17,6 +18,7 @@ if (initial)
     Console.ReadLine();
     Environment.Exit(0);
 }
+*/
 
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();
@@ -36,6 +38,9 @@ using (var logger = new ProcessLogger(setting, session))
 
     if (worker.Enabled && Directory.Exists(setting.GetFilesPath()))
     {
+
+        Console.WriteLine(Directory.GetFiles(setting.GetFilesPath()).Length);
+
         var processes = Directory.GetFiles(setting.GetFilesPath()).
             Select(x => new Script(x, setting, collection, logger)).
             ToArray().

@@ -35,6 +35,14 @@ namespace EnumRun.Lib
             }
         }
 
+        public TcpConnect(string server, int port, int maxWaitTime, bool startTest = true)
+        {
+            if (startTest)
+            {
+                this.TestAsync(server, port).Wait();
+            }
+        }
+
         public bool Test(string server)
         {
             this.TestAsync(server).Wait();
@@ -48,7 +56,7 @@ namespace EnumRun.Lib
             Ping ping = new Ping();
             for (int i = 0; i < maxCount; i++)
             {
-                PingReply reply = await ping.SendPingAsync(server);
+                PingReply reply = await ping.SendPingAsync(server, 1000);
                 if (reply.Status == IPStatus.Success)
                 {
                     this._reachable = true;

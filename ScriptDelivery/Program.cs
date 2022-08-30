@@ -3,22 +3,24 @@ using System.Text;
 using ScriptDelivery;
 using ScriptDelivery.Files;
 
+
+/*
 bool debug = true;
 if (debug)
 {
-    var sampleMap = ScriptDelivery.Maps.MappingGenerator.Deserialize("bin\\sample01.txt");
-    ScriptDelivery.Maps.MappingGenerator.Serialize(sampleMap, "bin\\sample01.txt");
-    ScriptDelivery.Maps.MappingGenerator.Serialize(sampleMap, "bin\\sample01.csv");
-    ScriptDelivery.Maps.MappingGenerator.Serialize(sampleMap, "bin\\sample01.json");
+    string sampleSetting01 = @"bin\setting.json";
 
-    Item.Setting = Setting.Deserialize("bin\\setting.json");
-    Item.Setting.ChangePath();
-    Item.Setting.Serialize("bin\\setting.json");
+    Setting sampleSetting = new Setting();
+    sampleSetting.Init();
+    sampleSetting.Serialize(sampleSetting01);
 
+    //  Mapファイルのサンプル
+    ScriptDelivery.Misc.samplefile.Sample01.Create();
 
     Console.ReadLine();
     Environment.Exit(0);
 }
+*/
 
 
 var builder = WebApplication.CreateBuilder(args);
