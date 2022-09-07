@@ -23,7 +23,7 @@ namespace EnumRun.Lib
         {
             if (startTest)
             {
-                this.TestAsync(server).Wait();
+                this.TestPingAsync(server).Wait();
             }
         }
 
@@ -31,24 +31,46 @@ namespace EnumRun.Lib
         {
             if (startTest)
             {
-                this.TestAsync(server, port).Wait();
+                this.TestPingAsync(server).Wait();
+                if (_reachable)
+                {
+                    this.TestConnectAsync(server, port).Wait();
+                }
+            }
+        }
+
+        public TcpConnect(string server, int port, int maxPingCount, bool startTest = true)
+        {
+            if (startTest)
+            {
+                this.TestPingAsync(server, maxPingCount).Wait();
+                if (_reachable)
+                {
+                    this.TestConnectAsync(server, port).Wait();
+                }
             }
         }
 
         public bool Test(string server)
         {
-            this.TestAsync(server).Wait();
+            this.TestPingAsync(server).Wait();
             return _reachable;
         }
 
-        public async Task<bool> TestAsync(string server)
+        /// <summary>
+        /// 対象サーバへのPing導通チェック
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="maxCount">デフォルトでは固定4回</param>
+        /// <returns></returns>
+        public async Task<bool> TestPingAsync(string server, int maxCount = 4)
         {
-            int maxCount = 4;       //  最大4回チェック
+            //int maxCount = 4;       //  最大4回チェック
             int interval = 500;     //  インターバル500ミリ秒
             Ping ping = new Ping();
             for (int i = 0; i < maxCount; i++)
             {
-                PingReply reply = await ping.SendPingAsync(server);
+                PingReply reply = await ping.SendPingAsync(server, 1000);
                 if (reply.Status == IPStatus.Success)
                 {
                     this._reachable = true;
@@ -62,15 +84,23 @@ namespace EnumRun.Lib
 
         public bool Test(string server, int port)
         {
-            this.TestAsync(server, port).Wait();
+            this.TestConnectAsync(server, port).Wait();
             return this._success;
         }
 
-        public async Task<bool> TestAsync(string server, int port)
+        /// <summary>
+        /// 対象サーバへのTCP接続チェック
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="port"></param>
+        /// <param name="timeout">デフォルトでは固定3000ミリ秒</param>
+        /// <returns></returns>
+        public async Task<bool> TestConnectAsync(string server, int port)
         {
             using (var client = new TcpClient())
             {
                 int timeout = 3000;
+
                 try
                 {
                     Task task = (client.ConnectAsync(server, port));

@@ -36,6 +36,9 @@ namespace EnumRun
         {
             string logTitle = "PreProcess";
 
+            //  ScriptDeliveryセッション状態
+            _logger.Write(LogLevel.Info, logTitle, $"Delivery => {_session.EnableDelivery}, LogTransport => {_session.EnableLogTransport}, Connect => {_session.Enabled}");
+
             //  前回セッション
             //string sessionFile = TargetDirectory.GetFile(Item.SESSION_FILE);
             string sessionFile = Path.Combine(_setting.LogsPath, Item.SESSION_FILE);

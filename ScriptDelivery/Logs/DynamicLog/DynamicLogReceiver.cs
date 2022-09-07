@@ -14,6 +14,10 @@ namespace ScriptDelivery.Logs.DynamicLog
         public DynamicLogReceiver(Setting setting)
         {
             _logDir = setting.DynamicLogsPath;
+            if (!Directory.Exists(_logDir))
+            {
+                Directory.CreateDirectory(_logDir);
+            }
 
             string today = DateTime.Now.ToString("yyyyMMdd");
             string dbPath = Path.Combine(

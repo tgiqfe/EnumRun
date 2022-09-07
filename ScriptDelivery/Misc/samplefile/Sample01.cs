@@ -13,10 +13,13 @@ namespace ScriptDelivery.Misc.samplefile
     {
         public static void Create()
         {
-            List<Mapping> list = Create02();
-            MappingGenerator.Serialize(list, @"bin\sample01.yml");
-            MappingGenerator.Serialize(list, @"bin\sample01.csv");
-            MappingGenerator.Serialize(list, @"bin\sample01.txt");
+            List<Mapping> list1 = Create01();
+            MappingGenerator.Serialize(list1, @"bin\sample01.txt");
+
+            List<Mapping> list2 = Create02();
+            //MappingGenerator.Serialize(list, @"bin\sample01.yml");
+            //MappingGenerator.Serialize(list, @"bin\sample01.csv");
+            MappingGenerator.Serialize(list2, @"bin\sample02.txt");
         }
 
         private static List<Mapping> Create01()

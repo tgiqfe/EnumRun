@@ -3,6 +3,7 @@ using EnumRun.Lib;
 using EnumRun.Logs.ProcessLog;
 using EnumRun.ScriptDelivery;
 
+/*
 bool initial = false;
 if (initial)
 {
@@ -17,6 +18,10 @@ if (initial)
     Console.ReadLine();
     Environment.Exit(0);
 }
+*/
+
+
+
 
 LanguageCollection collection = LanguageCollection.Deserialize();
 EnumRunSetting setting = EnumRunSetting.Deserialize();

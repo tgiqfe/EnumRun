@@ -23,7 +23,7 @@ namespace EnumRun.ScriptDelivery
             //  - ScriptDeliveryの記述がある
             //  - ScriptDelivery.Serverの記述がある
             //  - 以下のどちらかが一致
-            //    - SctiptDelivery.ProcessNameが一致
+            //    - SctiptDelivery.ProcessNameが一致 ←この場合は最大30秒待機
             //    - ScriptDelivery.LogTransportがtrue
             if (setting.ScriptDelivery != null && setting.ScriptDelivery.Server?.Length > 0)
             {
@@ -36,7 +36,9 @@ namespace EnumRun.ScriptDelivery
                     foreach (var sv in array)
                     {
                         var info = new ServerInfo(sv, 5000, "http");
-                        var connect = new TcpConnect(info.Server, info.Port);
+                        var connect = EnableDelivery ?
+                            new TcpConnect(info.Server, info.Port, maxPingCount: 30) :
+                            new TcpConnect(info.Server, info.Port);
                         if (connect.TcpConnectSuccess)
                         {
                             this.Uri = info.URI;
