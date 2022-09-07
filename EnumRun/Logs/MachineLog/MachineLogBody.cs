@@ -18,6 +18,9 @@ namespace EnumRun.Logs.MachineLog
     {
         public const string TAG = "MachineLog";
 
+        //  ※確認 実機ログを見たところ、Dateのパラメータがnullになっている。
+        //  ※シリアル番号も取得できるように
+
         #region Public parameter
 
         public override string Tag { get { return TAG; } }
